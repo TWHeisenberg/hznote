@@ -1,0 +1,147 @@
+package com.hznc.datacenter.bean;
+
+import com.sun.jna.Structure;
+
+import java.util.Arrays;
+import java.util.List;
+
+/**
+ * 封装tickdata的结构体，作调用c++的参数:
+ * *********************************************
+ * // K线数据
+ * typedef  struct KLine {
+ * int Msec;           // 毫秒
+ * int64 Amount;       // 成交量
+ * int64 PreAmount;    // 前Tick总成交量
+ * int64 Timestamp;    // 时间戳
+ * double Volume;      // 成交金额
+ * double PreVolume;   // 前Tick总成交金额
+ * double OpenPrice;   // 开盘价
+ * double HighPrice;   // 最高价
+ * double LowPrice;    // 最低价
+ * double ClosePrice;  //  收盘价
+ * double PreClosePrice;// 前周期收盘价
+ * double SettlePrice; // 结算价
+ * double Inc;         // 涨幅[%]
+ * double Imp;         // 振幅[%]
+ * char dt[20]; }
+ * KLine;
+ * *********************************************
+ *
+ * @author TWang
+ * @date 2021-04-19 16:30:00
+ */
+public class KLineStructBak extends Structure {
+
+  public int Msec;
+  public long Amount;
+  public long PreAmount;
+  public long Timestamp;
+  public double Volume;
+  public double PreVolume;
+  public double OpenPrice;
+  public double HighPrice;
+  public double LowPrice;
+  public double ClosePrice;
+  public double PreClosePrice;
+  public double SettlePrice;
+  public double Inc;
+  public double Imp;
+  public byte[] dt = new byte[20]; // useless
+
+  // 下面属性是结构体中漏掉的，这里加一下
+  public double openInterest; // 持仓量，最新
+  public double openInterest_diff; // 持仓量，周期内累加
+  public long volume_Sell; // 成交量， 最新
+
+  public static ByReference fromKline(KData kLine) {
+    KLineStructBak.ByReference kLineStruct = new KLineStructBak.ByReference();
+    if(kLine == null){
+      return kLineStruct;
+    }
+
+    kLineStruct.Msec = kLine.getMillisec();
+    kLineStruct.Amount = kLine.getVolume_diff(); // TODO: kdata的注释是成交量？
+    kLineStruct.Timestamp = kLine.getUtime(false);
+    kLineStruct.Volume = kLine.getTurnover_diff(); // TODO: 当前成交金额 还是累计成交金额?
+    kLineStruct.OpenPrice = kLine.getOpenPrice_diff();
+    kLineStruct.HighPrice = kLine.getHighestPrice_diff();
+    kLineStruct.LowPrice = kLine.getLowestPrice_diff();
+    kLineStruct.ClosePrice = kLine.getClosePrice_diff();// 当前的收盘价
+    kLineStruct.PreClosePrice = kLine.getPreClosePrice();
+    kLineStruct.SettlePrice = kLine.getSettlementPrice();
+    // TODO(TWang): 这几个字段不确定的
+    kLineStruct.PreVolume = kLine.getTurnover(); // 前tick累积的成交额
+    kLineStruct.PreAmount = kLine.getVolume(); // 前tick总成交量
+    kLineStruct.Inc = 0;
+    kLineStruct.Imp = 0;
+
+    // 后来增加的
+    kLineStruct.openInterest_diff = kLine.getOpenInterest_diff();
+    kLineStruct.openInterest = kLine.getOpenInterest();
+    kLineStruct.volume_Sell = kLine.getVolume();
+    return kLineStruct;
+  }
+
+  // 将kLineStruct 的信息更新到kLine中
+  public static KData createNewKline(KData lastKLine, ByReference kLineStruct)
+      throws CloneNotSupportedException {
+    KData newKline = lastKLine.clone();
+    newKline.setMillisec(kLineStruct.Msec);
+        newKline.setVolume_diff(kLineStruct.Amount);
+    newKline.setUtime(kLineStruct.Timestamp * 1000 + kLineStruct.Msec); // 转换成毫秒级
+    newKline.setTurnover_diff(kLineStruct.Volume); // volume属性， 在kdata中表示数量（当日成交量）， c++结构体中表示成交金额
+    newKline.setOpenPrice_diff(kLineStruct.OpenPrice);
+    newKline.setHighestPrice_diff(kLineStruct.HighPrice);
+    newKline.setLowestPrice_diff(kLineStruct.LowPrice);
+    newKline.setClosePrice_diff(kLineStruct.ClosePrice);
+        newKline.setPreClosePrice(kLineStruct.PreClosePrice);
+    newKline.setSettlementPrice(kLineStruct.SettlePrice);
+    // TODO(TWang): 这几个字段不确定的
+    newKline.setTurnover(kLineStruct.PreVolume); // 前Tick总成交金额
+    newKline.setVolume(kLineStruct.PreAmount); // 前Tick总成交量
+    kLineStruct.Inc = 0;
+    kLineStruct.Imp = 0;
+
+    // 后来增加的
+    newKline.setOpenInterest(kLineStruct.openInterest);
+    newKline.setOpenInterest_diff(kLineStruct.openInterest_diff);
+    newKline.setVolume(kLineStruct.volume_Sell);
+    return newKline;
+  }
+
+  // 作为结构体的标识
+  public static class ByReference extends KLineStructBak implements Structure.ByReference {
+
+  }
+
+  public static class ByValue extends KLineStructBak implements Structure.ByValue {
+
+  }
+
+  @Override
+  public List getFieldOrder() {
+    return Arrays.asList(new String[]{"Msec", "Amount", "PreAmount", "TimeStamp"
+        , "Volume", "PreVolume", "OpenPrice", "HighPrice", "LowPrice",
+        "ClosePrice", "PreClosePrice", "SettlePrice", "Inc", "Imp", "dt"});
+  }
+
+  @Override
+  public String toString(){
+    StringBuffer sbuf = new StringBuffer();
+    sbuf.append("Msec=").append(this.Msec).append(",");
+    sbuf.append("Amount=").append(this.Amount).append(",");
+    sbuf.append("PreAmount=").append(this.PreAmount).append(",");
+    sbuf.append("Timestamp=").append(this.Timestamp).append(",");
+    sbuf.append("Volume=").append(this.Volume).append(",");
+    sbuf.append("PreVolume=").append(this.PreVolume).append(",");
+    sbuf.append("OpenPrice=").append(this.OpenPrice).append(",");
+    sbuf.append("HighPrice=").append(this.HighPrice).append(",");
+    sbuf.append("LowPrice=").append(this.LowPrice).append(",");
+    sbuf.append("ClosePrice=").append(this.ClosePrice).append(",");
+    sbuf.append("PreClosePrice=").append(this.PreClosePrice).append(",");
+    sbuf.append("SettlePrice=").append(this.SettlePrice);
+    return sbuf.toString();
+  }
+
+}

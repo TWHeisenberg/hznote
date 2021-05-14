@@ -1,0 +1,65 @@
+<component>
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory>/lib</outputDirectory>
+            <useTransitiveDependencies>true</useTransitiveDependencies>
+            <includes>
+                <include>*:*</include>
+            </includes>
+        </dependencySet>
+    </dependencySets>
+
+    <fileSets>
+        <fileSet>
+            <directory>etc</directory>
+            <outputDirectory>etc</outputDirectory>
+
+            <includes>
+                <include>**/*</include>
+            </includes>
+        </fileSet>
+
+        <fileSet>
+            <directory>logs</directory>
+            <outputDirectory>logs</outputDirectory>
+            <excludes>
+                <exclude>*.*</exclude>
+            </excludes>
+        </fileSet>
+
+        <fileSet>
+            <filtered>true</filtered>
+            <directory>bin</directory>
+            <outputDirectory>bin</outputDirectory>
+            <fileMode>0755</fileMode>
+            <directoryMode>0755</directoryMode>
+            <lineEnding>unix</lineEnding>
+            <includes>
+                <include>*.sh</include>
+            </includes>
+        </fileSet>
+
+        <fileSet>
+            <filtered>true</filtered>
+            <directory>bin</directory>
+            <outputDirectory>bin</outputDirectory>
+            <lineEnding>dos</lineEnding>
+            <includes>
+                <include>*.bat</include>
+            </includes>
+        </fileSet>
+
+        <fileSet>
+            <filtered>false</filtered>
+            <directory>bin</directory>
+            <outputDirectory>bin</outputDirectory>
+            <lineEnding>keep</lineEnding>
+            <excludes>
+                <exclude>*.sh</exclude>
+                <exclude>*.bat</exclude>
+            </excludes>
+        </fileSet>
+
+
+    </fileSets>
+</component>
