@@ -1,0 +1,1809 @@
+记录：
+
+
+sourcegraph
+
+    地址：http://10.1.13.1:7080/search
+    用户名密码: lzy/123456
+
+
+maven 配置：
+D:\soft\maven\apache-maven-3.3.9\conf\settings.xml
+
+ceph 建新的osd:
+ 1013  2020-05-21 19:34:10 ceph -s
+ 1014  2020-05-21 19:34:17 ceph osd out osd.0
+ 1015  2020-05-21 19:34:28 systemctl stop ceph-osd@0
+ 1016  2020-05-21 19:34:35 ceph osd crush remove osd.0
+ 1017  2020-05-21 19:34:45 ceph auth del osd.0
+ 1018  2020-05-21 19:34:53 ceph osd rm osd.0
+ 1019  2020-05-21 19:34:59 umount /var/lib/ceph/osd/ceph-0
+ 1020  2020-05-21 19:35:04 lsblk
+ 1021  2020-05-21 19:35:10 lvdisplay
+ 1022  2020-05-21 19:35:25 lvremove /dev/ceph-897eaa6d-d2d6-4b94-ba7a-734505cf974a/osd-block-922b9306-b72b-47df-90fe-a58eae21d36f
+ 1023  2020-05-21 19:35:43 vgremove /dev/ceph-897eaa6d-d2d6-4b94-ba7a-734505cf974a
+ 1024  2020-05-21 19:35:50 lsblk
+ 1025  2020-05-21 19:35:58 cd /opt/ceph-cluster
+ 1026  2020-05-21 19:36:07 ceph-deploy osd create --data /dev/sdb ceph-10-1-46-32
+
+46.12是solea的web,showApp和数据库, 
+46.13是solea的后台这些七七八八的
+jgcai(蔡建国) 2019-07-31 11:59:44
+solr在46.29
+arm：10.1.132.78 root/arm654321
+gradlew:f
+gradlew -Pprod bootDistTar test / gradlew -Pprod clean bootDistTar
+推荐书籍：
+http://wiki.lzy.com/%E6%96%B0%E5%91%98%E5%B7%A5%E5%85%A5%E8%81%8C%E5%BF%85%E7%9C%8B
+
+10.1.12.4 share 123456
+10.1.11.5 user 123456
+# solea 1.9 solea-1.9 B环境：
+连接：l
+10.2.30.4 root/123456	高级》隧道：10.1.50.18 gw/123456
+prometheus
+:15018
+
+c环境分配：
+http://wiki.lzy.com/%E7%A0%94%E5%8F%91%E6%B5%8B%E8%AF%95%E7%8E%AF%E5%A2%83%28C%E7%8E%AF%E5%A2%83%EF%BC%89ip%E5%88%86%E9%85%8D?highlight=%2810.1.58.1%29
+
+消费情况：
+/usr/hdp/current/kafka-broker/bin/kafka-consumer-groups.sh  --bootstrap-server 10.1.46.32:6667 --describe --group solea-tika
+
+
+远程调试forkparse:
+-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8012
+
+清除kafka数据：
+清除kafka数据  --ok
+		  kafka 清掉数据
+ZK_HOSTS="10.1.61.5:2181"
+		  /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper ${ZK_HOSTS} --topic  solea_fileserver_web  --alter --config  retention.ms=10 
+/usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper ${ZK_HOSTS} --topic solea_fileserver_web --alter --config cleanup.policy=delete
+		  
+		  查看等到log大小为0
+		  ll /opt/kafka-logs/solea_fileserver_web-*
+		  
+		  kafka还原设置
+		  /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper ${ZK_HOSTS} --topic solea_fileserver  --alter --config  retention.ms=604800000 
+		
+	  清空solr数据	--ok
+		  python /opt/millipede-solr/management/bin/solr_collection.py delete-collection solea_
+
+		  创建collection:
+cd /opt/solea-release-2.0.0-r1/solr
+python /opt/millipede-solr/management/bin/solr_collection.py create-collection --auto-numshard  --replication-factor 1 --route-name implicit --auto-create-replication=2 --schema-file /opt/solea_schema/schema.xml  solea_
+
+ /opt/solea-release-2.0.3-r1/solr/conf/schema.xml  solea_
+ 
+ /usr/hdp/current/kafka-broker/bin/kafka-topics.sh  --zookeeper $ZK_HOSTS  --topic solea_fileserver  --describe
+ 
+听包：
+tcpdump -i any tcp port  15003 -w 1.pcap
+
+http and ip.src==10.1.30.4 and ip.dst==10.1.30.4
+ 
+
+liyulong:
+lovexiafe1314
+ 
+ 
+source /opt/solea-tika-app/bin/solea_tika_profile.sh
+export SOLEA_TIKA_APP_OPTS="$SOLEA_TIKA_APP_OPTS -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8019"
+
+cd /opt/solea-tika-app
+bash /opt/solea-tika-app/bin/solea-tika-app start-tika-api \
+ --app.id=api
+ 
+curl http://10.1.46.32:8018/tika/api/doParse  -F "file=@/opt/solea-tika-external-service/test-data/test_ocr.jpg" -d "config=@{\"translateEnable\":\"true\",\"ocrEnable\":\"true\"}" -X POST
+ 
+ 
+source /opt/solea-tika-app/bin/solea_tika_profile.sh
+export SOLEA_TIKA_APP_OPTS="$SOLEA_TIKA_APP_OPTS -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8019"
+	 
+ bash /opt/solea-tika-app/bin/solea-tika-app run-tika \
+ --app.id=xxx.test --application.tika.file.debug=false \
+ --application.kafka.topic=solea_fileserver \
+ --application.solr.collection=solea_redirect_collection
+ 
+远程调试forkparse:
+-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8021
+
+netstat -nap | grep 1096
+ 
+ solea数据库：
+ 10.1.46.31/solea/123456/ora11g
+ 
+
+
+A环境：
+http://10.1.12.4/ssh%20proxy#preview
+
+查询占用端口进程：
+netstat -nlp | grep :8080 | awk '{print $7}' |awk -F"/" '{ print $1 }'
+
+c mntos:
+ http://10.1.16.1/mntos/
+
+
+20200806
+1.合并代码
+git checkout  -b solea-gz-mr-20200806 remotes/origin/solea-gz-mr-20200806
+
+git remote add solea_gz_20200806_bundle  solea.bundle
+
+git pull -v --progress  "solea_gz_20200806_bundle" solea-gz-mr-20200806
+
+看看pull的：
+git pull -v --progress "origin" solea-gz-mr-20200806
+
+bundle合并到gz
+gz合并到master
+master 合并到rb
+合并projectinfo		--ok
+
+2.出差jira
+	工作日志
+	出差邮件		--ok
+	报销
+
+3.问题：
+1.马力反馈省厅1.x版本接数据到/opt/solea-data下，为什么没有入到系统
+2.音频转换改成ffmpeg
+3.合肥局，修改铭感词限制，1000
+升级
+
+申请延期：
+到明天：
+SOLEA-2854 【出差】【solea】广州全文现场定制化开发
+SOLEA-2795 【pdf高亮】英文全词的问题，是否可以支持解决这个问题
+COMMON-6057 【长期出差】【广州】solea开发
+
+到下周：
+SOLEA-2951 【新疆zz】pst文件抽出eml进行发送
+SOLEA-2952 【新疆zz】支持通过后缀检索
+SOLEA-2967 【A环境】缺省安装的不能运行二次分析，报告错误
+SOLEA-2956 【云度】：数据升级兼容程序
+SOLEA-2669 规划部指出的一些solea问题
+
+
+20200902
+1.南京sj数据确认
+
+	java 参数： fileId pool
+	多进程put
+
+是否可以发快点？
+parallel
+
+确认下问题：
+SOLEA-3026 【云度】：查询转义bug
+
+
+2.
+SOLEA-3106 中译接口老是出现变化，我们应该如何应对？
+
+做个prometheus 统计监测翻译失败成功率
+
+SOLEA-2868 【solea-tika】solea_tika_check_status.sh检测日志打印时的问题
+
+应该检测main OR taskExecutor 的时间来判断程序是否输出。
+
+设置程序刚启动一段时间不监测：
+		<CheckCmd
+      DelayTime="600"
+      Interval="60"
+      NumFail="2"
+      RunTimeOut="10"
+      CheckScripts="/opt/guard_checks/tomcat-jdk-11/*.sh"
+    >
+
+
+
+SOLEA-3063 【showapp】图片跟视频是否可以统一走 showapp 去展示		--ok
+查看jira common
+SOLEA-3002 【solea】演示数据下的 S8KGGTORJ_clip3.mp4 ,ffmepg 错误
+
+convert cmd:
+/opt/ffmpeg/ffmpeg-4.3.1-amd64-static/ffmpeg -threads 8 -i http://10.1.61.2:15003/solea-fserver2/api/v1/getFile?url=ceph://solea_20200902/58157721-1929-4d8b-b872-2ef3552ad440 -map 0 -c copy -sn -c:v libx264 -b:v 1000k -pix_fmt yuv420p -maxrate 3776002 -bufsize 7552004 -preset veryfast -profile:v:0 high -level:v:0 4.1 -crf 23 -x264opts:0 subme=0:me_range=4:rc_lookahead=10:me=dia:no_chroma_me:8x8dct=0:partitions=none -g:v:0 90 -keyint_min:v:0 90 -sc_threshold:v:0 0 -copyts -vsync -1 -c:a libmp3lame -metadata:s:a:0 language=eng -disposition:a:0 default -ac:a:0 2 -ab:a:0 192000 -f segment -max_delay 5000000 -avoid_negative_ts disabled -map_metadata -1 -map_chapters -1 -start_at_zero -segment_time 2 -individual_header_trailer 0 -segment_format mpegts -segment_list_type m3u8 -segment_start_number 0 -segment_list /opt/videoTemp/20200902/16/868b3140-112e-42fd-8493-bcb1366bf241/index.m3u8 -y /opt/videoTemp/20200902/16/868b3140-112e-42fd-8493-bcb1366bf241/%03d.ts
+
+SOLEA-3105 【文件详情页面】pdf格式文件当选中敏感信息后文件中对应的敏感信息不会高亮显示
+http://10.1.61.2:15003/solea-showapp/file/show?url=http%3A%2F%2F10.1.61.2%3A15003%2Fsolea-download%3FfileName%3Dxj%252FPPT%2520PARADE%2520eng%25204%2520July%25202017.pdf%26cephUrl%3Dceph%3A%2F%2Fsolea_20200902%2Fe1b89f2c-6e9f-498f-a081-7b3558a44fce%26importTime%3D20200903&contentType=application/pdf&name=xj%2FPPT%20PARADE%20eng%204%20July%202017.pdf&customWords[0].wordList[0]=from&customWords[0].backGroundColor=%23ffff00&customWords[0].fontColor=%23008000&customWords[0].bold=true
+
+
+换个方式高亮：
+        float[] quad = { rect.getX() -3.0f, rect.getHeight(), rect.getY(), rect.getHeight(), rect.getY() -3.0f, rect.getHeight() + 1.0f, rect.getY(), rect.getHeight() +1.0f };
+        PdfAnnotation highlight = PdfAnnotation.createMarkup(stamper.getWriter(),
+            new Rectangle(rect.getX(), rect.getY(), rect.getHeight(), rect.getWidth()), null,
+            PdfAnnotation.MARKUP_HIGHLIGHT, quad);
+        PdfAppearance ap = PdfAppearance.createAppearance(stamper.getWriter(), rect.getWidth(), rect.getHeight());
+        ap.rectangle(rect.getX(), rect.getY(), rect.getHeight(), rect.getWidth());
+        ap.setColorFill(BaseColor.YELLOW);
+        ap.fill();
+        highlight.setAppearance(PdfAnnotation.APPEARANCE_NORMAL, ap);
+        stamper.addAnnotation(highlight, pageno);
+
+-- 不行
+
+SOLEA-3114 sendFserver对lzyzip做个tmpwatch,防止空目录过多
+
+确认一下，什么问题：
+
+http://git.lzy.com/lzy/java-common/pipelines
+510 [concat] Assertion Failed: Unrecognized VM option 'UseParNewGC'
+511 [concat] Error: Could not create the Java Virtual Machine.
+512 [concat] Error: A fatal exception has occurred. Program will exit.
+波波，这个是你的吗？release 连续三天没过了
+
+开会：
+SOLEA-2868 【solea-tika】solea_tika_check_status.sh检测日志打印时的问题
+SOLEA-3106 中译接口老是出现变化，我们应该如何应对？
+SOLEA-3063 【showapp】图片跟视频是否可以统一走 showapp 去展示
+SOLEA-3002 【solea】演示数据下的 S8KGGTORJ_clip3.mp4 ,ffmepg 错误		--ok
+SOLEA-3105 【文件详情页面】pdf格式文件当选中敏感信息后文件中对应的敏感信息不会高亮显示
+
+20200903
+1.SOLEA-3065 【数据迁移】根据旧版本全文doc, 生成文件表sql
+
+
+2.SOLEA-3105 【文件详情页面】pdf格式文件当选中敏感信息后文件中对应的敏感信息不会高亮显示
+
+确认是否匹配到铭感词	--ok
+是否对pdf加亮了			--ok
+查看meta：
+<head>
+  <meta name="Author" content="User" />
+  <meta name="Content-Type" content="application/pdf" />
+  <meta name="Creation-Date" content="2017-07-04T13:52:12Z" />
+  <meta name="Last-Modified" content="2020-09-02T11:03:15Z" />
+  <meta name="Last-Save-Date" content="2020-09-02T11:03:15Z" />
+  <meta name="X-Parsed-By" content="org.apache.tika.parser.CompositeParser" />
+  <meta name="X-Parsed-By" content="org.apache.tika.parser.DefaultParser" />
+  <meta name="X-Parsed-By" content="com.lzy.solea.tika.parser.pdf.PDFParser" />
+  <meta name="X-TIKA:digest:MD5" content="e83f88ab3f7f705833e9b7c33623ab40" />
+  <meta name="access_permission:assemble_document" content="true" />
+  <meta name="access_permission:can_modify" content="true" />
+  <meta name="access_permission:can_print" content="true" />
+  <meta name="access_permission:can_print_degraded" content="true" />
+  <meta name="access_permission:extract_content" content="true" />
+  <meta name="access_permission:extract_for_accessibility" content="true" />
+  <meta name="access_permission:fill_in_form" content="true" />
+  <meta name="access_permission:modify_annotations" content="true" />
+  <meta name="created" content="2017-07-04T13:52:12Z" />
+  <meta name="creator" content="User" />
+  <meta name="date" content="2020-09-02T11:03:15Z" />
+  <meta name="dc:creator" content="User" />
+  <meta name="dc:format" content="application/pdf; version=1.5" />
+  <meta name="dc:language" content="en-US" />
+  <meta name="dc:title" content="PowerPoint Presentation" />
+  <meta name="dcterms:created" content="2017-07-04T13:52:12Z" />
+  <meta name="dcterms:modified" content="2020-09-02T11:03:15Z" />
+  <meta name="language" content="en-US" />
+  <meta name="meta:author" content="User" />
+  <meta name="meta:creation-date" content="2017-07-04T13:52:12Z" />
+  <meta name="meta:save-date" content="2020-09-02T11:03:15Z" />
+  <meta name="modified" content="2020-09-02T11:03:15Z" />
+  <meta name="pdf:PDFVersion" content="1.5" />
+  <meta name="pdf:docinfo:created" content="2017-07-04T13:52:12Z" />
+  <meta name="pdf:docinfo:creator" content="User" />
+  <meta name="pdf:docinfo:creator_tool" content="Microsoft® PowerPoint® 2010" />
+  <meta name="pdf:docinfo:modified" content="2020-09-02T11:03:15Z" />
+  <meta name="pdf:docinfo:producer" content="Microsoft® PowerPoint® 2010; modified using iText® 5.5.13 ©2000-2018 iText Group NV (AGPL-version)" />
+  <meta name="pdf:docinfo:title" content="PowerPoint Presentation" />
+  <meta name="pdf:encrypted" content="false" />
+  <meta name="producer" content="Microsoft® PowerPoint® 2010; modified using iText® 5.5.13 ©2000-2018 iText Group NV (AGPL-version)" />
+  <meta name="resourceName" content="5fe52324-5b0d-4392-b856-421710a5e1ba.pdf-highlight.pdf" />
+  <meta name="tmpDir" content="/opt/solea-tika-app/tmp/avi" />
+  <meta name="xmp:CreatorTool" content="Microsoft® PowerPoint® 2010" />
+  <meta name="xmpTPg:NPages" content="18" />
+  <title></title>
+
+  
+好像是图片不会高亮？
+http://10.1.50.18:15003/solea-showapp/file/show?url=http%3A%2F%2F10.1.61.2%3A15003%2Fsolea-download%3FfileName%3Dxj%252Fawara-study-russian-economy-rus.pdf%26cephUrl%3Dceph%3A%2F%2Fsolea_20200902%2F3bc63e46-8ef3-49de-bfa0-92a62da0fdd4%26importTime%3D20200903&contentType=application/pdf&name=xj%2Fawara-study-russian-economy-rus.pdf&customWords[0].wordList[0]=2014&customWords[0].backGroundColor=%23ffff00&customWords[0].fontColor=%23008000&customWords[0].bold=true
+  
+
+单个页面看看：
+
+http://10.1.50.18:15003/solea-showapp/file/show?url=http%3A%2F%2F10.1.61.2%3A15003%2Fsolea-download%3FfileName%3Dlyl%252Fone-page.pdf%26cephUrl%3Dceph%3A%2F%2Fsolea_20200903%2F46ce6960-34d5-49fa-8787-838de6239114%26importTime%3D20200904&contentType=application/pdf&name=lyl%2Fone-page.pdf&highlight=2014
+  
+3.
+改一下：
+http://git.lzy.com/lzy/java-common/pipelines		--ok
+510 [concat] Assertion Failed: Unrecognized VM option 'UseParNewGC'
+511 [concat] Error: Could not create the Java Virtual Machine.
+512 [concat] Error: A fatal exception has occurred. Program will exit.
+波波，这个是你的吗？release 连续三天没过了
+
+
+
+4.乱码的问题，看看：
+KUJIRA-163 【solea】个别zip包解压出现问题
+
+20200905
+1.SOLEA-3065 【数据迁移】根据旧版本全文doc, 生成文件表sql
+	我来演示下
+	
+2.SOLEA-2959 【云度】：南京局BUG
+邮件未解析出 文本， 好像内容是html？
+先造一个邮件试试？
+1.eml
+1tbiBwM65FVVnPQubAAAsw.eml
+html内容能不能提取.eml
+
+
+演示：
+SOLEA-3114 sendFserver对lzyzip做个tmpwatch,防止空目录过多
+SOLEA-3100 lockrun 的文件不能放/tmp 目录，有问题，几天后会自动删除。要放/var/run
+	http://10.1.13.1:7080/search?q=lockrun.*/tmp+count:1000+repo:%5Egit%5C.lzy%5C.com/lzy/solea%24+&patternType=regexp#14
+	
+	0 1 * * * root lockrun -L /var/run/mq_manage -- /bin/bash @ROOT_DIR@/bin/mq_manage.sh
+		--> /var/run/solea_mq_manage 
+SOLEA-2868 【solea-tika】solea_tika_check_status.sh检测日志打印时的问题
+
+
+修改一下：
+SOLEA-3114 sendFserver对lzyzip做个tmpwatch,防止空目录过多
+SOLEA-3112 【现场维护】solea现场维护(W36 20200831)
+
+
+
+## 本周工作
+
+SOLEA-3065 【数据迁移】根据旧版本全文doc, 生成文件表sql									2h
+
+SOLEA-3026 【云度】：查询转义bug														1h
+SOLEA-3112 【现场维护】solea现场维护(W36 20200831)										4h
+
+
+SOLEA-3114 sendFserver对lzyzip做个tmpwatch,防止空目录过多								1h
+SOLEA-2868 【solea-tika】solea_tika_check_status.sh检测日志打印时的问题					2h
+SOLEA-3002 【solea】演示数据下的 S8KGGTORJ_clip3.mp4 ,ffmepg 错误						2h
+SOLEA-3100 lockrun 的文件不能放/tmp 目录，有问题，几天后会自动删除。要放/var/run		2h
+SOLEA-3106 中译接口老是出现变化，我们应该如何应对？										4h
+SOLEA-3063 【showapp】图片跟视频是否可以统一走 showapp 去展示							4h
+
+SOLEA-3105 【文件详情页面】pdf格式文件当选中敏感信息后文件中对应的敏感信息不会高亮显示	2h
+SOLEA-3059 【南京sj】对solr导出的json做，解析出邮件收发关系的bcp，入到知识图谱中		4h
+SOLEA-2959 【云度】：南京局BUG															4h
+SOLEA-2958 【南京局】：机器规划，新版本安装												2d
+SOLEA-3065 【数据迁移】根据旧版本全文doc, 生成文件表sql									4h
+
+total:
+4d 4h
+
+20200907
+1.sj检查系统
+	数据是否发送完成？要一致
+	邮件收发关系
+	文档翻译
+	二次分析
+	SOLEA-2959 【云度】：南京局BUG
+		邮件解析失败的问题，是否可以把文件带回来
+		
+ceph://solea_20200906/5534c7cf-726e-40fe-a0c4-347ee5940510
+
+2.SOLEA-3127 【ceph】solea ceph，实时的缺省 2 份，案件的缺省 3 份
+
+3.COMMON-6326 【docker】anole 部署需要 map_server ，如何改成变量可替换的
+
+4.COMMON-6265 【Ambari nagios】：增加 Ambari 的 hive 编码检查项
+
+
+
+
+2.查一下自动部署：
+/vagrant
+crontab -l
+
+ssh 10.1.61.2
+touch /vagrant/auto-deploy/force_install
+bash /vagrant/auto-deploy/auto-deploy.sh
+
+20200908
+1.SOLEA-2959 【云度】：南京局BUG		不好搞，填个jira
+	邮件问题，看一下
+	
+
+2.COMMON-6265 【Ambari nagios】：增加 Ambari 的 hive 编码检查项
+实际检查的是mysql的配置
+4.4.4. HIVE
+打开HA，参考高可用性配置文档。
+
+Execution Engine改成mapreduce
+
+修改HiveServer2 Heap Size为12G
+
+看情况，如果很多机器的话，可以配置16G
+
+修改Memory For Map Join, per Map memory threshold为2.5G
+
+hive的metastore信息不支持中文。临时修改方案如下：
+
+1、进入hive mysql库修改。（不要修改整个mysql的编码）
+
+mysql -u hive -p
+http://buildbot-linux-slave01.lzy.com/daily_releases_new/centos6/lzy-data-platform/master/2020090803/lzy-data-platform-release-1.0.0-dev/docs/install/webhelp/index/content/ch04s04.html
+
+3.COMMON-6326 【docker】anole 部署需要 map_server ，如何改成变量可替换的
+
+4.rpm加一下			--ok
+
+
+20200909
+1.演示一下
+SOLEA-2868
+SOLEA-3026
+SOLEA-3114
+跟厦门确认下 是否还有这个问题
+
+2.COMMON-6265 【Ambari nagios】：增加 Ambari 的 hive 编码检查项
+查看章节：
+4.4.4. HIVE
+打开HA，参考高可用性配置文档。
+
+环境：
+http://10.1.50.40:8080/#/login
+
+jdbc:mysql://127.0.0.1/hive?createDatabaseIfNotExist=true&characterEncoding=utf-8
+
+mysql -uroot -p123456
+
+# 查看库的编码：
+show variables like '%char%';
+# 查看表的编码：
+show create table COLUMNS_V2;
+
+# 查看字段编码：
+show full columns from COLUMNS_V2 where FIELD='COMMENT';
+
+show full columns from INDEX_PARAMS where FIELD='PARAM_VALUE';
+alter table INDEX_PARAMS modify column PARAM_VALUE varchar(4000) character set utf8;
+
+mysql> show full columns from INDEX_PARAMS where FIELD='PARAM_VALUE';
++-------------+---------------+-------------------+------+-----+---------+-------+---------------------------------+---------+
+| Field       | Type          | Collation         | Null | Key | Default | Extra | Privileges                      | Comment |
++-------------+---------------+-------------------+------+-----+---------+-------+---------------------------------+---------+
+| PARAM_VALUE | varchar(4000) | latin1_swedish_ci | YES  |     | NULL    |       | select,insert,update,references |         |
++-------------+---------------+-------------------+------+-----+---------+-------+---------------------------------+---------+
+1 row in set (0.10 sec)
+
+
+mysql> show full columns from COLUMNS_V2 where FIELD='COMMENT';
++---------+--------------+-----------------+------+-----+---------+-------+---------------------------------+---------+
+| Field   | Type         | Collation       | Null | Key | Default | Extra | Privileges                      | Comment |
++---------+--------------+-----------------+------+-----+---------+-------+---------------------------------+---------+
+| COMMENT | varchar(256) | utf8_general_ci | YES  |     | NULL    |       | select,insert,update,references |         |
++---------+--------------+-----------------+------+-----+---------+-------+---------------------------------+---------+
+1 row in set (0.00 sec)
+
+host="ambari-10-1-50-41"
+port="3306"
+username="hive"
+password="123456"
+select_sql="use hive; show full columns from COLUMNS_V2 where FIELD='COMMENT';"
+mysql -h"${host}" -P"${port}" -u"${username}" -p"${password}" -e"${select_sql}"
+
+项目：
+E:\work\gits\lzy-data-platform\lzy-data-platform\06sourcecode\tools\ambari-config
+
+拿到host:
+u'jdbc:mysql://ambari-10-1-50-41/hive?createDatabaseIfNotExist=true&characterEncoding=utf-8'
+
+python执行shell:
+os.system("ls")
+
+>>> cmd="mysql -h\"ambari-10-1-50-41\" -P\"3306\" -u\"hive\" -p\"123456\" -e\"use hive; show full columns from COLUMNS_V2 where FIELD='COMMENT';\""
+>>> os.system(cmd)
++---------+--------------+-----------------+------+-----+---------+-------+---------------------------------+---------+
+| Field   | Type         | Collation       | Null | Key | Default | Extra | Privileges                      | Comment |
++---------+--------------+-----------------+------+-----+---------+-------+---------------------------------+---------+
+| COMMENT | varchar(256) | utf8_general_ci | YES  |     | NULL    |       | select,insert,update,references |         |
++---------+--------------+-----------------+------+-----+---------+-------+---------------------------------+---------+
+0
+
+用这个commands
+import commands
+output=commands.getoutput(cmd)
+
+实现告警：
+'ambari-10-1-50-41 HIVE_SERVER: hive metastore must be utf-8. error from table: COLUMNS_V2, column: COMMENT'
+
+
+测试一下：
+10.1.50.40：/opt/lzy-data-platform-tools/ambari-config/lib/config
+
+mysql -u hive -p
+use hive;
+alter table INDEX_PARAMS modify column PARAM_VALUE varchar(4000) character set latin1;
+
+
+
+提交：
+http://git.lzy.com/lzy/lzy-data-platform/merge_requests/71
+
+3.COMMON-6333 【版本依赖关系】如果知道每一项项目的版本依赖，并且检查
+
+4.COMMON-6326 【docker】anole 部署需要 map_server ，如何改成变量可替换的
+
+
+5.单元测试看下
+
+
+6.导出文件：		--ok
+http://10.1.47.106:8983/solr/solea_202003100140_implicit_shard_1_replica_n1/export_data_by_query?&q=*:*&max_doc=false&wt=json&rows=10000
+
+
+20200910
+1.SOLEA-3105 【文件详情页面】pdf格式文件当选中敏感信息后文件中对应的敏感信息不会高亮显示。		--ok
+	调一下
+	http://10.1.50.18:15003/solea-showapp/file/show?url=http%3A%2F%2F10.1.61.2%3A15003%2Fsolea-download%3FfileName%3Dxj%252F%25E5%2590%2588%25E5%2590%258C%25E3%2580%2581%25E6%258F%2590%25E5%258D%2595%25E5%258F%25B7%25E6%25B5%258B%25E8%25AF%2595%25E7%2594%25A8%25E4%25BE%258B%252Ftest-email%252Flanding%252F86923722-39ad-4c39-9bd8-151607e0cb75-32393-530.pdf%26cephUrl%3Dceph%3A%2F%2Fsolea_20200909%2F986e593b-28aa-46d9-91cb-5566dbe75eff%26importTime%3D20200909&contentType=application/pdf&name=xj%2F%E5%90%88%E5%90%8C%E3%80%81%E6%8F%90%E5%8D%95%E5%8F%B7%E6%B5%8B%E8%AF%95%E7%94%A8%E4%BE%8B%2Ftest-email%2Flanding%2F86923722-39ad-4c39-9bd8-151607e0cb75-32393-530.pdf&customWords[0].wordList[0]=86-532-89805132&customWords[0].backGroundColor=%23ffff00&customWords[0].fontColor=%23008000&customWords[0].bold=true
+	
+http://10.1.61.2:15003/solea-showapp/file/show?url=http%3A%2F%2F10.1.61.2%3A15003%2Fsolea-download%3FfileName%3Dlyl%252Fone-page.pdf%26cephUrl%3Dceph%3A%2F%2Fsolea_20200903%2F46ce6960-34d5-49fa-8787-838de6239114%26importTime%3D20200904&contentType=application/pdf&name=lyl%2Fone-page.pdf&highlight=2014
+	
+2.COMMON-6326 【docker】anole 部署需要 map_server ，如何改成变量可替换的
+
+10.1.50.18 /opt/docker-common-docker-0.0.1-dev/docker-compose
+docker-compose/anole/docker-compose.yml:46
+docker-compose/anole/env.override.template:5
+
+06sourcecode\docker\docker-compose\anole\consul-template-custom\template.d\nginx\conf.d\anole.conf.ctmpl
+
+
+修改文件：
+/opt/tmp/anole-docker-1.0.1-dev/docker-compose/anole/consul-template-custom/template.d/nginx/conf.d
+
+生成模板：
+
+	
+3.COMMON-6333 【版本依赖关系】如果知道每一项项目的版本依赖，并且检查
+1.从simba拿到所有注册app信息
+	http://10.1.46.1:15003/simba/appCenter/api/loadApps
+	appCode: simba
+	accessKey: 34B248255189426884F3787C02FB0C6E
+
+2.调用每个app的接口，查依赖关系
+
+问题：
+建议在app-info中把getAppInfo接口也加上  
+	不用了，url是固定的
+
+
+
+
+4.SOLEA-3126 【web】广州文件上传的问题
+	问一下
+	
+5.给马力一个文档，发数据的		--ok
+
+6.市场的几个问题		--ok
+
+20200911
+1.COMMON-6333 【版本依赖关系】如果知道每一项项目的版本依赖，并且检查
+1.从simba拿到所有注册app信息
+	http://10.1.46.1:15003/simba/appCenter/api/loadApps
+	appCode: simba
+	accessKey: 34B248255189426884F3787C02FB0C6E
+	
+比较用：
+pip install semver
+Successfully installed semver-2.10.2
+	
+        >>> semver.VersionInfo.parse("1.0.0").compare("2.0.0")
+        -1
+        >>> semver.VersionInfo.parse("2.0.0").compare("1.0.0")
+        1
+        >>> semver.VersionInfo.parse("2.0.0").compare("2.0.0")
+        0
+        >>> semver.VersionInfo.parse("2.0.0").compare(dict(major=2, minor=0, patch=0))
+        0
+	
+
+	
+测试一下：
+cd /opt/simba-tools/check-dependency
+bash bin/check_dependency.sh
+	
+python check/check_dependency.py --simba-host 10.1.61.1
+	
+2.SOLEA-3127 【ceph】solea ceph，实时的缺省 2 份，案件的缺省 3 份
+
+3.查询转义的bug,看下
+
+
+4.
+E:\work\gits\lzy\solea\04sourcecode\dev_tools\docker-perf
+
+5.fileserver2报错：
+/opt/fileserver-2/bin/fileserver2_profile.sh: line 5: ulimit: open files: cannot modify limit: Invalid argument
+/usr/java/jdk1.8.0_251-amd64/jre/lib/rt.jar: error reading zip file
+
+
+tika也报错：
+/opt/solea-tika-app-boot-2.1.1-SNAPSHOT/bin/solea_tika_profile.sh: line 5: ulimit: open files: cannot modify limit: Invalid argument
+
+手动起看看：
+bash /opt/solea-tika-app/bin/solea-tika-app run-tika \
+ --app.id=xxx.test --application.tika.file.debug=false \
+ --application.kafka.topic=solea_fileserver \
+ --application.solr.collection=solea_redirect_collection
+
+ cd /opt/solea-tika-app
+ bash bin/solea-tika-app run-tika --app.id=test --app.stopfile=solea_tika_test.stop
+ 
+ 
+20200912
+1.yanqi		--ok
+
+SOLEA-3126 【web】广州文件上传的问题
+COMMON-6326 【docker】anole 部署需要 map_server ，封 docker 的时候 map_server 写死了，如何改成变量可替换的
+
+2.演示：
+COMMON-6265 【Ambari nagios】：增加 Ambari 的 hive 编码检查项
+COMMON-6333 【版本依赖关系】如果知道每一项项目的版本依赖，并且检查
+	ssh 10.1.46.1
+	cd /opt/simba-tools/check-dependency
+	bash bin/check_dependency.sh
+
+
+3.COMMON-6333 【版本依赖关系】如果知道每一项项目的版本依赖，并且检查
+修改下：
+优先显示的告警		--ok
+版本对比的单元测试
+编译一下：
+E:\work\gits\simba\simba-master\06sourcecode\tools
+ant check_dependency_release
+ant release
+
+手动加一下nagios看看：		--ok
+10.1.46.2
+
+
+
+4.SOLEA-3127 【ceph】solea ceph，实时的缺省 2 份，案件的缺省 3 份
+手动改一下配置，看看是否可以出发reblance
+
+news_solea_20200629  95 KiB      22      0     44                  0       0        0      177 295 KiB     22 110 KiB
+
+查看配置文件：
+rados ls --pool=ceph.meta.pool
+
+配置文件拿下来看看：
+ rados get solea_pool_config.conf solea_pool_config.conf --pool=ceph.meta.pool
+
+改成3份，再更新：
+ rados put solea_pool_config.conf solea_pool_config.conf --pool=ceph.meta.pool
+ 
+solea_20200912       20 GiB  110111      0 220222                  0       0        0  4783393  18 GiB 126794  20 GiB
+
+手动上传看看呢：
+ rados put solea_pool_config.conf solea_pool_config.conf --pool=solea_20200912
+ 
+bash /opt/fileserver-2/ceph-manager/bin/create_single_pool.sh solea_20200913
+ rados put solea_pool_config.conf solea_pool_config.conf --pool=solea_20200913
+ 
+
+数量：
+solea_20200912       20 GiB  110112      0 220224                  0       0        0  4783393  18 GiB 126795  20 GiB
+solea_20200913        471 B       1      0      2                  0       0        0        0     0 B      1   1 KiB
+
+没有生效
+
+试试手动修改：
+# 查看pool的副本数
+ceph osd pool get solea_20200913 size
+# 设置pool的副本数
+ceph osd pool set solea_20200913 size 3
+set pool 116 size to 3
+
+再上传验证：
+1.原来的是否变成3?		--ok
+solea_20200912       23 GiB  110113      0 330339                  0       0   109441  3637629  13 GiB 130143  23 GiB
+solea_20200913        471 B       1      0      3                  0       0        0        0     0 B      1   1 KiB
+
+2.新数据是否是3?		--ok
+rados put tmp_pool_config.conf tmp_pool_config.conf  --pool=solea_20200913
+solea_20200913      1.1 KiB       2      0      6                  0       0        0        0     0 B      2   2 KiB
+
+
+ 
+
+5.干净的虚拟机，部署完成好像有程序没起来？
+10.1.61.3
+lcm_guard --l | grep solea_data_bcp_uploader
+/opt/solea-data-bcup-output/bcpdirs 这个目录没有？
+应该自动建立的，查一下
+ 
+## 本周工作
+SOLEA-2958 【南京局】：机器规划，新版本安装														1d
+SOLEA-3127 【ceph】solea ceph，实时的缺省 2 份，案件的缺省 3 份									2h
+COMMON-6326 【docker】anole 部署需要 map_server ，如何改成变量可替换的							4h
+COMMON-6265 【Ambari nagios】：增加 Ambari 的 hive 编码检查项									6h
+SOLEA-3126 【web】广州文件上传的问题															1h
+SOLEA-2959 【云度】：南京局BUG																	4h
+SOLEA-3105 【文件详情页面】pdf格式文件当选中敏感信息后文件中对应的敏感信息不会高亮显示。		2h
+30.234 solea 性能测试部署																		4h
+COMMON-6333 【版本依赖关系】如果知道每一项项目的版本依赖，并且检查								1d
+
+total:
+4d 7h
+
+bugfix 分钟
+
+20200914
+1.SOLEA-3127 【ceph】solea ceph，实时的缺省 2 份，案件的缺省 3 份		--ok
+看一下，三备份的配置好像没有生效？是否跟机器数量有关?
+确认一下，数据是否3份？
+
+
+2.演示准备一下		--ok
+
+
+3.本周工作整理下		--ok
+
+4.SOLEA-3130 【sendFserver】sendFserver如何保证程序不被某个文件卡死？
+
+5.演示工作回来，整理一下		--ok
+
+6.SOLEA-3152 【自动部署】c环境恢复后重装solea_data_bcp_uploader起不来，报错是inputDir没有		--ok
+startCmd:
+                        python bin/ftp_upload.py --inputdir /opt/solea-data-bcup-output/bcpdirs --groupname dbn --ftp-server-config-file /opt/solea-tika-app/etc/stat/solea_data_upload_server.config --logconfig /opt/solea-tika-app/etc/stat/ftpuploader.conf
+
+
+自动部署脚本：
+
+/opt/solea_data_bcup/bcpdirs
+
+SOLEA-2869中把inputDir目录修改了，但是创建目录的脚本没有修改
+原来是
+--inputdir /opt/solea_stats_bcup/bcpdirs
+改成了：
+/opt/solea-data-bcup-output/bcpdirs
+但是自动部署脚本没有改
+roles/solea_tika/tasks/solea_data_bcp_uploader.yml
+- name: Create dirs
+  file: path=/opt/solea_data_bcup/{{ item }} state=directory
+  with_items:
+    - bcpdirs
+
+20200915
+1.SOLEA-3150 【tika】解压压缩包时，文件名过长导致解压异常
+
+2.SOLEA-3149 【tika】zip 解压文件对子文件名编码写死了 GB18030，导致一些包含中文名子文件解压异常
+第一层不加密 (1).zip
+看看之前自动识别，怎么做的？
+SOLEA-2171 【showapp】2_61_1567335679_022_00_542662.eml 主题乱码
+      if (unfoldRawValue.equals(decodingString)) {
+        AutoDetectReader ad =
+            new AutoDetectReader(
+                (new ByteArrayInputStream(decodingString.getBytes(StandardCharsets.ISO_8859_1))));
+        return new String(decodingString.getBytes(StandardCharsets.ISO_8859_1), ad.getCharset());
+      }
+
+
+3.SOLEA-3130 【sendFserver】sendFserver如何保证程序不被某个文件卡死？
+先做 detect，如果需要 unzip 什么的，用 forkparser（类似的）做，如果超过，发送，失败发送全部或者其他策略
+另外 2 个 bug 是否可以复现
+
+4.COMMON-6265 【Ambari nagios】：增加Ambari 的hive编码检查项
+更新A环境和鲸数环境
+
+加上密码，要输密码
+密码配置
+
+20200916
+1.演示一下：
+COMMON-6265 【Ambari nagios】：增加Ambari 的hive编码检查项
+SOLEA-3127 【ceph】solea ceph，实时的缺省 2 份，案件的缺省 3 份
+实时的改成月建
+SOLEA-3065【数据迁移】根据旧版本全文doc, 生成文件表sql
+
+
+usage: ambari_check.py [-h] [--server SERVER] [--port PORT]
+                       [--username USERNAME] [--password PASSWORD]
+ambari_check.py: error: unrecognized arguments: --db-user root --db-password 123456
+[09/16/20 11:02:40] end
+
+2.验收文档
+参考：工程文档，验收模板
+找赵开泰要一份原始的合同
+
+
+3.SOLEA-3130 【sendFserver】sendFserver如何保证程序不被某个文件卡死？
+先复现：
+	SOLEA-3150 【tika】解压压缩包时，文件名过长导致解压异常
+	
+java.io.IOException: File name too long
+        at java.io.UnixFileSystem.createFileExclusively(Native Method)
+        at java.io.File.createNewFile(File.java:1012)
+        at com.lzy.solea.tika.content.OutputContentWriter.writeFileImpl(OutputContentWriter.java:159)
+        at com.lzy.solea.tika.content.OutputContentWriter.writeFile(OutputContentWriter.java:79)
+        at com.lzy.solea.tika.parser.pkg.ZipArchiveParser.writeFile(ZipArchiveParser.java:146)
+        at com.lzy.solea.tika.parser.pkg.ZipArchiveParser.parse(ZipArchiveParser.java:87)
+        at org.apache.tika.parser.ParserDecorator.parse(ParserDecorator.java:188)
+        at org.apache.tika.parser.CompositeParser.parse(CompositeParser.java:280)
+        at org.apache.tika.parser.CompositeParser.parse(CompositeParser.java:280)
+        at org.apache.tika.parser.AutoDetectParser.parse(AutoDetectParser.java:143)
+        at com.lzy.tika.parser.FserverDetectParser.parse(FserverDetectParser.java:55)
+        at com.lzy.tika.processor.LzyZipFileProcessor.processOrgData(LzyZipFileProcessor.java:348)
+        at com.lzy.tika.processor.LzyZipFileProcessor.processLzyZipToSendItems(LzyZipFileProcessor.java:289)
+        at com.lzy.tika.processor.LzyZipFileProcessor.processToFiles(LzyZipFileProcessor.java:269)
+        at com.lzy.tika.SendToFserver2Runner$SenderWorker.call(SendToFserver2Runner.java:387)
+        at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+        at java.lang.Thread.run(Thread.java:748)
+2020-09-16 17:50:32 ERROR ZipArchiveParser:147 - file name:wt/超长文件名.zip/超长文件名/zip 解压文件对子文件名编码写死了 GB18030，导致一些包含中文名子文件解压异常zip 解压文件对子文件名编码写死了 GB18030，导致一些包含中文名子文件解压异常zip 解压文件对子文件名编码写死了 GB18030，导致一些包含中文名子文件解压异常zip 解压文件对子文件名编码写死了 GB18030，导致一些包含中文名子文件解压异常zip 解压文件对子文件名编码写死了 GB18.txt write error
+2020-09-16 17:50:32 ERROR OutputContentWriter:168
+	
+	SOLEA-3149 【tika】zip 解压文件对子文件名编码写死了 GB18030，导致一些包含中文名子文件解压异常
+	.
+
+其他异常如何处理：
+1.压缩包刚解压就失败怎么办？
+2.压缩包解压到一半失败怎么办？ 或者说解压到百分之99失败怎么办？
+3.发送或者解压一个超大文件失败怎么办？
+
+
+
+
+
+南京sj回来：
+1.查询的结果的默认排序是否可以安装用户行为保存
+2.是否可以看到所有的铭感信息
+3.知识图谱要升级
+4.烽火数据要那边要出来
+
+
+20200917
+1.SOLEA-3130 【sendFserver】sendFserver如何保证程序不被某个文件卡死？
+	乱码问题：
+	SOLEA-3149 【tika】zip 解压文件对子文件名编码写死了 GB18030，导致一些包含中文名子文件解压异常
+	
+做一个事务，解压要么全成功，要么失败，回调报告错误信息
+问题：
+页面如何显示异常信息？
+
+
+大文件解压报错：
+2020-09-17 11:44:58 ERROR ZipCommentReader:42 - get Zip Comments failure!!!
+java.lang.NegativeArraySizeException
+        at com.lzy.solea.tika.parser.pkg.ZipCommentReader.extractZipComment(ZipCommentReader.java:32)
+        at com.lzy.solea.tika.parser.pkg.ZipArchiveParser.parse(ZipArchiveParser.java:61)
+        at org.apache.tika.parser.ParserDecorator.parse(ParserDecorator.java:188)
+        at org.apache.tika.parser.CompositeParser.parse(CompositeParser.java:280)
+        at org.apache.tika.parser.CompositeParser.parse(CompositeParser.java:280)
+        at org.apache.tika.parser.AutoDetectParser.parse(AutoDetectParser.java:143)
+        at com.lzy.tika.parser.FserverDetectParser.parse(FserverDetectParser.java:55)
+        at com.lzy.tika.processor.LzyZipFileProcessor.processOrgData(LzyZipFileProcessor.java:348)
+        at com.lzy.tika.processor.LzyZipFileProcessor.processLzyZipToSendItems(LzyZipFileProcessor.java:289)
+        at com.lzy.tika.processor.LzyZipFileProcessor.processToFiles(LzyZipFileProcessor.java:269)
+        at com.lzy.tika.SendToFserver2Runner$SenderWorker.call(SendToFserver2Runner.java:387)
+        at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+        at java.lang.Thread.run(Thread.java:748)
+
+		
+本地运行看看：
+ --filetype=raw-841-lzyzip --filter-size-mod=1 --filter-size=0 --filter-type=file_size --id=001
+		
+		
+加密压缩包异常
+org.apache.tika.exception.EncryptedDocumentException: Unable to process: document is encrypted
+文件损坏的异常
+org.apache.tika.exception.TikaException: TIKA-198: Illegal IOException from org.apache.tika.parser.ParserDecorator$1@24d93c29
+java.io.EOFException
+
+Unsupported feature encryption used in entry zip
+
+大文件解压失败的异常
+
+2.发个邮件，南京sj的翻译是试用的
+吴总/周总/bo总/楚雪/崔荣存/王超
+
+3.验收文档再改下
+地图没有咋办？
+
+4.徐吉反馈：
+文件磁盘只有1.2t
+上传统计有3t
+
+20200918
+1.SOLEA-3130 【sendFserver】sendFserver如何保证程序不被某个文件卡死？
+三种常见测试
+	加密压缩文件		--ok
+	损坏压缩文件		--ok
+	超大压缩文件		做了限制
+1.是否对大文件做限制，直接不做
+2.超过多大的文件直接走forkparse
+	批量文件上传
+	
+2020-09-18 10:21:53 ERROR ZipCommentReader:42 - get Zip Comments failure!!!
+java.lang.NegativeArraySizeException
+        at com.lzy.solea.tika.parser.pkg.ZipCommentReader.extractZipComment(ZipCommentReader.java:32)
+        at com.lzy.solea.tika.parser.pkg.ZipArchiveParser.parse(ZipArchiveParser.java:61)
+        at org.apache.tika.parser.ParserDecorator.parse(ParserDecorator.java:188)
+        at org.apache.tika.parser.CompositeParser.parse(CompositeParser.java:280)
+        at org.apache.tika.parser.CompositeParser.parse(CompositeParser.java:280)
+	
+java.io.EOFException: Truncated ZIP entry: huangseng/content-analysis-dependency.tar
+	
+TikaConfig
+	
+null.eml
+
+2020-09-18 14:37:34 INFO  SendToFserver2Runner:494 - callback success, url is http://10.1.61.2:15003/solea/caseManage/api/UploadCallback/5C819390-AE7B-4349-8C87-848DAC8BCFE5, data is {"files":[{"id":"orgFile","filename":"20200917/超大文件.zip"}],"status":"error","isUnpack":false,"errorDesc":"Unable to process file: The file is too large.","callBackUrl":"http://10.1.61.2:15003/solea/caseManage/api/UploadCallback/5C819390-AE7B-4349-8C87-848DAC8BCFE5"}
+2020-09-18 14:37:34 ERROR SendToFserver2Runner:441 - Unable to process file: The file is too large.
+
+2.SOLEA-3172 【A环境】发送邮件收发关系数据，对接知识图谱
+
+3.演示下
+SOLEA-3150 【tika】解压压缩包时，文件名过长导致解压异常
+SOLEA-3152 【自动部署】c环境恢复后重装solea_data_bcp_uploader起不来，报错是inputDir没有
+SOLEA-3130 【sendFserver】sendFserver如何保证程序不被某个文件卡死？
+SOLEA-3145 【南京sj】solea部署已完成，去sj给客户演示
+SOLEA-3172 【A环境】发送邮件收发关系数据，对接知识图谱
+
+问题：
+预览失败，
+
+
+20200919
+1.验收文档
+
+2.SOLEA-3151 【tika】tika没有提取出邮件的text
+
+
+3.测试文件发送
+	simba关掉		--ok
+mv  /opt/simba-auto-test/auto_test.sh /opt/simba-auto-test/auto_test.sh.bak
+mv auto-deploy.sh auto-deploy.sh.bak
+
+	程序更新			--ok
+	测试一下发送		--ok
+
+	
+## 本周工作：
+total:4d 4h
+SOLEA-3145 【南京sj】solea部署已完成，去sj给客户演示														6h
+SOLEA-3130 【sendFserver】sendFserver如何保证程序不被某个文件卡死？											1d
+SOLEA-3150 【tika】解压压缩包时，文件名过长导致解压异常 													4h
+SOLEA-3149 【tika】zip 解压文件对子文件名编码写死了 GB18030，导致一些包含中文名子文件解压异常				4h
+
+SOLEA-3156 【现场维护】solea现场维护(W38 20200914)															4h
+SOLEA-3152 【自动部署】c环境恢复后重装solea_data_bcp_uploader起不来，报错是inputDir没有						2h
+SOLEA-3151 【tika】tika 没有提取出邮件的 text 																4h
+COMMON-6326 【docker】anole 部署需要 map_server ，封 docker 的时候 map_server 写死了，如何改成变量可替换的	4h
+
+20200921
+1.SOLEA-3160 整理下后缀				--ok
+所有的后缀：
+
+看看text的parser
+  <meta name="X-Parsed-By" content="org.apache.tika.parser.CompositeParser" />
+  <meta name="X-Parsed-By" content="org.apache.tika.parser.DefaultParser" />
+  <meta name="X-Parsed-By" content="com.lzy.solea.tika.parser.mail.RFC822Parser" />
+    <meta name="X-Parsed-By" content="com.lzy.solea.tika.parser.txt.TXTParser" />
+	<meta name="X-Parsed-By" content="com.lzy.solea.tika.parser.microsoft.office.OOXMLParser" />
+	<meta name="X-Parsed-By" content="com.lzy.solea.tika.parser.txt.XMLParser" />
+
+用50.18上面的80w文件看看，提取后缀：
+filename="./downloads.digitalcorpora.org/by_type/files.jpeg/804/804236.jpg"
+suffix=${filename##*.}
+echo ${suffix}
+
+vim get_suffix.sh
+dir=$1
+output=$2
+
+for file in `find ${dir} -type f` ; do
+	suffix=${file##*.}
+	echo ${suffix} >> ${output}
+done
+
+bash get_suffix.sh /opt/solea-test-untar suffix.list
+
+排序，去重
+
+
+2.验收文档						--ok
+
+3.SOLEA-3159 【安装文档】新发布solea-需要ansible-2.4.2的了，文档写的还是2.3.2的
+yum install ansible-2.4.2*
+
+
+4.查一下，上传百分之99
+英语S181.xls
+{"id":"bae538a4-0f2e-47a1-b1a4-b42889072227","filename":"20020919sendfile测试/solea-test-untar/河北20190918/841/130000-130000-1567644643-DATA_HTTPMULTI_16-705858/2_89_1567644507_019_00_888471.1.efo_724.rar/2019秋季班级课表/基础部/英语S181.xls"}
+	
+2020-09-20 19:37:23 INFO  SendToFserver2Runner:455 - /opt/solea-server-bcup/bcpdirs/lzyzip/20200919151841/2020092019/2d8f1c2d19004e2cb041223f0b3589d2.zip sent to fserver success
+2020-09-20 19:37:23 INFO  SendToFserver2Runner:496 - callback success, url is http://10.1.65.104:15003/solea/caseManage/api/UploadCallback/CE38FC56-543B-40A6-9A91-0B0350ABD0AC, data is {"files":[{"id":"4e4001c9-a1a5-4c1a-a301-8fc99c5917ef","filename":"20020919sendfile测试/solea-test-untar/河北20190918/841/130000-130000-1567644643-DATA_HTTPMULTI_16-705858/2_89_1567644448_019_00_899341.efo_732.zip.efoxml"}],"status":"success","isUnpack":false,"callBackUrl":"http://10.1.65.104:15003/solea/caseManage/api/UploadCallback/CE38FC56-543B-40A6-9A91-0B0350ABD0AC"}
+2020-09-20 19:37:23 WARN  Archive:171 - exception in archive constructor maybe file is encrypted, corrupt or support not yet implemented
+java.lang.NullPointerException
+        at com.github.junrar.Archive.readHeaders(Archive.java:291)
+        at com.github.junrar.Archive.setFile(Archive.java:169)
+        at com.github.junrar.Archive.setVolume(Archive.java:648)
+        at com.github.junrar.Archive.<init>(Archive.java:124)
+        at com.github.junrar.Archive.<init>(Archive.java:100)
+        at com.lzy.solea.tika.parser.pkg.RarParser.parse(RarParser.java:86)
+        at org.apache.tika.parser.ParserDecorator$3.parse(ParserDecorator.java:135)
+        at com.lzy.solea.tika.parser.pkg.CompositeRarParser.parse(CompositeRarParser.java:47)
+        at org.apache.tika.parser.ParserDecorator.parse(ParserDecorator.java:188)
+        at org.apache.tika.parser.CompositeParser.parse(CompositeParser.java:280)
+        at org.apache.tika.parser.CompositeParser.parse(CompositeParser.java:280)
+        at org.apache.tika.parser.AutoDetectParser.parse(AutoDetectParser.java:143)
+        at com.lzy.tika.parser.FserverDetectParser.parse(FserverDetectParser.java:56)
+        at com.lzy.tika.processor.LzyZipFileProcessor.processOrgData(LzyZipFileProcessor.java:346)
+        at com.lzy.tika.processor.LzyZipFileProcessor.processLzyZipToSendItems(LzyZipFileProcessor.java:288)
+        at com.lzy.tika.processor.LzyZipFileProcessor.processToSendItems(LzyZipFileProcessor.java:252)
+        at com.lzy.tika.SendToFserver2Runner$SenderWorker.call(SendToFserver2Runner.java:404)
+        at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+        at java.lang.Thread.run(Thread.java:748)
+2020-09-21 00:17:43 INFO  SendToFserver2Runner:496 - callback success, url is http://10.1.65.104:15003/solea/caseManage/api/UploadCallback/F1E027D9-BE81-449E-A5F5-53707AC652CD, data is {"files":[{"id":"orgFile","filename":"20020919sendfile测试/solea-test-untar/河北20190918/solea-filesever/20190905/00/09/64d37635-148f-482c-b2c0-63fbc5fda076-104774-2254101.rar"}],"status":"error","isUnpack":true,"errorDesc":"Unable to process file: An unexpected error has occurred in program: com.lzy.tika.bean.SenderException: The result is empty. There may have been an error.","callBackUrl":"http://10.1.65.104:15003/solea/caseManage/api/UploadCallback/F1E027D9-BE81-449E-A5F5-53707AC652CD"}
+
+2020-09-20 19:37:22 ERROR ZipArchiveParser:66 - create archive input stream failure.
+org.apache.commons.compress.archivers.ArchiveException: No Archiver found for the stream signature
+        at org.apache.commons.compress.archivers.ArchiveStreamFactory.detect(ArchiveStreamFactory.java:563)
+        at org.apache.commons.compress.archivers.ArchiveStreamFactory.createArchiveInputStream(ArchiveStreamFactory.java:476)
+        at com.lzy.solea.tika.parser.pkg.ZipArchiveParser.parse(ZipArchiveParser.java:64)
+        at org.apache.tika.parser.ParserDecorator.parse(ParserDecorator.java:188)
+        at org.apache.tika.parser.CompositeParser.parse(CompositeParser.java:280)
+        at org.apache.tika.parser.CompositeParser.parse(CompositeParser.java:280)
+        at org.apache.tika.parser.AutoDetectParser.parse(AutoDetectParser.java:143)
+        at com.lzy.tika.parser.FserverDetectParser.parse(FserverDetectParser.java:56)
+        at com.lzy.tika.processor.LzyZipFileProcessor.processOrgData(LzyZipFileProcessor.java:346)
+        at com.lzy.tika.processor.LzyZipFileProcessor.processLzyZipToSendItems(LzyZipFileProcessor.java:288)
+        at com.lzy.tika.processor.LzyZipFileProcessor.processToSendItems(LzyZipFileProcessor.java:252)
+        at com.lzy.tika.SendToFserver2Runner$SenderWorker.call(SendToFserver2Runner.java:404)
+        at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+        at java.lang.Thread.run(Thread.java:748)
+2020-09-20 19:37:22 INFO  SendToFserver2Runner:496 - callback success, url is http://10.1.65.104:15003/solea/caseManage/api/UploadCallback/095F95E0-9CCB-4360-9888-1022BCC56CC8, data is {"files":[{"id":"orgFile","filename":"20020919sendfile测试/solea-test-untar/河北20190918/841/130000-130000-1567644643-DATA_HTTPMULTI_16-705858/2_89_1567644795_019_00_258104.efo_948.zip"}],"status":"error","isUnpack":true,"errorDesc":"Unable to process file: File may be corrupt or it may have a wrong data format.","callBackUrl":"http://10.1.65.104:15003/solea/caseManage/api/UploadCallback/095F95E0-9CCB-4360-9888-1022BCC56CC8"}
+2020-09-20 19:37:22 ERROR SendToFserver2Runner:433 - Unable to process file: File may be corrupt or it may have a wrong data format.
+	
+找bo总要一下文件
+
+10.1.50.18：/opt/solea-test-untar
+
+
+无法填报时，统一填
+
+sendFserver发送是否都发了？
+grep -rn "return url" | wc -l 
+131
+sendFserver都发了，tika没有消费？
+
+tika日志看看：
+truncate -s 0 *.log
+grep -rn "call back param is" solea_tika_app_001.log| wc -l
+
+web日志看看：
+truncate -s 0 *.out
+grep -rn "SendSolrCallback param is" catalina.out | wc -l
+
+
+pdf乱码测试下
+	
+20200922
+1.刻一下盘，知识图谱
+
+
+
+3.COMMON-6326 【docker】anole 部署需要 map_server ，封 docker 的时候 map_server 写死了，如何改成变量可替换的
+用python写
+guard中一个注册脚本
+map server自动注册的脚本
+
+
+4.SOLEA-3149 【tika】zip解压文件对子文件名编码写死了GB18030，导致一些包含中文名子文件解压异常
+
+TIKA-198: Illegal IOException from ZipArchiveParser
+Caused by: java.nio.charset.MalformedInputException: Input length = 1
+
+20200923
+1.文件发送的看看			--ok
+网页卡住了，是否可以拿所有的压缩包发送
+看看所有压缩包多少？
+[root@lzy-10-1-50-18 solea-test-untar]# find -type f -name "*.zip" | wc -l
+2742
+
+[root@lzy-10-1-50-18 solea-test-untar]# find -type f -name "*.rar" | wc -l
+433
+
+[root@lzy-10-1-50-18 solea-test-untar]# find -type f -name "*.7z" | wc -l
+2
+
+
+341836
+345711
+
+用所有的压缩包测试
+
+
+
+2.SOLEA-3179 【solea版本规划】：规划下个版本的内容		--ok
+
+
+3.SOLEA-3176 【solea统计】页面的统计数量不准确
+	2.0.3到2.1.0有没有改变？
+
+4.SOLEA-3149 【tika】zip解压文件对子文件名编码写死了GB18030，导致一些包含中文名子文件解压异常
+ArchiveStreamFactory 
+
+看看tika有没有编码识别
+
+http://10.1.47.106:8983/solr
+
+http://10.1.47.106:8983/solr/solea_search_collection/mlp_get_cores?wt=json
+
+
+    collection_url=sys.argv[1]
+    collection_name=sys.argv[2]
+
+	
+http://10.1.47.106:8983/solr/solea_202003100140_implicit_shard_1_replica_n1/export_data_by_query?&q=*:*&max_doc=false&wt=json&rows=10000
+	
+http://10.1.61.11:8983/solr/admin/collections?action=CLUSTERSTATUS
+	
+# param
+batchRecordCsvPath=""
+	
+US-ASCII
+
+htmlEncodingDetector
+Univasal
+Icu4j
+
+
+    CodepageDetectorProxy detector = CodepageDetectorProxy.getInstance();
+    detector.add(new ParsingDetector(false));
+    detector.add(ASCIIDetector.getInstance());
+
+    Charset charset = detector.detectCodepage(stream, Integer.MAX_VALUE);
+    String name = charset.name();
+
+  @VisibleForTesting
+  String detectCharset(InputStream stream) throws IOException, TikaException{
+    String charsetName = "GB18030";
+    DefaultEncodingDetector encodingDetector = (DefaultEncodingDetector)getEncodingDetector();
+
+    Metadata meta = new Metadata();
+    try(AutoDetectReader detect = new AutoDetectReader(new CloseShieldInputStream(stream))){
+      Charset charset = detect.getCharset();
+      charsetName = charset.name();
+    }
+    return charsetName;
+  }
+
+  
+ --no ok
+ 
+只能去重试了
+
+5.SOLEA-3186 【solea_thirdparty_file_service】压缩包内的文件预览失败，跟文件名有关  --ok
+	
+20200924
+1.SOLEA-3151 【tika】tika没有提取出邮件的text
+                case T_START_MULTIPART:
+                    handler.startMultipart(mimeTokenStream.getBodyDescriptor());
+T_PREAMBLE
+
+  public void preamble(InputStream is) throws MimeException, IOException {}
+  
+T_START_MULTIPART:
+[pos: 395][limit: 506][This is a multi-part message in MIME format.
+--Next_Item:_(A3CB49KFSA19)/1
+
+--Next_Item:_(A3CB49KFSA19)/1--
+]
+  
+T_PREAMBLE:
+MimeBoundaryInputStream, boundary --Next_Item:_(A3CB49KFSA19)/1
+  
+MutableBodyDescriptor
+
+
+2.SOLEA-3149 【tika】zip解压文件对子文件名编码写死了GB18030，导致一些包含中文名子文件解压异常
+拿到足够的文件名字做编码检测
+--no ok 检测不准确
+
+
+3.SOLEA-3130 【sendFserver】sendFserver如何保证程序不被某个文件卡死？
+	失败回调看看，代码合一下
+
+4.SOLEA-3178 【文件统计】确认下2.0.3版本的文件上传统计是否准确
+http://10.1.61.2:15003/solea-fserver2/api/v1/getFile?url=ceph://ext_solea_20200923/1cf11bef-45e4-459b-ac42-7decec9e6f17
+
+
+20200925
+1.版本规划，再规划一下		--ok
+
+2.SOLEA-3151 【tika】tika没有提取出邮件的text		--ok
+	再调一下
+3.SOLEA-3159 【安装文档】新发布solea-需要ansible-2.4.2的了，文档写的还是2.3.2的		--ok
+	文档改一下
+	合下sendFserver代码
+	
+4.SOLEA-3176 【solea统计】页面的统计数量不准确		--ok
+query solr, fq:file_classify:pdf and import_time: 2019-10-10 00:00:00 and max_doc: false. total fileSize: 100
+
+grep 查询插入sql
+it will insert data to oracle , sql is :
+
+
+5.演示下jira:
+SOLEA-3160 【南京sj需求】整理下solea支持哪些后缀的文档提取文本内容
+脚本
+SOLEA-3159 【安装文档】新发布solea-需要ansible-2.4.2的了，文档写的还是2.3.2的
+	http://git.lzy.com/lzy/common-doc/merge_requests/71
+	有没有检查版本的
+SOLEA-3151 【tika】tika没有提取出邮件的text
+SOLEA-3178 【文件统计】确认下2.0.3版本的文件上传统计是否准确
+SOLEA-3149 【tika】zip解压文件对子文件名编码写死了GB18030，导致一些包含中文名子文件解压异常
+SOLEA-3186 【solea_thirdparty_file_service】压缩包内的文件预览失败，跟文件名有关
+	填个jira，web调用showapp 改成post?
+
+让马力统计所有压缩包数量
+
+
+合代码
+http://git.lzy.com/lzy/common-doc/merge_requests/71
+http://git.lzy.com/lzy/solea/merge_requests/1822
+
+延期：
+SOLEA-3176 【solea统计】页面的统计数量不准确
+COMMON-6326 【docker】anole 部署需要 map_server ，封 docker 的时候 map_server 写死了，如何改成变量可替换的
+SOLEA-3151 【tika】tika没有提取出邮件的text
+
+
+
+SOLEA-3149 【tika】zip解压文件对子文件名编码写死了GB18030，导致一些包含中文名子文件解压异常
+SOLEA-3130 【sendFserver】sendFserver如何保证程序不被某个文件卡死？
+
+20200927
+1.本周工作
+
+2.SOLEA-3160 【南京sj需求】整理下solea支持哪些后缀的文档提取文本内容	
+	提供一个脚本获取所有的类别和后缀
+	
+	java -jar 
+	
+	
+3.SOLEA-3194 【系统问题】云度方案整理及邮件处理系统演示用例录屏时发现的问题
+
+视频检索时，视频的预览封面显示问题，有时可以全部显示，有时只显示小部分； --a环境看看
+新增一些关于印度方向的邮件文件，配合邮件处理系统演示用例的录制； –- ok
+	1.新建一个collection操作
+		印度的ip
+		jgcai(蔡建国) 2020-09-24 10:21:26
+		新加两个字段
+		email_received_ip_txt:xxxx
+		email_ip_location_ms_i_s_dv:印度
+		\\10.1.12.4\share\tmp\cjg
+	2.导出数据
+	3.配一下，发送
+
+3.SOLEA-3194 【系统问题】云度方案整理及邮件处理系统演示用例录屏时发现的问题
+
+视频检索时，视频的预览封面显示问题，有时可以全部显示，有时只显示小部分； --a环境看看
+
+http://10.1.61.2:15003/solea-fserver2/api/v1/viewFile?url=http://10.1.61.2:15003/solea-download?fileName=%E6%95%B0%E6%8D%AE20200801%2Fdata%2Fsnowden_eng_rip_clip8.mp4&cephUrl=ceph://solea_20200801/9253aee5-3ecd-4569-8cf3-03d2a576fa8a&importTime=20200802&type=video&width=200
+
+2020-09-27 14:06:55.341  INFO 1542547 --- [pool-2-thread-1] c.l.s.fileserver2.service.RadosStorage   : ioCTXreferences size: 1
+2020-09-27 14:07:04.418 ERROR 1542547 --- [XNIO-2 task-146] c.l.s.f.w.rest.ViewFileApiDelegateImpl   : viewFile fail:{}
+
+org.bytedeco.javacv.FrameGrabber$Exception: avformat_open_input() error -2: Could not open input "java.io.BufferedInputStream@c1f0ff9". (Has setFormat() been called?)
+        at org.bytedeco.javacv.FFmpegFrameGrabber.startUnsafe(FFmpegFrameGrabber.java:853)
+        at org.bytedeco.javacv.FFmpegFrameGrabber.start(FFmpegFrameGrabber.java:785)
+        at com.lzy.solea.fileserver2.web.rest.util.JavacvUtil.makeImageFromVideo(JavacvUtil.java:44)
+        at com.lzy.solea.fileserver2.web.rest.ViewFileApiDelegateImpl.viewFile(ViewFileApiDelegateImpl.java:53)
+        at com.lzy.solea.fileserver2.web.api.ViewFileApi.viewFile(ViewFileApi.java:42)
+        at com.lzy.solea.fileserver2.web.api.ViewFileApi$$FastClassBySpringCGLIB$$1df552fe.invoke(<generated>)
+        at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:204)
+
+
+新增一些关于印度方向的邮件文件，配合邮件处理系统演示用例的录制； -- 0k
+	1.新建一个collection操作				--ok
+	http://10.1.60.173:15003/solr
+	case_solea_202009270000
+
+		印度的ip
+		jgcai(蔡建国) 2020-09-24 10:21:26
+		新加两个字段
+		email_ip_location_ms_i_s_dv:印度
+		
+"response":{"numFound":2,"start":0,"docs":[
+      {
+        "email_ip_location_ms_i_s_dv":["日本"]},
+      {
+        "email_ip_location_ms_i_s_dv":["俄罗斯"]}]
+  }}
+
+  
+ 		email_received_ip_txt:xxxx
+   "response":{"numFound":6,"start":0,"docs":[
+      {
+        "email_received_ip_txt":["127.0.0.1",
+          "210.150.184.18",
+          "6.2.5.2",
+          "50.139.150.220",
+          "220.150.139.50"]},
+      {
+        "email_received_ip_txt":["90.154.127.19"]},
+      {
+        "email_received_ip_txt":["10.1.131.46"]},
+      {
+        "email_received_ip_txt":["10.1.131.46"]},
+      {
+        "email_received_ip_txt":["10.1.131.46"]},
+      {
+        "email_received_ip_txt":["10.1.131.46"]}]
+  }}
+
+
+
+		
+	2.导出数据
+	[root@solea-10-1-61-3 input]# wc -l email.json
+	914 email.json
+	
+	邮箱以"@enron.com"结尾
+	
+	
+	http://10.1.60.173:8983/solr/case_solea_202007231621_implicit_shard_1_replica_n1/export_data_by_query?indent=on&q=email_to_txt:@enron.com&max_doc=false&wt=json
+	
+	core/export_data_by_query?indent=on&q=${query_condition}&max_doc=false&wt=json
+	
+	[root@solea-10-1-61-3 20200927]# wc -l @enron_com_email.json
+761 @enron_com_email.json
+
+分成5分
+/opt/solea-tools/solea-data-migration/input/20200927/parts/input
+	
+	3.配一下生成新的json
+	印度
+	36.255.30.251
+	36.255.30.222
+	36.255.30.213
+	36.255.30.234
+	36.255.30.245
+	
+	运行：
+	bash process_data.sh parseToNewJson
+	
+	确认：
+	/opt/solea-tools/solea-data-migration/output/20200927/
+	
+	4.发送
+	
+	bash process_data.sh sendToSolr
+	
+	5.确认：
+	email_ip_location_ms_i_s_dv:印度
+	email_received_ip_txt
+	
+	id:82d97b90-d471-4bb4-89d4-40916e59fc77  可以查询
+	
+	id:65ad4dc3-4267-4197-a368-990a1454bae5  查询不到？？？
+	
+	
+	61f3416dbaf411e8b13590e2ba87e277
+	
+	
+	
+	"efo_catalog_ms_i_s":"61f3416dbaf411e8b13590e2ba87e277"
+	
+	((file_classify:eml) AND (efo_catalog_ms_i_s:7LmXHy1I0J7JLgFsPI0vggvqiu19DYJY)) AND (efo_catalog_ms_i_s:1p09qnfjif3saN9Z8wHDJ4dojCJRKTUG OR efo_catalog_ms_i_s:7LmXHy1I0J7JLgFsPI0vggvqiu19DYJY OR efo_catalog_ms_i_s:gJ7a1QLfHDeOObFItnsn7dS3XQ4vb0Nb)
+	
+	
+	--ok
+	761
+	
+
+4.SOLEA-3202 【邮件收发】确认下邮件生成的bcp是否正确，跟solr查出来的数量好像不一致
+导出来看看：
+
+id:7269a7d1-c223-45a1-9293-958bfc2a907b
+content_type:message/rfc822
+
+
+solrurl="http://10.1.61.11:8983/solr/case_solea_202009280000_implicit_shard_1_replica_n1/export_data_by_query?&q=batch_id:8E66AFFB-1738-4669-8039-E2168726AACF&max_doc=false&wt=json"
+
+file="/opt/solea-tools/solea-data-migration/input/email.json"
+
+wget ${solrurl} -O ${file}
+
+[root@solea-10-1-61-3 input]# wc -l email.json
+898 email.json
+
+本地调试一下：
+生成bcp方式不对？
+
+bash process_data.sh genEmailRelaTionBcp
+
+[root@solea-10-1-61-3 plugin-output]# wc -l 20200927_e535deac-f7c8-4920-b82d-980a7571f3ed.bcp
+4818 20200927_e535deac-f7c8-4920-b82d-980a7571f3ed.bcp
+
+wc -l 20200927_2daf8b5b-b3d4-4769-8493-6303eb1f814d.bcp
+938 20200927_2daf8b5b-b3d4-4769-8493-6303eb1f814d.bcp
+
+
+自动部署失败了
+TASK [lzy.nagios : valid nagios config] *****************************************************************************************************************************************************************************************************
+fatal: [solea-10-1-61-2]: FAILED! => {"changed": true, "cmd": "nagios --verify-config /etc/nagios/nagios.cfg", "delta": "0:00:00.030168", "end": "2020-09-27 14:41:58.140091", "msg": "non-zero return code", "rc": 1, "start": "2020-09-27 14:41:58.109923", "stderr": "", "stderr_lines": [], "stdout": "\nNagios Core 4.3.2\nCopyright (c) 2009-present Nagios Core Development Team and Community Contributors\nCopyright (c) 1999-2009 Ethan Galstad\nLast Modified: 2017-05-09\nLicense: GPL\n\nWebsite: https://www.nagios.org\nReading configuration data...\nWarning: sleep_time is deprecated and will be removed.\nWarning: external_command_buffer_slots is deprecated and will be removed. All commands are always processed upon arrival\nWarning: command_check_interval is deprecated and will be removed. Commands are always handled on arrival\n   Read main config file okay...\n   Read object config files okay...\n\nRunning pre-flight check on configuration data...\n\nChecking objects...\nError: There are no services defined!\n\tChecked 0 services.\nError: There are no hosts defined!\n\tChecked 0 hosts.\n\tChecked 3 host groups.\n\tChecked 0 service groups.\n\tChecked 3 contacts.\n\tChecked 1 contact groups.\n\tChecked 29 commands.\n\tChecked 5 time periods.\n\tChecked 0 host escalations.\n\tChecked 0 service escalations.\nChecking for circular paths...\n\tChecked 0 hosts\n\tChecked 0 service dependencies\n\tChecked 0 host dependencies\n\tChecked 5 timeperiods\nChecking global event handlers...\nChecking obsessive compulsive processor commands...\nChecking misc settings...\n\nTotal Warnings: 0\nTotal Errors:   2\n\n***> One or more problems was encountered while running the pre-flight check...\n\n     Check your configuration file(s) to ensure that they contain valid\n     directives and data definitions.  If you are upgrading from a previous\n     version of Nagios, you should be aware that some variables/definitions\n     may have been removed or modified in this version.  Make sure to read\n     the HTML documentation regarding the config files, as well as the\n     'Whats New' section to find out what has changed.", "stdout_lines": ["", "Nagios Core 4.3.2", "Copyright (c) 2009-present Nagios Core Development Team and Community Contributors", "Copyright (c) 1999-2009 Ethan Galstad", "Last Modified: 2017-05-09", "License: GPL", "", "Website: https://www.nagios.org", "Reading configuration data...", "Warning: sleep_time is deprecated and will be removed.", "Warning: external_command_buffer_slots is deprecated and will be removed. All commands are always processed upon arrival", "Warning: command_check_interval is deprecated and will be removed. Commands are always handled on arrival", "   Read main config file okay...", "   Read object config files okay...", "", "Running pre-flight check on configuration data...", "", "Checking objects...", "Error: There are no services defined!", "\tChecked 0 services.", "Error: There are no hosts defined!", "\tChecked 0 hosts.", "\tChecked 3 host groups.", "\tChecked 0 service groups.", "\tChecked 3 contacts.", "\tChecked 1 contact groups.", "\tChecked 29 commands.", "\tChecked 5 time periods.", "\tChecked 0 host escalations.", "\tChecked 0 service escalations.", "Checking for circular paths...", "\tChecked 0 hosts", "\tChecked 0 service dependencies", "\tChecked 0 host dependencies", "\tChecked 5 timeperiods", "Checking global event handlers...", "Checking obsessive compulsive processor commands...", "Checking misc settings...", "", "Total Warnings: 0", "Total Errors:   2", "", "***> One or more problems was encountered while running the pre-flight check...", "", "     Check your configuration file(s) to ensure that they contain valid", "     directives and data definitions.  If you are upgrading from a previous", "     version of Nagios, you should be aware that some variables/definitions", "     may have been removed or modified in this version.  Make sure to read", "     the HTML documentation regarding the config files, as well as the", "     'Whats New' section to find out what has changed."]}
+
+
+nagios --verify-config /etc/nagios/nagios.cfg
+
+20200928
+1.SOLEA-3149 【tika】zip解压文件对子文件名编码写死了GB18030，导致一些包含中文名子文件解压异常 
+	测试一下：
+	所有的zip文件
+		find -type f -name "*.zip" | xargs -i cp {} E:\work\logbook\202009\data\zip-data
+
+	使用老版本全都发送一遍
+	实行新版本全部发送一遍
+	
+2.SOLEA-3198 【tika】附件的邮件文件没有解析出发件时间 	--先过吧
+
+<output>
+<filemetas>
+<meta name="filename" content="noSentTime.eml"/>
+<meta name="filesize" content="869"/>
+</filemetas>
+
+<html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head>
+  <meta name="AllRecipients" content="8615203258808/TYPE=PLMN" />
+  <meta name="Author" content="031169018725/TYPE=PLMN" />
+  <meta name="CC" content="" />
+  <meta name="Content-Type" content="message/rfc822" />
+  <meta name="From" content="031169018725/TYPE=PLMN" />
+  <meta name="Message-From" content="031169018725/TYPE=PLMN" />
+  <meta name="Message-To" content="8615203258808/TYPE=PLMN" />
+  <meta name="ReplayTo" content="031169018725/TYPE=PLMN" />
+  <meta name="Subject" content="�河北移动综合资源管理系统; charset=utf-8;" />
+  <meta name="To" content="8615203258808/TYPE=PLMN" />
+  <meta name="X-Parsed-By" content="org.apache.tika.parser.CompositeParser" />
+  <meta name="X-Parsed-By" content="org.apache.tika.parser.DefaultParser" />
+  <meta name="X-Parsed-By" content="com.lzy.solea.tika.parser.mail.RFC822Parser" />
+  <meta name="X-TIKA:digest:MD5" content="6a8ddd0631cfca10491ee74c65e8ec93" />
+  <meta name="attach_file" content="false" />
+  <meta name="creator" content="031169018725/TYPE=PLMN" />
+  <meta name="dc:creator" content="031169018725/TYPE=PLMN" />
+  <meta name="dc:title" content="�æ²³å��ç§»å�¨ç»¼å��èµ�æº�ç®¡ç��ç³»ç»�; charset=utf-8;" />
+  <meta name="meta:author" content="031169018725/TYPE=PLMN" />
+  <meta name="plain_b" content="false" />
+  <meta name="resourceName" content="noSentTime.eml" />
+  <meta name="subject" content="�æ²³å��ç§»å�¨ç»¼å��èµ�æº�ç®¡ç��ç³»ç»�; charset=utf-8;" />
+  <meta name="tmpDir" content="/opt/solea-tika-app/tmp/avi" />
+  <title></title>
+ </head> 
+ <body>
+  <div class="email-entry">
+   <p></p> 
+  </div> 
+  <div class="email-entry">
+   <p></p> 
+  </div> 
+ </body>
+</html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head>
+  <meta name="Content-Encoding" content="UTF-8" />
+  <meta name="Content-Type" content="text/plain; charset=UTF-8" />
+  <meta name="X-Parsed-By" content="org.apache.tika.parser.CompositeParser" />
+  <meta name="X-Parsed-By" content="org.apache.tika.parser.DefaultParser" />
+  <meta name="X-Parsed-By" content="com.lzy.solea.tika.parser.txt.TXTParser" />
+  <meta name="X-TIKA:digest:MD5" content="e6703279405c03ce5080745f71e4c234" />
+  <meta name="X-TIKA:embedded_depth" content="1" />
+  <meta name="X-TIKA:embedded_resource_path" content="/embedded-1" />
+  <title></title>
+ </head> 
+ <body>
+  <p>综合资源服务热线'0311-69018725' </p> 
+ </body>
+</html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"> 
+ <head>
+  <meta name="Content-Encoding" content="UTF-8" />
+  <meta name="Content-Type" content="text/plain; charset=UTF-8" />
+  <meta name="X-Parsed-By" content="org.apache.tika.parser.CompositeParser" />
+  <meta name="X-Parsed-By" content="org.apache.tika.parser.DefaultParser" />
+  <meta name="X-Parsed-By" content="com.lzy.solea.tika.parser.txt.TXTParser" />
+  <meta name="X-TIKA:digest:MD5" content="97795de48f5b78db0a0c167234bac78e" />
+  <meta name="X-TIKA:embedded_depth" content="2" />
+  <meta name="X-TIKA:embedded_resource_path" content="/embedded-2" />
+  <title></title>
+ </head> 
+ <body>
+  <p>您好，您收到一张工单号为：ID-0601-20190901-02184的投诉工单，处理时限为2019-09-02 18:55:11，请尽快安排处理! </p> 
+ </body>
+</html>
+
+</output>
+
+没有：
+<meta name="SentTime" content="2018-10-22T13:39:00Z" />
+
+
+  <meta name="X-Parsed-By" content="org.apache.tika.parser.CompositeParser" />
+  <meta name="X-Parsed-By" content="org.apache.tika.parser.DefaultParser" />
+  <meta name="X-Parsed-By" content="com.lzy.solea.tika.parser.mail.RFC822Parser" />
+
+
+headers:
+line:
+Date: Sun Sep  1 19:01:19 2019
+name: Date
+value: ""
+
+		synchronized (mailDateFormat) {
+		    return mailDateFormat.parse(s);
+		}
+  
+Date result = parse(source, pos); 变成 null了
+  
+    public Date parse(String text, ParsePosition pos) {
+	return parseDate(text.toCharArray(), pos, isLenient());
+    }
+
+    /*
+      Valid Examples:
+      
+      Date: Sun, 21 Mar 1993 23:56:48 -0800 (PST)
+      Date: 
+      Date: Mon, 22 Mar 1993 09:41:09 -0800 (PST)
+      Date:     26 Aug 76 14:29 EDT
+
+      */
+	  
+报错：java.text.ParseException: Bad Month
+
+看看正常的：
+Tue, 5 Feb 2002 14:45:10 -0800 (PST)
+Mon, 19 Nov 2001 07:18:58 -0800 (PST)
+Wed, 13 Feb 2002 11:47:17 -0800 (PST)
+坏的：
+Sun Sep  1 19:01:19 2019
+EEE MMM dd HH:mm:ss yyyy
+
+Bad month
+
+Unparseable date: "Sun Sep  1 19:01:19 2019"
+2019/9/1 19:01
+
+  
+    System.out.println(df.parse("Sun, 21 Mar 1993 23:56:48 -0800 (PST)"));
+	System.out.println(df.parse("Mon, 22 Mar 1994 13:34:51 +0000"));
+	System.out.println(df.parse("26 Aug 76 14:29 EDT"));
+	System.out.println(df.parse("15 Apr 11 23:49 EST"));
+	System.out.println(df.parse("15 Apr 11 23:49 ABC"));
+  
+mailDateFormat
+
+
+		"EEE, dd MMM yy HH:mm:ss ZZZZ",
+        "dd MMM yy HH:mm:ss ZZZZ",
+        "EEE, dd MMM yy HH:mm:ss.SSS 0000",
+        "EEE, dd MMM yy HH:mm:ss 0000",
+        "EEE, dd MMM yyyy HH:mm:ss ZZZZ",
+        "dd MMM yyyy HH:mm:ss ZZZZ",
+        "EEE, dd MMM yyyy HH:mm:ss.SSS 0000",
+        "EEE, dd MMM yyyy HH:mm:ss 0000",
+        "EEE, dd MMM yy HH:mm:ss X",
+        "dd MMM yy HH:mm:ss X",
+        "EEE, dd MMM yy HH:mm:ss.SSS X",
+        "EEE, dd MMM yy HH:mm:ss X",
+        "EEE, dd MMM yyyy HH:mm:ss X",
+        "dd MMM yyyy HH:mm:ss X",
+        "EEE, dd MMM yyyy HH:mm:ss.SSS X",
+        "EEE, dd MMM yyyy HH:mm:ss X",
+ 
+EEE MMM d HH:mm:ss yyyy
+ 
+  
+3.SOLEA-3194 【系统问题】云度方案整理及邮件处理系统演示用例录屏时发现的问题	
+
+2、视频检索时，视频的预览封面显示问题，有时可以全部显示，有时只显示小部分；
+视频viewFile 接口报错：
+org.bytedeco.javacv.FrameGrabber$Exception: avformat_open_input() error -2: Could not open input "java.io.BufferedInputStream@227cc5bd". (Has setFormat() been called?)
+        at org.bytedeco.javacv.FFmpegFrameGrabber.startUnsafe(FFmpegFrameGrabber.java:853)
+        at org.bytedeco.javacv.FFmpegFrameGrabber.start(FFmpegFrameGrabber.java:785)
+        at com.lzy.solea.fileserver2.web.rest.util.JavacvUtil.makeImageFromVideo(JavacvUtil.java:44)
+        at com.lzy.solea.fileserver2.web.rest.ViewFileApiDelegateImpl.viewFile(ViewFileApiDelegateImpl.java:53)
+        at com.lzy.solea.fileserver2.web.api.ViewFileApi.viewFile(ViewFileApi.java:42)
+        at com.lzy.solea.fileserver2.web.api.ViewFileApi$$FastClassBySpringCGLIB$$1df552fe.invoke(<generated>)
+        at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:204)
+        at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.invokeJoinpoint(CglibAopProxy.java:746)
+        at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163)
+        at org.springframework.validation.beanvalidation.MethodValidationInterceptor.invoke(MethodValidationInterceptor.java:119)
+        at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:185)
+        at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:688)
+        at com.lzy.solea.fileserver2.web.api.ViewFileApiController$$EnhancerBySpringCGLIB$$db76dde6.viewFile(<generated>)
+        at sun.reflect.GeneratedMethodAccessor52.invoke(Unknown Source)
+        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+        at java.lang.reflect.Method.invoke(Method.java:498)
+		
+		
+用bufferedInputStream:
+{code:java}
+  public InputStream copyLimitStream(InputStream inputStream, int maxLength) throws IOException {
+    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    IOUtils.copyLarge(inputStream, bos, 0, maxLength);
+    ByteArrayInputStream clonedStream = new ByteArrayInputStream(bos.toByteArray());
+    return clonedStream;
+  }
+
+{code}
+
+
+		
+
+7、关于压缩文件上传时解压问题，zip可以支持，rar目前不可以；					--ok
+tika 1.23之前rar版本只有
+      <mime>application/x-rar-compressed</mime>
+升级之后版本变了：
+      <!-- Rar type chage from tika 1.23 -->
+      <mime>application/x-rar-compressed; version=4</mime>
+      <mime>application/x-rar-compressed; version=5</mime>
+
+  private static final MediaType ZIP = MediaType.APPLICATION_ZIP;
+  private static final MediaType JAR = MediaType.application("java-archive");
+  private static final MediaType AR = MediaType.application("x-archive");
+  private static final MediaType CPIO = MediaType.application("x-cpio");
+  private static final MediaType DUMP = MediaType.application("x-tika-unix-dump");
+  private static final MediaType TAR = MediaType.application("x-tar");
+  private static final MediaType SEVENZ = MediaType.application("x-7z-compressed");
+	  
+	  
+<mime>application/java-archive</mime>
+<mime>application/x-archive</mime>
+<mime>application/x-cpio</mime>
+<mime>application/x-tika-unix-dump</mime>
+<mime>application/x-tar</mime>
+<mime>application/x-7z-compressed</mime>
+	  
+
+
+20200929
+1.SOLEA-3149 【tika】zip解压文件对子文件名编码写死了GB18030，导致一些包含中文名子文件解压异常 
+	测试一下：
+	所有的zip文件
+		find -type f -name "*.zip" | xargs -i cp {} E:\work\logbook\202009\data\zip-data
+
+	使用老版本全都发送一遍
+	19798
+	
+	使用新版本全部发送一遍
+
+2.SOLEA-3196 修改一下
+
+http://git.lzy.com/lzy/solea/merge_requests/1832
+
+2.0.3之前导出方式：
+
+query_condition="*:*"
+download_url="${solr_collection_url}/select?q=${query_condition}&wt=csv&fl=text&rows=${max_row}"
+echo "${download_url}"
+
+download_file=${download_file_path}/${task_id}_${time}.csv
+echo "wget ${download_url} -O ${download_file}"
+wget ${download_url} -O ${download_file}
+
+http://10.1.61.11:8983/solr/case_solea_202009280000/select?q=*:*&wt=csv&rows=10
+
+-- 不行 换个方法，看看能不能获取对应的core:
+http://10.1.61.11:8983/solr/admin/collections?action=CLUSTERSTATUS&collection=case_solea_202009280000
+
+http://10.1.61.11:8983/solr/admin/collections?action=CLUSTERSTATUS&collection=case_solea_202009280000
+
+
+
+http://10.1.47.103:8983/solr/admin/collections?action=CLUSTERSTATUS&collection=case_solea_202009270000
+
+3.
+
+
+#############
+20200930
+1.SOLEA-3149 【tika】zip解压文件对子文件名编码写死了GB18030，导致一些包含中文名子文件解压异常
+		测试一下：
+	所有的zip文件
+		find -type f -name "*.zip" | xargs -i cp {} E:\work\logbook\202009\data\zip-data
+
+	使用老版本全都发送一遍
+	19798
+	
+	使用新版本全部发送一遍
+
+src.zip
+$ find -type f | wc -l
+7733
+
+	
+
+2.演示下jira:
+SOLEA-3194 【系统问题】云度方案整理及邮件处理系统演示用例录屏时发现的问题
+SOLEA-3202 【邮件收发】确认下邮件生成的bcp是否正确，跟solr查出来的数量好像不一致
+	单元测试
+SOLEA-3151 【tika】tika没有提取出邮件的text
+SOLEA-3160 【南京sj需求】整理下solea支持哪些后缀的文档提取文本内容
+SOLEA-3130 【sendFserver】sendFserver如何保证程序不被某个文件卡死
+
+
+todo:
+c环境solr改成
+10.1.50.18:15003/solr
+
+南京sj的数据和发票]
+
+解压的单元测试，rar解压的
+
+本周工作：
+SOLEA-3206 	【南京sj】一批新的im数据，处理入库																	1d
+SOLEA-3194 【系统问题】云度方案整理及邮件处理系统演示用例录屏时发现的问题										6h
+SOLEA-3149 【tika】zip解压文件对子文件名编码写死了GB18030，导致一些包含中文名子文件解压异常						2h
+	测试一下, 1.zip解开成功率，2.有没有乱码的
+SOLEA-3198 【tika】附件的邮件文件没有解析出发件时间																4h
+SOLEA-3202 【邮件收发】确认下邮件生成的bcp是否正确，跟solr查出来的数量好像不一致								4h
+SOLEA-3205 【现场维护】solea现场维护(W40 20200927)																4h
+SOLEA-3130 【sendFserver】sendFserver如何保证程序不被某个文件卡死？						
+SOLEA-3151 【tika】tika没有提取出邮件的text																		--ok
+SOLEA-2638,【资源限制】加密，等可以用systemd来限制资源													6h
+	
+systemd限制，im
+
+todo:
+c环境  solr改成50.18
+
+SoleaIOUtil.makeinnputStream 没有吧流关闭
+
+## 本周工作
+total: 4d 
+SOLEA-3179 【solea版本规划】：规划下个版本的内容																4h
+SOLEA-3151 【tika】tika没有提取出邮件的text																		4h
+SOLEA-3149 【tika】zip解压文件对子文件名编码写死了GB18030，导致一些包含中文名子文件解压异常						4h
+COMMON-6326 【docker】anole 部署需要 map_server ，封 docker 的时候 map_server 写死了，如何改成变量可替换的		4h
+
+SOLEA-3178 【文件统计】确认下2.0.3版本的文件上传统计是否准确													4h
+	关联jira:SOLEA-3176 【solea统计】页面的统计数量不准确
+SOLEA-3186 【solea_thirdparty_file_service】压缩包内的文件预览失败，跟文件名有关								4h
+明天下午跟传证去sj升级图谱																						4h
+SOLEA-3130 【sendFserver】sendFserver如何保证程序不被某个文件卡死？												1h
+SOLEA-3159 【安装文档】新发布solea-需要ansible-2.4.2的了，文档写的还是2.3.2的									1h
+SOLEA-3160 【南京sj需求】整理下solea支持哪些后缀的文档提取文本内容												2h
+
+
+TODO:
+A环境演示数据:
+
+演示数据放在\\10.1.11.5\share\项目相关\solea
+ ** 每次安装升级完成后，删除数据，并且全部重发，保证下面的测试也过
+
+ 
+ nanj sj
+ 
+ 
+ 登录账号密码:
+admin/1qaz@WSX
+
+服务器登录：
+root/qazwsx@okm
+
+检查下所有nginx都应该有：
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+http://wiki.lzy.com/shell%E5%A6%82%E4%BD%95%E6%94%AF%E6%8C%81%E6%AF%8F%E4%B8%80%E4%B8%AA%E5%91%BD%E4%BB%A4%E4%B8%8D%E8%83%BD%E9%94%99%E8%AF%AF
+
+
+南京sj 再建一个collection 测试下
+
+文档写一下，force-clean

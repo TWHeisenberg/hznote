@@ -1,0 +1,2446 @@
+## tips
+
+注意：
+
+夜盘数据比较特殊,  比如 2021-04-01 21:00:00 ~ 2021-04-02 00:00:00 的数据, 其实是 2021-03-31 21:00:00 ~ 2021-04-01 00:00:00 的数据.  即夜盘一整天的开盘时间是 昨天 21:00
+
+maven 官方下载地址：
+
+https://archive.apache.org/dist/maven/maven-3/
+
+服务器地址：
+
+```
+10.10.10.104   administrator  Admin123
+10.10.10.102 administrator  Admin711406
+```
+
+
+
+项目 SVN 地址:
+https://10.10.10.102/svn/量化系统/nc_tree_parse/nc_algo
+
+confluence 地址：http://10.10.0.47:8090/
+
+​	ftp:list_delete_rowkey.shb
+
+	   历史股指期权 和 商品期权 数据的下载地址 ：
+	   域名：tik-ftp.citicsf.com 端口：8371  
+	   电信IP：58.33.80.163     端口：8371    
+	   联通IP：140.206.97.123 端口：8371
+	   李佳桧/83g3Mh7m
+
+​	历史数据：
+
+​		50ETF期权数据
+​		CFFEX股指期货
+​		DCE大连商品
+​		CZC3郑州商品
+​		SHFE上海商品
+
+钉钉邮箱：wangdao6551@dingtalk.com
+
+jira账号：u00479/123456
+
+jira   ip地址更换成：http://10.10.0.47:8080/
+
+svn账号和密码：liuzhenjiang/liuzhenjiang
+
+hbase:
+	hadoop-daemon.sh start datanode
+	hbase-daemon.sh start regionserver
+	tail  -n -500 /usr/local/hbase/logs/hbase-hadoop-regionserver-slave4.log
+
+sql server:
+		properties.setProperty("user", "R16");
+		properties.setProperty("password", "R16_0625");
+
+现有集群规模：共有七台机器，老机房两台，新机房五台。
+
+老机房两台：
+
+​     主机名：keep-0        IP：10.10.10.110    root用户登录密码：1
+
+主机名：keep-1        IP：10.10.10.111       root用户登录密码：1
+
+ 
+
+新机房五台：
+
+​     主机名：master      IP：10.10.0.254        root用户登录密码：1
+
+主机名：slave1        IP：10.10.0.119        root用户登录密码：1
+
+主机名：slave2        IP：10.10.0.15         root用户登录密码：1
+
+主机名：slave3        IP：10.10.0.253        hadoop用户登录密码：1
+
+主机名：slave4        IP：10.10.0.252        hadoop用户登录密码：1
+
+ 
+
+集群配置：
+
+​     三台zookeeper，七台HDFS（master，slave1，上运行namenode，七台DataNode）
+
+​     Master，slave3作为HBASE的HMaster节点，除master节点之外，六台起HRegionserver服务，HMaster节点需要另起ThriftServer服务来提供读取数据服务。集群启动步骤见《集群各项服务启动命令.txt》文件
+
+Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas
+
+HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview
+
+
+
+## 每天做的
+
+```
+1.检查下hadoop集群, hbase集群
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  
+	进程：RunOnlyGuzhi，
+    	  
+10.10.10.102 administrator/Admin711406  
+	进程：GetMarketDataAndStore
+	     GuPiaoReduce（RunDataMerge?）
+```
+
+
+
+
+
+## 20210413
+
+1.看看交接文档
+	大数据开发岗工作交接文档.docx
+	集群各项服务启动命令.txt
+
+2.熟悉下代码，工作流程
+	是否有wiki之类的说明文档？
+	连一下hbase：
+		hmaster:10.10.0.253
+		http://10.10.0.254:60010/master-status#compactStas
+
+3.环境搭建
+​	软件工具
+​		putty
+​		everything
+​		notepad++
+​		gitbash
+​		java format
+​		wireshark
+​		idea换成英文的
+
+​		bycompare		
+​		
+​		
+4.看一下：
+​	1.商品期货夜盘处理逻辑按照策略研究员的需求重新整理
+​		搞清楚原来的逻辑
+​			定时任务名：MarketData-night
+​			运行程序：D:\TimeTask\NewInterface\GetMarketDataAndStore.bat
+​			实现功能：运行接收储存商品期货夜盘数据的程序
+​			源码路径（SVN）:Repositories\JKdata\NewInterfaceToHbase\src\main\java\hznc\com\java\NewInterfaceToHbase\GetMarketDataAndStore
+
+		新的需求？
+	2.商品期货主力合约切换逻辑按照需求重新处理
+		搞清楚原来的逻辑	
+		新的需求
+
+​	咨询一下：
+​		svn账号，代码提交和编译的流程
+​			https://10.10.10.102/svn/JKdata 用原来的账号
+​		咱们有几个环境？测试环境和生产环境？7台服务器，跟着数据流向测试一下
+​			只有一个环境
+​		几个定时程序有木有需求文档？直接看代码需求不是很明确，比如存储期货日盘数据的程序，项目培训文档？
+​			E:\TWang\sourcecode\JKdata\文档
+​		近期的一个目标，做什么工作？比如本周或本月要做什么
+​			先自己看看，后面有个小的需求
+
+## 20210414
+
+1.继续看下项目代码和文档
+​	项目模块：
+​		NewInterfaceToHbase 定时任务从mq中拉数据，进行合并然后发送到hbase中
+​		Data2Hbase 
+
+​		Day_Data2Hbase
+
+​				1.从sqlServer中将历史数据导入hbase
+
+​				2.将每天的日线数据导入hbase
+
+​				Data.java : 数据类对象
+
+​				HistoryDay2Hbase.java : 获取历史日线数据并存入hbase
+
+​				MergeEveryday.java ： 每天将当天的日线数据存入hbase以及实时合并周线月线并存储
+
+​				MergeOfMonth.java ： 历史数据合并月线并存入hbase
+
+​				MergeOfWeekly.java ： 历史数据合并周线并存入hbase
+
+​				ToHbaseFunction.java： 连接hbase数据库以及存入hbase数据库接口
+
+​		DataMonitoring
+​		Flink-kafka-demo
+​		GuZhi
+​		History
+​		IndicatorData
+​		PlateData2Hbase
+​	
+
+	看下mq的数据：
+		10.10.0.220
+	
+	看下：
+		商品期货日盘和夜盘等
+		股票交易
+		hbase ui
+		学习一下股票软件使用
+		k线和tick线
+		
+	咨询一下：
+		10.10.10.110 ，10.10.10.102，10.10.0.220 的密码		--ok
+			10.10.10.102，10.10.0.220 暂时不需要看
+		
+		http://10.10.0.69:15672/ mq的端口？
+		主要是想看一下可视化的界面和数据长啥样
+
+2. 自己搭建一下集群		--ok
+   	安装虚拟机
+   	基础环境安装，java,python等
+   	安装hadoop
+   	安装hbase
+
+3. hbase创建表
+
+
+
+4.看下mq里面的测试数据，测试一下
+
+​	http://10.10.0.69:15672/	admin/admin
+
+明天工作：
+
+​	拿几条数据下来看看
+
+​	在自己的测试环境跑一下流程
+
+
+
+## 20210415
+
+1.在自己的测试环境跑一下流程
+
+​	导一下历史的数据			--ok
+
+2.问一下新的需求和要做的功能
+
+​	原来的k线合并不对，要重新整理下
+
+
+
+梳理下hbase中有哪些表
+
+​	1.股票以及指数：
+
+在hznc_data命名空间中，切按照上交所，深交所对表名后缀加_1,_2进行区分，_1为上交所，_2为上交所，如：
+
+| 表名                 | 说明                       |
+| -------------------- | -------------------------- |
+| hznc_data:1mindata_1 | 该表中存储上交所的股票数据 |
+| hznc_data:1mindata_2 | 该表中存储深交所的股票数据 |
+
+目前从股票接口中所接收的数据最小级别为1分钟周期，利用接收到的1分钟周期进行更大周期的数据处理，列：
+
+hznc_data:15mindata_1
+hznc_data:15mindata_2
+hznc_data:1mindata_1
+hznc_data:1mindata_2
+hznc_data:20mindata_1
+hznc_data:20mindata_2
+hznc_data:30mindata_1
+hznc_data:30mindata_2
+hznc_data:5mindata_1
+hznc_data:5mindata_2
+hznc_data:60mindata_1
+hznc_data:60mindata_2
+
+hznc_data:monthdata_1
+hznc_data:monthdata_2
+hznc_data:weekdata_1
+hznc_data:weekdata_2
+hznc_data:yeardata_1
+hznc_data:yeardata_2
+
+hznc_data:Ddata_1
+hznc_data:Ddata_2
+hznc_data:jidata_1
+hznc_data:jidata_2
+hznc_data:kdata_1
+hznc_data:kdata_2
+
+2.商品期货：
+
+| 表名                   | 说明                           |
+| ---------------------- | ------------------------------ |
+| hznc_mkdata:[周期]data | 商品期货表，按照周期划分不同表 |
+|                        |                                |
+
+在hznc_mkdata命名空间中，按照周期进行分表
+
+目前从商品期货接口中所接受的数据最小级别为tick，利用tick数据进行大周期的数据处理，列：
+
+hznc_mkdata:10mindata
+hznc_mkdata:10sdata
+hznc_mkdata:15mindata
+hznc_mkdata:15sdata
+hznc_mkdata:1mindata
+hznc_mkdata:1sdata
+hznc_mkdata:2sdata
+hznc_mkdata:30mindata
+hznc_mkdata:30sdata
+hznc_mkdata:3sdata
+hznc_mkdata:5mindata
+hznc_mkdata:5sdata
+hznc_mkdata:60mindata
+hznc_mkdata:ddata
+hznc_mkdata:tickdata
+hznc_mkdata:tickms
+
+3.策略数据：
+
+在hznc_qtdata命名空间中，按照策略种类进行分表，表名以策略名称首字母拼成
+
+| 表名                   | 说明                           |
+| ---------------------- | ------------------------------ |
+| hznc_qtdata:[策略种类] | 策略表，按照策略不同划分不同表 |
+
+hznc_qtdata:KDbl
+hznc_qtdata:MACDbl
+hznc_qtdata:alldata
+hznc_qtdata:allin
+hznc_qtdata:bdcz
+hznc_qtdata:bxdsd
+hznc_qtdata:gbkx
+hznc_qtdata:gf
+hznc_qtdata:gsxg
+hznc_qtdata:gsxgkczb
+hznc_qtdata:jbl
+hznc_qtdata:jxdgd
+hznc_qtdata:jxsgd
+hznc_qtdata:jxtd
+hznc_qtdata:jz
+hznc_qtdata:kdch
+hznc_qtdata:macdzbl
+hznc_qtdata:qlfz
+hznc_qtdata:syfz
+
+4.指标数据：
+
+在hznc_tgdata命名空间中，按照指标种类进行分表。
+
+| 表名               | 说明   |
+| ------------------ | ------ |
+| hznc_tgdata:[指标] | 指标表 |
+
+hznc_tgdata:amount
+hznc_tgdata:beixiang
+hznc_tgdata:bigorder
+
+
+
+看一下数据怎么查的，找一个股票对一下
+
+贵州茅台	600519	国内A股票，在上海证券交易所上市
+
+scan "hznc_data:1mindata_1"
+
+scan "hznc_data:1mindata_1", {STARTROW => "600519", ENDROW => "600520", LIMIT => 1000}
+
+看看时间：
+
+600519_1573695000_1                                         column=cf_kdata:cSymbol, timestamp=1573695071093, value=600519
+ 600519_1573695000_1
+
+600519_1599110460_1
+
+时间戳转换成日期看看
+
+​	date -d @1573695000
+
+​	2019年 11月 14日 星期四 09:30:00 CST
+
+
+
+转换成时间戳看看：
+
+date -d "2021-04-15 13:43:00" +%s
+
+600519_1618465380_1 
+
+
+
+重点看下这几个项目：
+
+JKdata\NewInterfaceToHbase\src\main\java\hznc\com\java\NewInterfaceToHbase\GuPiaoReduce
+
+实现功能：运行接收股票接口中数据的程序。目前只接收该接口中9个指数
+
+
+
+JKdata\NewInterfaceToHbase\src\main\java\hznc\com\java\NewInterfaceToHbase\GetMarketDataAndStore
+
+运行接收储存商品期货日盘和夜盘数据的程序
+
+
+
+GupiaoDayData
+
+天收盘后从MySql中读取股票日线数据导入Hbase
+
+
+
+Day_Data2Hbase
+
+
+
+历史数据迁移：
+
+```java
+Connection conn_sql_server = getConnection(
+      "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+      "jdbc:sqlserver://10.10.10.8:1433;DatabaseName=DATA_NoRest",
+      properties);
+```
+
+
+
+实时数据导入：
+
+## 20210416
+
+1.用历史的离线数据跑一下流程			--ok
+
+​	Day_Data2Hbase
+
+​				1.从sqlServer中将历史数据导入hbase
+
+​				2.将每天的日线数据导入hbase
+
+​				Data.java : 数据类对象
+
+​				HistoryDay2Hbase.java : 获取历史日线数据并存入hbase
+
+​				MergeEveryday.java ： 每天将当天的日线数据存入hbase以及实时合并周线月线并存储
+
+​				MergeOfMonth.java ： 历史数据合并月线并存入hbase
+
+​				MergeOfWeekly.java ： 历史数据合并周线并存入hbase
+
+​				ToHbaseFunction.java： 连接hbase数据库以及存入hbase数据库接口
+
+用c++去连：
+
+​	hbase-daemon.sh start thrift2
+
+
+
+股票k线是哪一个表？
+
+1分钟的，平安银行 000001
+
+hznc_data:1mindata_1 hznc_data:kdata_1
+
+倒序返回：
+
+scan table_name, {REVERSED => TRUE}
+
+date -d "2021-04-16 10:28:00" +%s
+
+1618540080
+
+get  "hznc_data:1mindata_1","000001_1618540080_1"
+
+
+
+## 20210417
+
+1.k线数据重新聚合导入
+
+
+
+2.历史期权数据处理
+
+
+
+## 20210418
+
+1.k线数据重新聚合导入
+
+
+
+2.历史期权数据处理
+
+​	继续做这个， 问题：
+
+​		调用新的c++接口
+
+​		tick线处理的逻辑
+
+## 20210420
+
+k线数据重新聚合导入
+
+​	合并的规则？
+​	历史数据还是实时数据？
+​	
+
+说明：
+
+​	先做这个需求《股指期货所有周期级别数据补录1.0》：
+
+​	做1小时以内的K线数据订正，合约是以IC,IF,IH开头的所有合约。
+
+​    先给出一个K线数据修正的方案：
+
+​	1  哪些表需要订正			--ok
+​			
+
+```
+		先修订1h以内的表：
+			hznc_gzdata:tickdata
+			hznc_gzdata:1sdata
+			hznc_gzdata:2sdata
+			hznc_gzdata:3sdata
+			hznc_gzdata:5sdata
+			hznc_gzdata:10sdata
+			hznc_gzdata:15sdata
+			hznc_gzdata:30sdata
+			hznc_gzdata:1mindata
+			hznc_gzdata:5mindata
+			hznc_gzdata:10mindata
+			hznc_gzdata:15mindata
+			hznc_gzdata:30mindata
+			hznc_gzdata:60mindata
+```
+
+​	2  订正分几步实施
+
+​		1. 怎么备份数据和恢复/迁移数据，看看如何清理数据		--ok
+
+```shell
+# 对表进行备份
+# 方法1：使用copyTable
+create "hznc_gzdata:1mindata", "cf_data"   #目的集群上先创建一个与原表结构相同的表
+hbase org.apache.hadoop.hbase.mapreduce.CopyTable --peer.adr=zk-addr1,zk-addr2,zk-addr3:2181:/hbase table_test 
+
+# zk:
+server.1=master:2888:3888
+server.2=slave1:2888:3888
+server.3=slave2:2888:3888
+server.4=keep-0:2888:3888
+server.5=keep-1:2888:3888
+
+# 方法2：通过导出，导入的方法
+# 1. 导出
+# 	确保yarn是启动的：start-yarn.sh // yarn-daemon.sh start resourcemanager //yarn-daemon.sh start nodemanager
+# 	先创建备份的目录：
+hadoop dfs -mkdir /backup/hznc_gzdata-1mindata
+hbase org.apache.hadoop.hbase.mapreduce.Export -D mapred.output.compress=true hznc_gzdata:1mindata /opt/tmp/hznc_gzdata-1mindata
+	# 如果没有权限，执行
+		hadoop dfs -chown -R root:root /backup
+		# 或者用对应的用户去执行：
+		ssh hadoop/1
+# 2. 从hdfs下载到本地
+hadoop dfs -get /backup/hznc_gzdata-1mindata
+# 3.scp 到要恢复的服务器
+scp -r hdp-master:/backup/hznc_gzdata-1mindata /backup/
+
+# 4.在目标服务器上传到hdfs
+hadoop dfs -put /backup/hznc_gzdata-1mindata /backup/hznc_gzdata-1mindata
+
+# 导入
+hbase org.apache.hadoop.hbase.mapreduce.Import hznc_gzdata:1mindata /backup/hznc_gzdata-1mindata
+
+# 数据清理，清空hbase表的数据
+truncate 'hznc_gzdata:1mindata'
+```
+
+​		2.java程序调用新的接口，可以拿到数据
+
+​					品种优先序为：IC->IH->IF  ?		跟处理逻辑无关			--ok
+
+​					读取本地历史数据，调用c++接口，生成k线数据
+
+​						(需求：股指期货所有周期级别数据重新处理入库)
+
+​							数据源？原来历史处理的程序？							--ok
+
+​									文件目录：	CFFEX（股指期货）
+
+​									HistoryGuzhi 股指数据导入mkdata表，应该是gzdata?		--ok
+
+​												找一个程序看看了，数据结构都是一样的	
+
+历史股指数据存到mkdata表中的？
+
+```java
+			HistoryGuzhi.java					
+				ToHbaseFunction.insertMkdata("hznc_mkdata:tickdata", data, rowkey);
+				System.out.println("存入hbase,rowkey:"+rowkey+"数据："+data);
+```
+
+​							几个表做什么用的？		--ok
+
+​									hznc_data：股票数据
+
+​									hznc_gzdata：股指期货
+
+​									hznc_mkdata：商品期货
+
+​									hznc_Tick:tdata_1
+
+​									hznc_BKdata
+
+​							分解：
+
+​							数据怎么读取和读取怎么处理？ 找一个例子看一下，数据结构都是一样的。		--ok
+
+​							调用c++接口，生成k线数据，调用参数，怎么调用接口？
+
+```
+import com.sun.jna.Callback;
+import com.sun.jna.Library;		
+import com.sun.jna.Native;
+import com.sun.jna.Pointer;
+import com.sun.jna.Structure;
+```
+
+​									
+
+​	先做实时数据修正， 原来的数据数据处理程序在哪里？
+
+​		数据源：调用c++接口从mq中获取数据
+
+​				RMQAPI int MQConsumer(void* m, ctpcb_data pcallback, void* u, char* queue);
+
+​				回调：ctpcb_data pcallback
+
+​		处理： 参考这个程序：GetMarketDataAndStore.java
+
+​		数据流向： hbase中，哪个表？ mkdata还是gzdata?
+
+​				程序在这个目录：E:\Task， gzdata现在不用了，合到mkdata中去了。
+
+单元测试跑通，用hbase里面的数据测试下：
+
+"hznc_gzdata:0.5sdata", "AP001_1575256460_0"
+
+跑一个简单的方法 _maxVal(void* arry int size, getValue get_v)
+
+
+
+
+
+​	生成之后回调，如何处理？再发送hbase？
+
+​													
+
+​        4.修改业务代码，在测试环境进行重新发送
+
+​					sdk.rar，用这个函数生成：
+
+​						DLL_EXPORT void _createKLine(TickData* tickData, KLine* kBuff, KParam* param, void* arr, KLineCallback callback, void* p);
+
+​		5.. 确认重新发送的数据没问题
+
+​		5.. 对老的hbase数据进行备份原来的数据
+
+​		6.. 清理hbase数据，并且进行重新发送
+
+​		7. 确认数据
+
+​	3  异常情况的处理
+
+​			用提前备份的数据进行恢复	
+
+​	4  回退机制的设计
+
+​			用提前备份的数据进行恢复	
+
+问题：
+
+​	数据源？		--ok, CFFEX（股指期货）
+
+​	品种优先序为：IC->IH->IF  		--ok, 跟处理逻辑无关
+
+​	DLL_EXPORT void _createKLine(TickData* tickData, KLine* kBuff, KParam* param, void* arr, KLineCallback callback, void* p);	接口参数
+
+​	KParam ，arr传哪些内容？
+
+看看NCAlgo.h里面的例子和说明。 之前有的也做过看看：RabbitMQc.h
+
+关键词: Java 调用C dll;  java定义C结构体; java传指针; java 传回调函数; 
+
+看看这个资料：https://www.cnblogs.com/gmhappy/p/11864037.html
+
+多重嵌套的结构体
+
+嵌套枚举类型的结构体
+
+
+
+给一个简单的接口，测试一下，只有一个结构体
+
+或者能不能调试
+
+回调的参数？
+
+​	
+
+股指表：
+
+hznc_gzdata:0.5sdata
+hznc_gzdata:10mindata
+hznc_gzdata:10sdata
+hznc_gzdata:15mindata
+hznc_gzdata:15sdata
+hznc_gzdata:1mindata
+hznc_gzdata:1sdata
+hznc_gzdata:2sdata
+hznc_gzdata:30mindata
+hznc_gzdata:30sdata
+hznc_gzdata:3sdata
+hznc_gzdata:5mindata
+hznc_gzdata:5sdata
+hznc_gzdata:60mindata
+hznc_gzdata:ddata
+hznc_gzdata:mondata
+hznc_gzdata:weekdata
+hznc_gzdata:yeardata
+
+
+
+```java
+// 表的映射：
+if (exchangeId == nce_ec_sgjr) {
+			switch (dataType) {
+			case nlec_kdp_01m:table = 32;
+				break;
+			case nlec_kdp_05m:table = 33;
+				break;
+			case nlec_kdp_15m:table = 34;
+				break;
+			case nlec_kdp_30m:table = 35;
+				break;
+			case nlec_kdp_60m:table = 36;
+				break;
+			case nlec_kdp_01d:table = 37;
+				break;
+			case nlec_kdp_tick:table = 38;
+				break;
+			case nlec_kdp_01s:table = 39;
+				break;
+			case nlec_kdp_05s:table = 40;
+				break;
+			case nlec_kdp_10s:table = 41;
+				break;
+			case nlec_kdp_15s:table = 42;
+				break;
+			case nlec_kdp_30s:table = 43;
+				break;
+			case nlec_kdp_01w:table = 44;
+				break;
+			case nlec_kdp_01mth:table = 45;
+				break;
+			case nlec_kdp_year:table = 46;
+				break;
+			case nlec_kdp_02s:table = 59;
+				break;
+			case nlec_kdp_03s:table = 60;
+				break;
+			}
+		}
+		
+	m_table_name[32] = "hznc_mkdata:1mindata";
+	m_table_name[33] = "hznc_mkdata:5mindata";
+	m_table_name[34] = "hznc_mkdata:15mindata";
+	m_table_name[35] = "hznc_mkdata:30mindata";
+	m_table_name[36] = "hznc_mkdata:60mindata";
+	m_table_name[37] = "hznc_mkdata:ddata";
+	m_table_name[38] = "hznc_mkdata:tickdata";
+	m_table_name[39] = "hznc_mkdata:1sdata";
+
+	m_table_name[40] = "hznc_mkdata:5sdata";
+	m_table_name[41] = "hznc_mkdata:10sdata";
+	m_table_name[42] = "hznc_mkdata:15sdata";
+	m_table_name[43] = "hznc_mkdata:30sdata";
+	m_table_name[44] = "hznc_gzdata:weekdata";
+	m_table_name[45] = "hznc_gzdata:mondata";
+	m_table_name[46] = "hznc_gzdata:yeardata";
+	m_table_name[47] = "hznc_mkdata:tickdata";
+	m_table_name[48] = "hznc_mkdata:1sdata";
+	m_table_name[49] = "hznc_mkdata:5sdata";
+
+	m_table_name[50] = "hznc_mkdata:10sdata";
+	m_table_name[51] = "hznc_mkdata:15sdata";
+	m_table_name[52] = "hznc_mkdata:30sdata";
+	m_table_name[53] = "hznc_mkdata:1mindata";
+	m_table_name[54] = "hznc_mkdata:5mindata";
+	m_table_name[55] = "hznc_mkdata:15mindata";
+	m_table_name[56] = "hznc_mkdata:30mindata";
+	m_table_name[57] = "hznc_mkdata:60mindata";
+	m_table_name[58] = "hznc_mkdata:ddata";
+	m_table_name[59] = "hznc_mkdata:2sdata";
+
+	m_table_name[60] = "hznc_mkdata:3sdata";
+	m_table_name[61] = "hznc_mkdata:2sdata";
+	m_table_name[62] = "hznc_mkdata:3sdata";
+```
+
+
+
+**期权数据导入**
+	看看数据，格式，条数
+	原来是怎么导入的？原来有没有导过期权数据，主要想知道原来是否建好了表。
+
+
+
+问题：
+
+行情软件上的k线数据从哪个表查询的，数据好像对不上？
+
+		高：20.8
+	
+	​	开：20.8
+	
+	​	低：20.6
+	
+	​	收：20.6
+	
+	​	时间：10:28 对应时间戳：1618540080
+	
+	1.8.7-p357 :002 > get  "hznc_data:1mindata_1","000001_1618540080_1"
+	COLUMN                                                       CELL
+	cf_kdata:01cSymbol                                          timestamp=1618540321194, value=000001
+	cf_kdata:02dbClosePrice                                     timestamp=1618540321194, value=3411.2621 # 收盘价
+	cf_kdata:03dbHeightPrice                                    timestamp=1618540321194, value=3411.2621 # 最高价
+	cf_kdata:04dbLowPrice                                       timestamp=1618540321194, value=3410.1958 # 最低价
+	cf_kdata:05dbOpenPrice                                      timestamp=1618540321194, value=3410.6951 # 开盘价
+	cf_kdata:06dbSum                                            timestamp=1618540321194, value=1.095629732300003E9 # 总量
+	cf_kdata:07dbYTClosePrice                                   timestamp=1618540321194, value=3398.9875
+	cf_kdata:08uTime                                            timestamp=1618540321194, value=1618540080
+	cf_kdata:09uVolume                                          timestamp=1618540321194, value=9.52887E7
+	cf_kdata:10uVolume_Sell                                     timestamp=1618540321194, value=0.0
+	cf_kdata:11iBeatCnt                                         timestamp=1618540321194, value=0.0
+	cf_kdata:12dbMaxBeatVolume                                  timestamp=1618540321194, value=0.0
+	cf_kdata:13zq_avgClose                                      timestamp=1618540321194, value=11.395190706017566
+	cf_kdata:14uVolume_LSum1_buy                                timestamp=1618540321194, value=0.0
+	cf_kdata:15uVolume_LSum1_sell                               timestamp=1618540321194, value=0.0
+	cf_kdata:16uVolume_LSum3_buy                                timestamp=1618540321194, value=0.0
+	cf_kdata:17uVolume_LSum3_sell                               timestamp=1618540321194, value=0.0
+	cf_kdata:18uVolume_LSum5_buy                                timestamp=1618540321194, value=0.0
+	cf_kdata:19uVolume_LSum5_sell                               timestamp=1618540321194, value=0.0
+	cf_kdata:20uVolume_LSum10_buy                               timestamp=1618540321194, value=0.0
+	cf_kdata:21uVolume_LSum10_sell                              timestamp=1618540321194, value=0.0
+	cf_kdata:22uVolume_Super_buy                                timestamp=1618540321194, value=0.0
+	cf_kdata:23uVolume_Super_sell                               timestamp=1618540321194, value=0.0
+	cf_kdata:24uVolume_Big_buy                                  timestamp=1618540321194, value=0.0
+	cf_kdata:25uVolume_Big_sell                                 timestamp=1618540321194, value=0.0
+	cf_kdata:26uVolume_Common_buy                               timestamp=1618540321194, value=0.0
+	cf_kdata:27uVolume_Common_sell                              timestamp=1618540321194, value=0.0
+	cf_kdata:28uVolume_Small_buy                                timestamp=1618540321194, value=0.0
+	cf_kdata:29uVolume_Small_sell                               timestamp=1618540321194, value=0.0
+
+
+程序每天从mysql中迁移股票日线数据到hbase中，这两个表的数据从哪来的?
+
+```java
+//获取连接 上海交易所数据的库（2_1dkd）的连接
+Connection conn_1 = getConnection("com.mysql.jdbc.Driver",
+      "jdbc:mysql://10.10.10.104:3306/2_1dkd", properties);
+
+//获取连接  深圳交易所数据的库（8_1dkd）的连接
+Connection conn_2 = getConnection("com.mysql.jdbc.Driver",
+      "jdbc:mysql://10.10.10.104:3306/8_1dkd", properties);
+```
+
+
+
+Callback为什么会一直在读取数据？			--ok
+
+应该是调用的native方法是一个死循环，通过callback function如果读取到数据就回调。
+
+
+
+{"cysm:600893,时:1618555200,均:41.82666365982622,收:41.84,开:41.85,低:41.83,高:41.85,成交额:1705830.9300000668,量:40771.0"}
+
+{"cysm:600893,时:1618502400,均:41.82666365982622,收:41.84,开:41.85,低:41.83,高:41.85,成交额:1705830.9300000668,量:40771.0"}
+
+
+
+get "hznc_data:1mindata_1", "600893_1618555200_1"
+
+
+
+看一下tick数据丢失的问题：
+
+​	程序：JKdata\NewInterfaceToHbase\src\main\java\hznc\com\java\NewInterfaceToHbase\GetMarketDataAndStore
+
+​	可以统计IC2105 的数据
+
+打印日志看看：
+
+​	总数，过滤掉的，插入的		--ok
+
+​	用不同的队列去跑就行了		--ok
+
+​	等跑完看下结果
+
+​	时间：21/04/20 13:33:15   - 21/04/20 14:33:06   耗时：1h
+
+​	tick数据总插入：1117073 ， tick数据总过滤：621
+
+​	ic05总插入：4839   ic05总过滤：1
+
+
+
+
+
+hznc_tgdata:amount 有没有下午两点以后的数据？
+
+查询今天的日期：
+
+date -d "2021-04-20 14:00:00" +%s
+
+1618898400 rowkey:1_000016_1_1618898400
+
+date -d "2021-04-20 16:00:00" +%s
+
+1618905600, rowkey:1_000016_1_1618905600
+
+
+
+
+
+date -d "2021-04-20 00:00:00" +%s
+
+ROWKEY: 1_000016_1_1618848000
+
+
+
+date -d @1618898340
+2021年 04月 20日 星期二 13:59:00 CST
+
+正好到两点停了
+
+
+
+​	很多被过滤掉了，都是同一个地方过滤的：Filtered count: 621, rowKey: WH01_1618898936, cause: 中途启动，过滤第一条
+
+解析有报错的：
+
+```java
+Caused by: java.text.ParseException: Unparseable date: "    -  -   8:0:0"
+	at java.text.DateFormat.parse(DateFormat.java:366)
+	at hznc.com.java.NewInterfaceToHbase.GetMarketData.parseData(GetMarketDataAndStore.java:494)
+	at hznc.com.java.NewInterfaceToHbase.GetMarketData$Data_Realize.function(GetMarketDataAndStore.java:304)
+	... 5 more
+java.lang.reflect.InvocationTargetException
+	at sun.reflect.GeneratedMethodAccessor3.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at com.sun.jna.CallbackReference$DefaultCallbackProxy.callback_inner(CallbackReference.java:295)
+	at com.sun.jna.CallbackReference$DefaultCallbackProxy.callback(CallbackReference.java:317)
+Caused by: java.text.ParseException: Unparseable date: "    -  -   8:0:0"
+	at java.text.DateFormat.parse(DateFormat.java:366)
+	at hznc.com.java.NewInterfaceToHbase.GetMarketData.parseData(GetMarketDataAndStore.java:494)
+	at hznc.com.java.NewInterfaceToHbase.GetMarketData$Data_Realize.function(GetMarketDataAndStore.java:304)
+	... 5 more
+```
+
+
+
+补数据：
+
+IF, IC, IH
+
+1.先转成csv
+
+2.跟原来的对比下，格式是否一样
+
+有文档《补数据流程.docx》
+
+
+
+问题：
+
+只有四个字段？
+
+date, time, price, volume
+
+其他的cSymbol，Open，High这些都没有？
+
+hbase 起不来，host配置错了，导致hbase从zk拿不到ip		--ok
+
+创建表：
+
+```
+create_namespace "hznc_mkdata"
+create "hznc_mkdata:tickdata", "cf_data"
+create "hznc_mkdata:1sdata", "cf_data"
+create "hznc_mkdata:2sdata", "cf_data"
+create "hznc_mkdata:3sdata", "cf_data"
+create "hznc_mkdata:5sdata", "cf_data"
+create "hznc_mkdata:15sdata", "cf_data"
+create "hznc_mkdata:10sdata", "cf_data"
+create "hznc_mkdata:30sdata", "cf_data"
+create "hznc_mkdata:1mindata", "cf_data"
+create "hznc_mkdata:5mindata", "cf_data"
+create "hznc_mkdata:10mindata", "cf_data"
+create "hznc_mkdata:15mindata", "cf_data"
+create "hznc_mkdata:30mindata", "cf_data"
+create "hznc_mkdata:60mindata", "cf_data"
+create "hznc_mkdata:ddata", "cf_data"
+```
+
+
+
+逻辑不一样：
+
+​	volume = 本条数据 - 上次的volume
+
+​	sum = 本条数据 - 上次的sum
+
+​	zpos 持仓量
+
+​	ytclose 昨日收盘价
+
+​	open = lastClose 上一条数据的收盘价
+
+
+
+2021-04-20 9:30:00
+
+date -d "2021-04-20 9:30:00" +%s
+
+1618882200
+
+1618847940
+
+rowkey:
+
+IC05_1618882200
+
+
+
+今天日期：
+
+1618848000
+
+
+
+IH05_1618848000
+
+IH05_1618968600
+
+count "hznc_mkdata:tickdata", {STARTROW => "IH05_1618848000_0", ENDROW => "IH05_1618968600_2"}
+
+
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IH05_1618848000", ENDROW => "IH05_1618968600"}
+
+
+
+
+
+deleteall 'tablename', rowkey
+
+删库；
+
+hbase deleterowkey.sh
+
+bash deleteRowFile.sh "hznc_mkdata:tickdata"  "IH05_1618848000_0"  "IH05_1618968600_2"
+
+
+
+bash deleteRowFile.sh "hznc_mkdata:tickdata"  "IC05_1618848000_0"  "IC05_1618968600_2"
+
+
+
+root@master:/opt/tmp# wc -l IC.txt
+12476 IC.txt
+
+
+
+bash deleteRowFile.sh "hznc_mkdata:tickdata"  "IF05_1618880400_0"  "IF05_1618920000_2"
+
+root@master:/opt/tmp# wc -l IF.txt
+14856 IF.txt
+
+
+
+date -d "2021-04-20 9:00:00" +%s
+
+1618880400
+
+date -d "2021-04-20 20:00:00" +%s
+
+1618920000
+
+去重：
+
+cat 1.txt | solr -u > uniq.txt
+
+
+
+删除
+
+hbase shell ./unit.txt
+
+
+
+删除k线的：
+
+scan "hznc_mkdata:5sdata", {STARTROW => "IH05_1618848000", ENDROW => "IH05_1618968600"}
+
+
+
+bash deleteRowFile.sh "hznc_mkdata:5sdata"  "IH05_1618848000"  "IH05_1618968600"
+
+
+
+bash deleteRowFile.sh "hznc_mkdata:1sdata"  "IH05_1618848000"  "IH05_1618968600"
+
+
+
+
+
+查一IF 最后一条数据
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IF05_1618848000_0", ENDROW => "IF05_1618968600_2", REVERSED => true, }
+
+
+
+## 20210421
+
+1.定位tick数据丢失的问题
+	再加一下日志，统计总数
+
+​	看下代码，可能哪里丢数据
+
+​			写hbase的时候最多会丢99条数据。
+
+​	是不是处理来不及？ 不发hbase看看
+​	
+
+时间：10:03:39 - 11:07:25  耗时： 64分钟
+
+IC05 总的插入： 6678	实际数据：6881， 少了203条数据
+
+Total received count: 1013154
+
+Filtered count: 636
+
+Inserted count:1012518
+
+
+
+到线上hbase中查一下,对比一下
+
+IC05_1618970617_0 
+
+IC05_1618974339_3
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IC05_1618970617_0 ", ENDROW =>  "IC05_1618974339_3"}
+
+2021年 04月 21日 星期三 10:03:37 CST - 2021年 04月 21日 星期三 11:05:39 CST
+
+
+
+3348 ?
+
+对比一下，少了哪些？
+
+grep -vwf file1 file2
+
+统计file1中没有，file2中有的行, file2包含file1, file2多出哪些行
+
+
+
+2.生成k线程序，开发
+		调用c++接口
+
+​		用实时数据测试下？	
+
+​	
+
+所有接受到的ic总数
+
+插入的ic总数
+
+过滤掉的ic总数
+
+
+
+发送hbase看看：
+
+
+
+14:09:13 - 14:14:11  
+
+  insert ic count: 500, rowKey: IC05_1618985650_0
+
+scan "hznc_mkdata:tickdata_test" , {STARTROW => "IC05_1618985351_0", ENDROW=> "IC05_1618985650_3"}
+
+14:34:25 - 14:44:22 
+
+IC05 日志接收数量：1055
+
+IC05 日志插入数量： 1054
+
+IC05 hbase插入数量：
+
+scan "hznc_mkdata:tickdata" , {STARTROW => "IC05_1618986863_0", ENDROW=> "IC05_1618987461_2"}
+
+IC05_1618987461_1                                           column=cf_data:21AskVolume1, timestamp=1618987464506, value=2
+1055 row(s) in 3.1360 seconds
+
+
+
+线上的hbase：
+
+825 row(s) in 1.1940 seconds， 少了
+
+看了线上数据，rowkey里面的时间戳应该是这条数据的生成时间，跟hbase里面的插入时间相差不超过2s，所以数据应该很快的不是来不及消费
+
+对比线上的代码看看？ 在104服务器上跑，服务器密码是多少？
+
+
+
+是消费来不及的问题？		--不是， 数据生成时间和插入时间不超过2s
+
+程序丢数据？		--统计没有丢失数据
+
+线上程序或者环境问题？   
+
+​		可能是，重复启动了消费者。代码是否一致？
+
+
+
+3.整理下清理hbase数据的文档
+
+​	先发进去，然后再看问题
+
+​		IC数据看一下，总 条数
+
+​			原始条数： 15859
+
+
+
+2021-4-21 9:30:00 - 2021-4-21 14:29:59
+
+date  -d "2021-4-21 9:29:00" +%s
+
+date  -d "2021-4-21 15:00:00" +%s
+
+IC05_1618968540_0 - IC05_1618988400_3
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IC05_1618968540 ", ENDROW => "IC05_1618988400_3"}
+
+
+
+IC05_1618988399_2                                           column=cf_data:13avgPrice, timestamp=1618994258032, value=6385.4
+15859 row(s) in 15.2530 seconds
+
+
+
+ic  --ok   15859
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IC05_1618968540 ", ENDROW => "IC05_1618988400_3"}
+
+线上的：
+
+IC05_1618988399_1                                           column=cf_data:21AskVolume1, timestamp=1618988418627, value=1
+14881 row(s) in 16.3950 seconds
+
+
+
+要删除的列表：
+
+bash list_rowkey.sh "hznc_mkdata:tickdata" IC05_1618968540 IC05_1618988400_3
+
+
+
+
+
+if: 21082		--ok
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IF05_1618968540 ", ENDROW => "IF05_1618988400_3"}
+
+21082 row(s) in 21.0600 seconds
+
+线上的：
+
+IF05_1618988399_1                                           column=cf_data:21AskVolume1, timestamp=1618988418629, value=3
+16833 row(s) in 19.3380 seconds
+
+IH:12880		--ok
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IH05_1618968540 ", ENDROW => "IH05_1618988400_3"}
+
+IH05_1618988399_0                                           column=cf_data:13avgPrice, timestamp=1618994788993, value=3499.6
+12880 row(s) in 12.6670 seconds
+
+线上的：
+
+ IH05_1618988399_0                                           column=cf_data:21AskVolume1, timestamp=1618988418629, value=8
+14061 row(s) in 16.1640 seconds
+
+
+
+清理下线上环境的数据：		--ok
+
+
+
+1.根据rowkey范围和要扫描的表列出来要删除的rowkey以及对应的删除指令
+
+bash list_rowkey.sh "hznc_mkdata:tickdata" IC05_1618968540 IC05_1618988400_3   ic05_delete.list
+
+2.确认要删除的数据和scan出来的师傅一致，防止误删
+
+3.开始删除数据
+
+hbase shell   ic05_delete.list
+
+4.确认要删除的数据已清空
+
+
+
+5.开始补发数据
+
+
+
+6.补发完一定要确认，数据量，数据等。
+
+
+
+
+
+​	代码 看看k线没有合并的bug
+
+
+
+## 20210422
+
+1.继续定位tick数据丢失的问题
+
+​		看看是否是两个程序消费导致数据丢失的问题
+
+​				本地也同步的发起来， 线上只有一个程序在跑，跟本地对别下结果
+
+​				本地的：09:29:05 - 09:40:00
+
+IC05_1619054940_0	
+
+1191 row(s) in 10.9210 seconds
+
+21/04/22 09:40:00   insert ic count: 1192, rowKey: IC05_1619055595_1
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IC05_1619054940_0", ENDROW => "IC05_1619055595_1"}
+
+1191 row(s) in 2.9730 seconds		--ok， 应该是重复的程序消费问题
+
+再多观察一会			--ok
+
+Line 296244: 21/04/22 10:10:00   insert ic count: 4266, rowKey: IC05_1619057190_0
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IC05_1619054940_0", ENDROW => "IC05_1619057190_1"}
+
+ IC05_1619057190_0                                           column=cf_data:21AskVolume1, timestamp=1619057190982, value=1
+4266 row(s) in 10.3430 seconds
+
+date -d "2021-04-22 15:00:00" +%s
+
+
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IC05_1619054930_0", ENDROW => "IC05_1619074800_3"}
+
+程序的退出逻辑有问题： 在凌晨三点的夜盘判断，如果数据消费完了就退出。这样导致如果三点钟还有数据推过来，程序不会停。
+
+​	1  你考虑下怎么规避类似的问题的出现。
+​	2  整理补数据的文档
+​	3  对接新的K线算法
+
+更新下程序，修复问题：
+
+1.三点的数据丢失
+
+2.程序重复启动
+
+​		在程序管理器里编辑触发器，设置超时时间 6h,超过6h自动停掉。
+
+​	
+
+
+
+2.k线合并，最后一条没有录入的问题		--ok，已经找到原因，是最后一条数据没有下周期数据的推送导致丢失，在新程序中修改
+
+
+
+3.生成k线程序，开发
+	调用c++接口
+	
+
+```c++
+问题： 
+typedef struct KParam {
+        int isNight;        // 是否夜盘
+        int dSize;          // 有效交易时间点数组大小
+        int hSize;          // 法定交易日数组大小 ?? 应该是法定假日？
+        int isTotalVol;     // Tick 数据中交易量, 交易额是差值还是总值 [0差值|1总值]
+        K_CYCLES cycle;     // K 线周期
+        TDuration* duration;// 有效交易时间点数组指针, 如: { {T0930, T1130}, {T1300, T1500} } ？？ 是数组还是一个对象的指针
+        int* holidaysTS;    // 回溯区间内所有法定假日(非交易日) 时间戳, 可以为 NULL, 表示无法定追
+    } KParam;
+
+判断一个周期完成，是在接口中实现还是java中实现。
+```
+
+
+
+回调成功了？
+
+```
+执行createKLine
+start callback, success
+native@0x133920
+KLineStruct$ByValue(allocated@0x13d610 (136 bytes) (shared from allocated@0x13d610 (136 bytes))) {
+  int Msec@0=0
+  long Amount@8=0
+  long PreAmount@10=0
+  long Timestamp@18=1619071531326
+  double Volume@20=0.0
+  double PreVolume@28=0.0
+  double OpenPrice@30=8650.0
+  double HighPrice@38=8650.0
+  double LowPrice@40=8650.0
+  double ClosePrice@48=8650.0
+  double PreClosePrice@50=0.0
+  double SettlePrice@58=0.0
+  double Inc@60=0.0
+  double Imp@68=0.0
+  byte dt[20]@70=[B@13167f4
+}
+null
+```
+
+```java
+// 打印所有属性的方法：
+@Override
+  public String toString(){
+    try {
+      StringBuffer sbuf = new StringBuffer();
+      Map desc = PropertyUtils.describe(this);
+      desc.entrySet().forEach((Object o) -> {
+        Entry entry = (Entry)o;
+        sbuf.append(entry.getKey()).append("=").append(entry.getValue());
+        sbuf.append("\t");
+      });
+      return sbuf.toString();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return super.toString();
+  }
+```
+
+
+
+4.补数据，tick数据			--ok , 不需要了
+
+
+
+## 20210423
+
+1.开发，对接新的k线算法
+
+​	调试，_createKLine 接口如何使用的  --基本完成了，还有些参数可能有问题。
+
+_packKLine 补足最后k线的接口
+
+
+
+2.观察下更新的程序运行情况			
+
+​	是否正常运行
+
+date -d "2021-04-23 09:29:00" +%s
+
+date -d "2021-04-23 09:39:00" +%s
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IC05_1619141340_0", ENDROW => "IC05_1619141940_3"}
+
+
+
+21/04/23 09:47:35   insert ic count: 1, rowKey: IC05_1619142449_0
+
+21/04/23 09:55:59   insert ic count: 1008, rowKey: IC05_1619142954_0
+
+date -d "2021-04-23 09:47:35" +%s
+
+date -d "2021-04-23 09:55:59" +%s
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IC05_1619142455_0", ENDROW => "IC05_1619142959_3"}
+
+1007 row(s) in 2.2830 seconds		--ok
+
+​	下午看看，是否有丢数据
+
+date -d "2021-04-23 15:05:00" +%s
+
+1619161500
+
+
+
+date -d "2021-04-23 09:29:00" +%s
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IC05_1619141280_0", ENDROW => "IC05_1619161500_3"}
+
+ IC05_1619161199_1                                           column=cf_data:21AskVolume1, timestamp=1619161303059, value=13
+16064row(s) in 31.1790 second
+
+
+
+1619148598  1619154001
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IC05_1619148598_0", ENDROW => "IC05_1619154001_3"}
+
+
+
+还是少了3条数据？ 中途启动过滤掉了？
+
+11:29:58 IC05_1619148598_1
+
+11:29:59 IC05_1619148599_1
+
+11:30:00  IC05_1619148600_0
+
+tick数据的时间戳和价格都是后半s的？
+
+
+
+看看日志
+
+
+
+## 20210425
+
+1.新的k线程序对接
+
+​		先把流程跑通		--基本上完成了，要多测试，观察字段是否对应，价格是否对
+
+​		如何保证数据不丢？
+
+​		对比下合并的逻辑和价格等熟悉
+
+{"symbol":"IC05","utime:1617240600,当前量:1,当前额:2473602.0,高:6182.8,低:6182.8,当前开:6185.2,当前收:6182.8,今量:2,今额:2473600.0,今持仓:4161.0,今开:6185.2,今收:6182.8,今均:6182.8,交易日:20210401,}
+
+
+
+2.tick数据丢失几条的问题再看看		--今天没有数据，明天看看
+
+​		在本地发半天， 跟线上对比下
+
+​		
+
+3.如何保证程序不重复启动，windows是否有类似lockrun
+
+下周工作计划：
+
+期货实时k线规则升级，对接新的k线算法
+
+
+
+## 20210426
+
+1.新的k线程序对接
+
+​		先把流程跑通		--基本上完成了，要多测试，观察字段是否对应，价格是否对
+
+​		如何保证数据不丢？
+
+​		对比下合并的逻辑和价格等熟悉
+
+
+
+项目 SVN 地址:
+https://10.10.10.102/svn/量化系统/nc_tree_parse/nc_algo
+
+
+
+```
+是否可以不传：
+duration // 有效交易时间点
+holidaysTS // 法定假日的时间戳
+kParamStruct.dSize = dSize; // 有效交易时间点数组大小
+kParamStruct.hSize = hSize; // 法定假日数组大小
+
+```
+
+
+
+zk连接断掉了？
+
+2021/04/26 13:40:26 INFO  [org.apache.zookeeper.ZooKeeper] - Session: 0x1790c24dfce001a closed
+2021/04/26 13:40:26 INFO  [org.apache.zookeeper.ClientCnxn] - EventThread shut down for session: 0x1790c24dfce001a
+
+
+
+设置回调的线程：Native.detatch(true)
+
+
+
+2.tick数据丢失几条的问题再看看
+
+​		在本地发半天， 跟线上对比下
+
+
+
+3.hbase 挂了				--ok
+
+
+
+zookeeper.RecoverableZooKeeper: ZooKeeper exists failed after 4 attempts
+
+server.1=master:2888:3888
+server.2=slave1:2888:3888
+server.3=slave2:2888:3888
+server.4=keep-0:2888:3888
+server.5=keep-1:2888:3888
+
+
+
+主机名：keep-0        IP：10.10.10.110    nc_007用户登录密码：nc_007
+
+主机名：keep-1        IP：10.10.10.111      nc_008用户登录密码：nc_008
+
+主机名：master      IP：10.10.0.254        root用户登录密码：1
+
+主机名：slave1        IP：10.10.0.119        root用户登录密码：1
+
+主机名：slave2        IP：10.10.0.15         root用户登录密码：1
+
+主机名：slave3        IP：10.10.0.253        root用户登录密码：1
+
+主机名：slave4        IP：10.10.0.252        root用户登录密码：1
+
+
+
+密码：nc_007
+
+slave2 挂掉了？	zk没有起来？两台节点都挂了，重新启动一下
+
+​	不是挂掉了，网路不通
+
+​	
+
+```
+关闭防火墙
+service iptables status //查看防火墙状态
+service iptables stop //关闭防火墙
+chkconfig iptables stop //永久关闭防火墙
+
+sudo ufw status
+sudo ufw disable
+
+查看网卡：
+sudo ip link ls eth0
+
+如果没有起来手动启动：
+#sudo ip link set eth0 up
+或者
+#sudo ifconfig eth0 up
+
+ethtool ethX来查看某一网卡的链路是否物理连通
+
+# 查看状态
+/usr/sbin/sestatus -v
+# 关闭,disable掉
+vim /etc/selinux/config
+# 改成SELINUX=disabled
+
+修改网络：
+sudo vi /etc/network/interfaces
+
+都不对， ip 不对，是10.10.0.54
+```
+
+
+
+4. java程序运行总是退出，看看		--ok
+
+   RunDataMerge		--ok, 
+
+   ​			上午是hbase连接不上导致的，并且系统时间不对直接退出了
+
+   102上面主要就是两个程序要维护：GetMargetDataAndStore和GuPiaoReduce
+
+5.中午补发数据
+
+​		补上午的，确定线上少多少条？
+
+9:30:00 - 11:30:00
+
+date -d "2021-04-26 9:30:00 " +%s
+
+1619141400
+
+
+
+date -d "2021-04-26 11:30:00 " +%s
+
+1619148600
+
+
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IC05_1619400600_0", ENDROW => "IC05_1619407800_3"}
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IH05_1619400600_0", ENDROW => "IH05_1619407800_3"}
+
+ IC05_1619406379_0                                           column=cf_data:13avgPrice, timestamp=1619410489421, value=6490.6
+
+7940 row(s) in 9.5800 seconds
+
+
+
+先清理下数据：
+
+bash list_delete_rowkey.sh "hznc_mkdata:tickdata"  "IC05_1619400600_0"  "IC05_1619407800_3"  IC_delete.cmds
+
+
+
+bash list_delete_rowkey.sh "hznc_mkdata:tickdata"  "IF05_1619400600_0"  "IF05_1619407800_3"  IC_delete.cmds
+
+
+
+删除失败？		--ok ，还有数据再发，先停掉。
+
+HBase Shell; enter 'help<RETURN>' for list of supported commands.
+Type "exit<RETURN>" to leave the HBase Shell
+Version 1.3.1, r930b9a55528fe45d8edce7af42fef2d35e77677a, Thu Apr  6 19:36:54 PDT 2017
+
+```java
+有报错：
+Exception in thread "main" org.apache.hadoop.hbase.regionserver.NoSuchColumnFamilyException: org.apache.hadoop.hbase.regionserver.NoSuchColumnFamilyException: Column family table does not exist in region hbase:meta,,1.1588230740 in table 'hbase:meta', {TABLE_ATTRIBUTES => {IS_META => 'true', coprocessor$1 => '|org.apache.hadoop.hbase.coprocessor.MultiRowMutationEndpoint|536870911|'}, {NAME => 'info', BLOOMFILTER => 'NONE', VERSIONS => '10', IN_MEMORY => 'true', KEEP_DELETED_CELLS => 'FALSE', DATA_BLOCK_ENCODING => 'NONE', TTL => 'FOREVER', COMPRESSION => 'NONE', CACHE_DATA_IN_L1 => 'true', MIN_VERSIONS => '0', BLOCKCACHE => 'true', BLOCKSIZE => '8192', REPLICATION_SCOPE => '0'}
+	at org.apache.hadoop.hbase.regionserver.HRegion.checkFamily(HRegion.java:7972)
+Caused by: org.apache.hadoop.hbase.ipc.RemoteWithExtrasException(org.apache.hadoop.hbase.regionserver.NoSuchColumnFamilyException): 
+
+原因应该是：
+slave2上的hbase版本jar包根其他不一样，版本低了插入失败，
+紧急处理为了先把数据发进去可以吧slave2停掉。
+后面保证版本对应。
+        
+    <dependency>
+        <groupId>org.apache.hbase</groupId>
+        <artifactId>hbase-client</artifactId>
+        <version>2.1.5</version>
+    </dependency>
+        替换成
+
+```
+
+
+
+今天没有数据？看一下：cf105
+
+scan "hznc_mkdata:tickdata", {STARTROW => "CF05_1619400540_0", ENDROW => "CF05_1619422200_3"}
+
+scan "hznc_mkdata:tickdata", {STARTROW => "AP01_1619400540_0", ENDROW => "AP01_1619422200_3"}
+
+
+
+[root@vm01-192 ~]# date -d @1619404201
+2021年 04月 26日 星期一 10:30:01 CST
+
+到：
+
+[root@vm01-192 ~]# date -d @1619406379
+2021年 04月 26日 星期一 11:06:19 CST
+
+程序停了？ 商品期货程序：  GetMarketDataAndStore
+
+```java
+Call exception, tries=9, retries=16, started=33347 ms ago, cancelled=false, msg=Call to vm01/192.168.198.101:16201 failed on connection exception: org.apache.hbase.thirdparty.io.netty.channel.AbstractChannel$AnnotatedConnectException: Connection refused: no further information: vm01/192.168.198.101:16201, details=row 'hznc_mkdata:1sdata' on table 'hbase:meta' at region=hbase:meta,,1.1588230740, hostname=vm01,16201,1619424499060, seqNum=-1, see https://s.apache.org/timeout
+
+id=1, table=hznc_mkdata:tickdata, attempt=11/16, failureCount=1ops, last exception=java.net.ConnectException: Call to slave2/10.10.0.15:60021 failed on connection exception: org.apache.hbase.thirdparty.io.netty.channel.ConnectTimeoutException: connection timed out: slave2/10.10.0.15:60021 on slave2,60021,1619406126231, tracking started null, retrying after=20143ms, operationsToReplay=1
+    
+    新增了slave2不能接受请求
+```
+
+
+
+清一下数据：
+
+
+
+IC：
+
+date -d "2021-04-26 09:29:00 " +%s      
+
+1619400540
+
+date -d "2021-04-26 15:30:00 " +%s
+
+1619422200
+
+
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IC05_1619400540_0", ENDROW => "IC05_1619422200_3"}
+
+ IC05_1619420397_1                                           column=cf_data:13avgPrice, timestamp=1619420397869, value=6466.0
+22197 row(s) in 22.8860 seconds
+
+bash list_delete_rowkey.sh "hznc_mkdata:tickdata"  "IC05_1619400540_0"  "IC05_1619422200_3"  IC_delete.cmds
+
+wc -l IC_delete.cmds
+22197 IC_delete.cmds
+
+18189		--ok
+
+
+
+IH:
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IH05_1619400540_0", ENDROW => "IH05_1619422200_3"}
+
+bash list_delete_rowkey.sh "hznc_mkdata:tickdata"  "IH05_1619400540_0"  "IH05_1619422200_3"  IC_delete.cmds
+
+ wc -l IH_delete.cmds			--ok
+20354 IH_delete.cmds
+
+
+
+IF:		--ok
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IF05_1619400540_0", ENDROW => "IF05_1619422200_3"}
+
+bash list_delete_rowkey.sh "hznc_mkdata:tickdata"  "IF05_1619400540_0"  "IF05_1619422200_3"  IF_delete.cmds
+
+
+
+## 20210427
+
+1.看看数据的发送情况：
+
+onlyGuzhi和marketGetAndStore
+
+
+
+2.k线程序开发：
+
+​	先搞懂createKLine和packingKLine接口的逻辑：https://10.10.10.102/!/#%E9%87%8F%E5%8C%96%E7%B3%BB%E7%BB%9F/view/head/nc_tree_parse/nc_algo
+
+```c++
+void   _createKLine(TickData* tickData, KLine* kBuff, KParam* param, void* arr, KLineCallback callback, void* p)
+{
+    if (tickData->Volume < 0 || tickData->Amount < 0)
+        return;
+
+    if (param->cycle <= _60min) {
+        if (!param->isNight)
+            _getKLineDayHour(tickData, kBuff, param, arr, callback, p);
+        else {
+            _getKLineNightHour(tickData, kBuff, param, arr, callback, p);
+        }
+    }
+    else {
+        _getKLineDay(tickData, kBuff, param, arr, callback, p);
+    }
+}
+KParam 中的duration 是一个数组？怎么传?
+holiday暂时不考虑，先能够稳定运行，整体的功能ok再说
+
+```
+
+​    完善代码然后测试， 争取明天可以跑起来。
+
+​		写一下日报：		--ok
+
+​		1.处理hbase集群挂掉的问题，因为zk没起来导致hbase挂掉
+
+​		2.补录实时股指数据
+
+​		3.开发实时k线对接程序
+
+
+
+今天：
+
+​	1.补录实时股指数据
+
+​	2.开发实时k线对接的程序
+
+
+
+3.数据丢失几条tick的问题看下，本地发一上午对比
+
+​		每天启动太麻烦了，配置开机自启			--ok
+
+```
+# 系统级的一些服务
+chkconfig --list
+单独开启某一服务的命令：
+
+chkconfig服务名on
+
+单独关闭某一服务的命令：
+
+chkconfig服务名off
+
+查看某一服务的状态：
+
+/etc/intd.d/服务名status
+
+# 自定义的一些服务
+# 在文件中添加内容：
+vim /etc/rc.local：
+su-oracle-c'lsnrctlstart'  //让监听启动起来
+su-oracle-c'dbstart' //让数据库启动起来
+```
+
+IF2105 TICK 上午数据丢失？开盘时间 至  2021/4/27,10:21:31 
+
+ 查询下看看
+
+2021-4-27 09:29:00 - 2021-4-27 10:21:31
+
+date -d "2021-4-27 09:29:00" +%s  1619486940
+
+date -d "2021-4-27 10:21:31" +%s  1619490091
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IF05_1619486940_0", ENDROW => "IF05_1619490091_3"}
+
+5692 row(s) in 8.8580 seconds
+
+表格里面数据是5339? 还多了353条？
+
+丢了哪些数据看看：
+
+9:47:33 - 9：47：56
+
+date -d "2021-4-27 09:47:33" +%s  1619488053
+
+date -d "2021-4-27 09:47:56" +%s  1619488076
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IF05_1619488053_0", ENDROW => "IF05_1619488076_3"}
+
+只有1条？
+
+date -d "2021-4-27 09:29:00" +%s  1619486940
+
+date -d "2021-4-27 11:30:00" +%s  1619494200
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IC05_1619486940_0", ENDROW => "IC05_1619494200_3"}
+
+
+
+IC 表格数据8814,  线上查出来数据：12432 row(s)， 本地查出来数据：12427 row(s) ，  日志记录数据：12432  c++: 12433
+
+
+
+09:47:28 - 09：47:56 中间的数据没有接收到， 看看c++日志
+
+​	跟肖兵接口的数据可以对的上		--ok
+
+补录今天的数据：
+
+IC：6417.6
+
+IH：3454.0
+
+IF：5042.0
+
+收盘价，在同花顺自己查一下
+
+IC:  15819		--ok
+
+date -d "2021-4-27 09:29:00" +%s  1619486940
+
+date -d "2021-4-27 15:00:00" +%s  1619506800
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IC05_1619486940_0", ENDROW => "IC05_1619506800_3"}
+
+ IC05_1619506799_1                                           column=cf_data:21AskVolume1, timestamp=1619506838984, value=2
+24791 row(s) in 36.4670 seconds
+
+bash list_delete_rowkey.sh "hznc_mkdata:tickdata"  "IC05_1619486940_0"  "IC05_1619506800_3"  IC_delete.cmds
+
+
+
+IH: 12268			--ok
+
+
+
+IF: 20179		--ok
+
+
+
+4.hbase 和zookeeper的运维监控看看
+
+
+
+## 20210428
+
+1.每天上班要做的
+
+```
+1.检查下hadoop集群, hbase集群
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  
+	进程：RunOnlyGuzhi		9:20
+    	  
+10.10.10.102 administrator/Admin711406  
+	进程：GetMarketDataAndStore		8:50
+	     GuPiaoReduce（RunDataMerge?）	9:25
+```
+
+
+
+2.k线程序继续开发，测试
+
+​		发送，对比下tick和1s的kline
+
+11:18:29 INFO  [main] - put tick IC05_1619579907_0
+
+13:08:23 INFO  [main] - put tick IC05_1619586503_1
+
+count: 2105
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IC05_1619579907_0", ENDROW => "IC05_1619586503_2"}
+
+问题：
+
+看看1s数据	日志统计：1136条   线上的：1135条		--好像没有啥问题
+
+scan "hznc_mkdata:1sdata", {STARTROW => "IC05_1619579907", ENDROW => "IC05_1619586502"}
+
+1.
+
+看看1分钟的数据	日志统计：20条  线上：20条     本地 19条
+
+scan "hznc_mkdata:1mindata", {STARTROW => "IC05_1619579880", ENDROW => "IC05_1619586360"}
+
+get "hznc_mkdata:1mindata", "IC05_1619586300"
+
+价格不对：
+
+```
+ cf_data:01cSymbol                                           timestamp=1619586362785, value=IC05
+ cf_data:02dbClosePrice                                      timestamp=1619586362785, value=6440.2  // 6431.0
+ cf_data:03dbHeightPrice                                     timestamp=1619586362785, value=6440.2 // 6440.6
+ cf_data:04dbLowPrice                                        timestamp=1619586362785, value=6440.2 // 6428.4
+ cf_data:05dbOpenPrice                                       timestamp=1619586362785, value=6440.2 // 6440.2
+ cf_data:06dbSum                                             timestamp=1619586362785, value=3864080.0 // 5.2102772E8
+ cf_data:07dbYTClosePrice                                    timestamp=1619586362785, value=6413.2
+ cf_data:08uTime                                             timestamp=1619586362785, value=1619586300
+ cf_data:09uVolume                                           timestamp=1619586362785, value=3 // 405
+ cf_data:10uVolume_Sell                                      timestamp=1619586362785, value=34334
+ cf_data:11zpos                                              timestamp=1619586362785, value=68434.0 // 68520.0
+ cf_data:12zpos_diff                                         timestamp=1619586362785, value=0.0 // 86.0
+ cf_data:13avgPrice                                          timestamp=1619586362785, value=6424.200000000001
+1 row(s) in 0.0030 seconds
+```
+
+2.时间戳应该精确到毫秒：
+
+​		 cf_data:08uTime                                             timestamp=1619586505166, value=1619586503
+
+​	时间不对
+
+时间：
+
+
+
+## 20210429
+
+1.每天上班要做的
+
+```
+1.检查下hadoop集群, hbase集群
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  
+	进程：RunOnlyGuzhi		9:20
+    	  
+10.10.10.102 administrator/Admin711406  
+	进程：GetMarketDataAndStore		8:50
+		进程死掉了？
+	     GuPiaoReduce（RunDataMerge?）	9:25
+```
+
+
+
+
+
+1.继续测试：
+
+​	时间戳不对的问题，时间转换不对？
+
+​	1619644724100  utime必须要改成int		--ok
+
+先保证功能和数据对的，然后再用多线程优化性能
+
+
+
+对比tick数据：
+2021/04/29 13:13:23 INFO  [main] - put tick IC05_1619673201_0 to hznc_mkdata:tickdata ok, count: 15
+	行 63: 2021/04/29 13:13:23 INFO  [main] - put tick IF05_1619673201_0 to hznc_mkdata:tickdata ok, count: 16
+	行 65: 2021/04/29 13:13:23 INFO  [main] - put tick IH05_1619673201_0 to hznc_mkdata:tickdata ok, count: 17
+
+对比下1s的数据
+
+2021/04/29 13:13:59 INFO  [main] - put kline IF12_1619673236 to hznc_mkdata:1sdata ok
+	行 1091: 2021/04/29 13:13:59 INFO  [main] - put kline IC05_1619673236 to hznc_mkdata:1sdata ok
+	行 1093: 2021/04/29 13:13:59 INFO  [main] - put kline IF06_1619673236 to hznc_mkdata:1sdata ok
+
+对比下5s的数据
+realtime_spif_run.log:375:2021/04/29 14:05:03 INFO  [main] - put kline IH12_1619676297 to hznc_mkdata:5sdata ok
+realtime_spif_run.log:378:2021/04/29 14:05:03 INFO  [main] - put kline IC05_1619676295 to hznc_mkdata:5sdata ok
+realtime_spif_run.log:381:2021/04/29 14:05:03 INFO  [main] - put kline IF05_1619676295 to hznc_mkdata:5sdata ok
+realtime_spif_run.log:392:2021/04/29 14:05:03 INFO  [main] - put kline IH05_1619676295 to hznc_mkdata:5sdata ok
+realtime_spif_run.log:403:2021/04/29 14:05:05 INFO  [main] - put kline IH06_1619676295 to hznc_mkdata:5sdata ok
+realtime_spif_run.log:430:2021/04/29 14:05:08 INFO  [main] - put kline IC06_1619676300 to hznc_mkdata:5sdata ok
+
+IC05_1619674505
+
+几个字段不对：
+
+ cf_data:02dbClosePrice                                      timestamp=1619676303891, value=6461.2
+ cf_data:03dbHeightPrice                                     timestamp=1619676303891, value=6461.2
+ cf_data:04dbLowPrice                                        timestamp=1619676303891, value=6461.2
+ cf_data:05dbOpenPrice                                       timestamp=1619676303891, value=6461.2
+ cf_data:06dbSum                                             timestamp=1619676303891, value=0.0
+
+cf_data:09uVolume                                           timestamp=1619676301451, value=13
+
+cf_data:10uVolume_Sell                                      timestamp=1619676301451, value=37545
+
+cf_data:11zpos                                              timestamp=1619676301451, value=66191.0
+ cf_data:12zpos_diff                                         timestamp=1619676301451, value=3.0
+
+```
+02dbClosePrice		6462.8  # 当前收盘价格，取最新
+03dbHeightPrice      6463.6	 # 最高价，跟前一条比，取最高
+04dbLowPrice		6462.8	# 最低价， 跟前一条比，取最低
+05dbOpenPrice		6463.6	# 开盘价，取第一条数据的
+06dbSum				2585120.0  # 成交额，周期内相加的
+07dbYTClosePrice	昨日收盘价格	--ok
+08uTime				时间戳		--ok
+09uVolume			2		# 成交量，周期内相加的
+10uVolume_Sell		37563		# 当日的成交量
+11zpos			    66196.0	    # 今日的持仓量，取最新
+12zpos_diff	         2				    # 当前周期持仓量，周期的内相加
+13avgPrice		     6455.6				# 取第一条的
+
+
+IC05_1617240601
+
+02dbClosePrice		6184.4  # 当前收盘价格，取最新
+03dbHeightPrice      6185.2	 # 最高价，跟前一条比，取最高
+04dbLowPrice		6182.8	# 最低价， 跟前一条比，取最低
+05dbOpenPrice		6182.8	# 开盘价，取第一条数据的
+06dbSum				2473760  # 成交额，周期内相加的
+07dbYTClosePrice	6176.2 			--ok
+08uTime				1617240601		--ok
+09uVolume			2		# 成交量，周期内相加的
+10uVolume_Sell		4		# 当日的成交量
+11zpos			    4159	    # 今日的持仓量，取最新
+12zpos_diff	         -2				    # 当前周期持仓量，周期的内相加
+13avgPrice		     6182.8			# 取第一条的
+
+01cSymbol:IC05
+02dbClosePrice:6184.4
+03dbHeightPrice:6185.2
+04dbLowPrice:6184.4
+05dbOpenPrice:6184.4
+06dbSum:4947360.0
+07dbYTClosePrice:6176.2
+08uTime:1617240601
+09uVolume:4
+10uVolume_Sell:4
+11zpos:4159.0
+12zpos_diff:0.0
+13avgPrice:6184.4
+
+
+主要是这几个字段计算不对：
+ cf_data:06dbSum          value=3710720.0
+ cf_data:09uVolume        value=3
+ cf_data:10uVolume_Sell   value=4
+ cf_data:12zpos_diff      value=-3.0
+
+
+IC05_1617240600：
+01cSymbol:IC05
+02dbClosePrice:6182.8
+03dbHeightPrice:6185.2
+04dbLowPrice:6182.8
+05dbOpenPrice:6182.8
+06dbSum:0.0
+07dbYTClosePrice:6176.2
+08uTime:1617240600
+09uVolume:0
+10uVolume_Sell:2
+11zpos:4161.0
+12zpos_diff:0.0
+13avgPrice:6182.8
+
+测试合并5sk线， native接口卡住不动了？
+
+{"symbol":"IC05","utime:1617240600100,当前成交量:2,当前成交额:2473600.0,高:6185.2,低:6182.8,当前开:6182.8,当前收:6182.8,今量:2,今额:2473600.0,今持仓:4161.0,今开:6185.2,今收:6182.8,今均:6182.8,交易日:20210401,}
+"IC05_1" -> "{"symbol":"IC05","utime:1617240600100,当前成交量:2,当前成交额:2473600.0,高:6185.2,低:6182.8,当前开:6182.8,当前收:6182.8,今量:2,今额:2473600.0,今持仓:4161.0,今开:6185.2,今收:6182.8,今均:6182.8,交易日:20210401,}"
+```
+
+tick数据都是对的，1s数据也正常，5s数据合并有问题？
+
+
+
+2.做一下工程化的东西
+
+​	mvn 打包，ant 编译， 定时脚本，readme
+
+先做mvn导包和定时脚本，可以测试起来
+
+################
+
+## 20210430
+
+1.每天上班要做的
+
+```
+1.检查下hadoop集群, hbase集群
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  
+	进程：RunOnlyGuzhi		9:20
+    	  
+10.10.10.102 administrator/Admin711406  
+	进程：GetMarketDataAndStore		8:50
+	     GuPiaoReduce（RunDataMerge?）	9:25
+```
+
+
+
+2.k线程序继续开发啊
+
+​		上午直接把c++接口用java实现了
+
+​	ZONE_SECS
+
+​	ZONE
+
+
+
+​		继续测试
+
+​		上传到git?
+
+
+
+3. 补一下k线数据
+
+   4.26日的
+
+   ​	查询一下线上多少条，本地的数据多少条，tick是否需要补
+
+2021/4/26,09:30:00
+
+date  -d "2021-4-26 09:30:00" +%s
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IC05_1619400600_0", ENDROW => "IC05_1619420400_1"}
+
+IC， 11:10 - 11:25少了
+
+date  -d "2021-4-26 11:10:00" +%s     1619406600
+
+date  -d "2021-4-23 11:10:00" +%s     1619147400
+
+get "hznc_mkdata:5mindata", "IC05_1619406600"
+
+scan "hznc_mkdata:5mindata", {STARTROW => "IC05_1619141400", ENDROW => "IC05_1619161200"}	正常48条
+
+scan "hznc_mkdata:5mindata", {STARTROW => "IC05_1619400600", ENDROW => "IC05_1619420400"}		40条
+
+​		date  -d "2021-4-23 09:30:00" +%s     1619141400
+
+​		date  -d "2021-4-23 15:00:00" +%s	1619161200
+
+
+
+ cf_data:01cSymbol                                           timestamp=1617240602523, value=IC05
+ cf_data:02dbClosePrice                                      timestamp=1617240602523, value=6182.8
+ cf_data:03dbHeightPrice                                     timestamp=1617240602523, value=6182.8
+ cf_data:04dbLowPrice                                        timestamp=1617240602523, value=6182.8
+ cf_data:05dbOpenPrice                                       timestamp=1617240602523, value=6182.8
+ cf_data:06dbSum                                             timestamp=1617240602523, value=2473600.0
+ cf_data:07dbYTClosePrice                                    timestamp=1617240602523, value=6176.2
+ cf_data:08uTime                                             timestamp=1617240602523, value=1617240600
+ cf_data:09uVolume                                           timestamp=1617240602523, value=2
+ cf_data:10uVolume_Sell                                      timestamp=1617240602523, value=2
+ cf_data:11zpos                                              timestamp=1617240602523, value=4161.0
+ cf_data:12zpos_diff                                         timestamp=1617240602523, value=4161.0
+ cf_data:13avgPrice                                          timestamp=1617240602523, value=0.0
+
+
+
+{"symbol":"IC05","utime:1617240600100,当前成交量:2,当前成交额:2473600.0,高:6185.2,低:6182.8,当前开:6182.8,当前收:6182.8,今量:2,今额:2473600.0,今持仓:4161.0,今开:6185.2,今收:6182.8,今均:6182.8,交易日:20210401,}
+
+
+
+```
+tickCycle		56420
+kCycle			50
+
+kBuff.Timestamp 1619712 时间戳不对
+
+对比下1s数据：
+2021/04/30 13:29:53 INFO  [main] - put kline IC09_1619760592 to hznc_mkdata:1sdata ok
+2021/04/30 13:29:53 INFO  [main] - put kline IC12_1619760592 to hznc_mkdata:1sdata ok
+
+
+2021/04/30 13:38:35 INFO  [main] - put kline IC06_1619761110 to hznc_mkdata:5sdata ok
+
+几个字段不对：
+ cf_data:09uVolume                                           timestamp=1619761117066, value=0
+ cf_data:06dbSum                                             timestamp=1619761117066, value=0
+ cf_data:12zpos_diff                                         timestamp=1619761117066, value=0
+
+
+
+	行 5262: 2021/04/30 14:25:01 INFO  [main] - put kline IC05_1619763600 to hznc_mkdata:5mindata ok
+	行 5973: 2021/04/30 14:30:01 INFO  [main] - put kline IC05_1619763900 to hznc_mkdata:5mindata ok
+	行 6641: 2021/04/30 14:35:01 INFO  [main] - put kline IC05_1619764200 to hznc_mkdata:5mindata ok
+	行 7322: 2021/04/30 14:40:00 INFO  [main] - put kline IC05_1619764500 to hznc_mkdata:5mindata ok
+	
+	
+	2021/04/30 15:54:57 INFO  [main] - put kline IC05_1617245932 to hznc_mkdata:1sdata ok
+2021/04/30 15:54:57 INFO  [main] - put kline IC05_1617245933 to hznc_mkdata:1sdata ok
+2021/04/30 15:54:57 INFO  [main] - put kline IC05_1617245934 to hznc_mkdata:1sdata ok
+2021/04/30 15:54:57 INFO  [main] - put kline IC05_1617245935 to hznc_mkdata:1sdata ok
+2021/04/30 15:54:57 INFO  [main] - put kline IC05_1617245942 to hznc_mkdata:1sdata ok
+2021/04/30 15:54:57 INFO  [main] - put kline IC05_1617245944 to hznc_mkdata:1sdata ok
+2021/04/30 15:54:57 INFO  [main] - put kline IC05_1617245950 to hznc_mkdata:1sdata ok
+	
+	
+	
+	问题：
+	06dbSum   hbase中是累积的成交额还是差值，即减去上一个tick的？
+	09uVolume	当前成交量，hbase中的累积的成交量还是差值？
+	03dbHeightPrice	取Math.Max(open, last) ? 还是last?
+	12zpos_diff	持仓量，相减的。
+```
+
+
+
+代码考一份出去
+
+.c文件.h文件
+
+
+
+昨日结算价：
+
+ic:6443.0
+
+if:5119.4
+
+IH:3515.6
+
+不清空了，直接补发
+
+
+
+todo:
+
+tick程序用多线程去处理
+
+用flink去实现k线合并的程序
+
+装一套hive,跟hbase集成
+
+装一套监控的系统
+
+看看：
+
+开仓，平仓
+
+盘面资金
+
+大单数据
+
+北向资金
+
+策略
+
+主力合约Tick数据
+
+股指
+
+期权
+
+股票的开盘时间
+
+主连
+
+股票
+
+
+
+代码问题：
+
+​	日志问题，直接System.println.out
+
+​	配置文件，ip端口直接写死的
+
+​	打出来的jar包是用eclipse导出来的，应该用mvn install
+
+​	依赖的jar包直接提交了
+
+​	代码格式化问题，格式太乱，大量重复代码，没有用到的变量。
+
+​	单元测试
+
+
+
+## TODO
+
+算法和计算机原理
+
+flink
+
+clickhouse
+
+mysql
+
+数据仓库
+
+
+
+
+
+
+
+
+​	

@@ -1,0 +1,1550 @@
+记录：
+
+maven 配置：
+D:\soft\maven\apache-maven-3.3.9\conf\settings.xml
+
+ceph 建新的osd:
+ 1013  2020-05-21 19:34:10 ceph -s
+ 1014  2020-05-21 19:34:17 ceph osd out osd.0
+ 1015  2020-05-21 19:34:28 systemctl stop ceph-osd@0
+ 1016  2020-05-21 19:34:35 ceph osd crush remove osd.0
+ 1017  2020-05-21 19:34:45 ceph auth del osd.0
+ 1018  2020-05-21 19:34:53 ceph osd rm osd.0
+ 1019  2020-05-21 19:34:59 umount /var/lib/ceph/osd/ceph-0
+ 1020  2020-05-21 19:35:04 lsblk
+ 1021  2020-05-21 19:35:10 lvdisplay
+ 1022  2020-05-21 19:35:25 lvremove /dev/ceph-897eaa6d-d2d6-4b94-ba7a-734505cf974a/osd-block-922b9306-b72b-47df-90fe-a58eae21d36f
+ 1023  2020-05-21 19:35:43 vgremove /dev/ceph-897eaa6d-d2d6-4b94-ba7a-734505cf974a
+ 1024  2020-05-21 19:35:50 lsblk
+ 1025  2020-05-21 19:35:58 cd /opt/ceph-cluster
+ 1026  2020-05-21 19:36:07 ceph-deploy osd create --data /dev/sdb ceph-10-1-46-32
+
+46.12是solea的web,showApp和数据库, 
+46.13是solea的后台这些七七八八的
+jgcai(蔡建国) 2019-07-31 11:59:44
+solr在46.29
+arm：10.1.132.78 root/arm654321
+gradlew:
+gradlew -Pprod bootDistTar test / gradlew -Pprod clean bootDistTar
+推荐书籍：
+http://wiki.lzy.com/%E6%96%B0%E5%91%98%E5%B7%A5%E5%85%A5%E8%81%8C%E5%BF%85%E7%9C%8B
+
+10.1.12.4 share 123456
+10.1.11.5 user 123456
+# solea 1.9 solea-1.9 B环境：
+连接：l
+10.2.30.4 root/123456	高级》隧道：10.1.50.18 gw/123456
+prometheus#####
+:15018
+
+c环境分配：
+http://wiki.lzy.com/%E7%A0%94%E5%8F%91%E6%B5%8B%E8%AF%95%E7%8E%AF%E5%A2%83%28C%E7%8E%AF%E5%A2%83%EF%BC%89ip%E5%88%86%E9%85%8D?highlight=%2810.1.58.1%29
+
+消费情况：
+/usr/hdp/current/kafka-broker/bin/kafka-consumer-groups.sh  --bootstrap-server 10.1.46.32:6667 --describe --group solea-tika
+
+
+远程调试forkparse:
+-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8012
+
+清除kafka数据：
+清除kafka数据  --ok
+		  kafka 清掉数据
+ZK_HOSTS="10.1.46.32:2181"
+		  /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper ${ZK_HOSTS} --topic  solea_fileserver  --alter --config  retention.ms=10 
+/usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper ${ZK_HOSTS} --topic solea_fileserver --alter --config cleanup.policy=delete
+		  
+		  查看等到log大小为0
+		  ll /opt/kafka-logs/solea_fileserver-*
+		  
+		  kafka还原设置
+		  /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper ${ZK_HOSTS} --topic solea_fileserver  --alter --config  retention.ms=604800000 
+		
+	  清空solr数据	--ok
+		  python /opt/millipede-solr/management/bin/solr_collection.py delete-collection solea_
+
+		  创建collection:
+cd /opt/solea-release-2.0.0-r1/solr
+python /opt/millipede-solr/management/bin/solr_collection.py create-collection --auto-numshard  --replication-factor 1 --route-name implicit --auto-create-replication=2 --schema-file /opt/solea_schema/schema.xml  solea_
+
+ /opt/solea-release-2.0.3-r1/solr/conf/schema.xml  solea_
+ 
+ /usr/hdp/current/kafka-broker/bin/kafka-topics.sh  --zookeeper $ZK_HOSTS  --topic solea_fileserver  --describe
+ 
+听包：
+tcpdump -i any tcp port  15003 -w /root/4.pcap
+
+http and ip.src==10.1.30.4 and ip.dst==10.1.30.4
+ 
+
+liyulong:
+lovexiafe1314
+ 
+ 
+source /opt/solea-tika-app/bin/solea_tika_profile.sh
+export SOLEA_TIKA_APP_OPTS="$SOLEA_TIKA_APP_OPTS -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8019"
+
+cd /opt/solea-tika-app
+bash /opt/solea-tika-app/bin/solea-tika-app start-tika-api \
+ --app.id=api
+ 
+curl http://10.1.46.32:8018/tika/api/doParse  -F "file=@/opt/solea-tika-external-service/test-data/test_ocr.jpg" -d "config=@{\"translateEnable\":\"true\",\"ocrEnable\":\"true\"}" -X POST
+ 
+ 
+source /opt/solea-tika-app/bin/solea_tika_profile.sh
+export SOLEA_TIKA_APP_OPTS="$SOLEA_TIKA_APP_OPTS -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8019"
+	 
+ bash /opt/solea-tika-app/bin/solea-tika-app run-tika \
+ --app.id=xxx.test --application.tika.file.debug=false \
+ --application.kafka.topic=solea_fileserver \
+ --application.solr.collection=solea_redirect_collection
+ 
+远程调试forkparse:
+-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8021
+
+netstat -nap | grep 1096
+ 
+ solea数据库：
+ 10.1.46.31/solea/123456/ora11g
+ 
+
+
+A环境：
+http://10.1.12.4/ssh%20proxy#preview
+
+查询占用端口进程：
+netstat -nlp | grep :8080 | awk '{print $7}' |awk -F"/" '{ print $1 }'
+
+
+2020.05.06
+1.整理一下工作日志						--ok
+				1.广州ceph告警：
+			HEALTH_WARN 1024 pgs not deep-scrubbed in time
+
+			2.fileserver2文档创建pool
+				提示前缀格式：是solea_还是solea?
+
+			3.trans的docker总是重启导致nagios告警，是否可以处理下？
+
+			4.邮件收发关系tika吐出的bcp加上批次号
+
+			5.emz文件，应该是word的一种图片格式，被识别成压缩文件了
+
+			6.【广州】文本格式展示的内容没有格式
+				输出是否可以是xhtml更美观些？
+				如果需要，哪些类型文件需要？
+
+
+			7.文件上传成功，但还没有入solr，点击文件，会提示"文件已删除"
+
+			8.im预处理的附件是否发送solr，如果发送，如何取关联im？
+
+			9. 广州im预发送附件，是否需要发送到solr?
+					如果发送到solr，如何保证附件跟im的关联关系，根据附件定位到im
+
+			10.音频接口对接设计
+
+			11.spark im预处理程序，加载url映射的map导致oom，broadcast使用不对？
+			
+				1.SOLEA-2760
+				【fileserver2】广州ceph告警： HEALTH_WARN 1024 pgs not deep-scrubbed in time
+
+				2.fileserver2文档创建pool
+					提示前缀格式：是solea_还是solea?
+
+				3.SOLEA-2761 【翻译】trans的docker总是重启导致nagios告警，是否可以处理下?
+
+				4.邮件收发关系tika吐出的bcp加上批次号
+
+				5.SOLEA-2762 【tika】emz文件，应该是word的一种图片格式，被识别成压缩文件了
+
+				6.SOLEA-2763 【showapp】展示的内容没有格式 ,输出是否可以是xhtml
+
+
+				7.SOLEA-2764 【web】文件上传成功，但solr中还查询不到（有两分钟的等待commit时间），点击文件，会提示"文件已删除"
+
+				8.
+				SOLEA-2758 【gz语音对接】如何对接gz的语音接口 (异步)
+
+
+2.出差回来整理
+	1.提交代码		--ok
+	2.电脑还回
+	3.邮件			--ok
+	4.报销
+		酒店		--ok
+		打车		--ok
+		团建		--ok
+	5.出差jira关掉
+
+3.
+COMMON-5785 【guard】出一个版本！1.8.0
+	拉rb分支：lcm-guard-1.8.0-rb		--ok
+	jira添加版本号：lcm-guard-1.8.1		--ok
+	导出表结构							--ok
+	修改权限,锁住这个分支				--ok
+	添加每日构造						--ok
+	清理编译环境						--ok
+	rb，master分支版本号修改
+		修改master版本号：
+		http://git.lzy.com/lzy/lcm-guard/merge_requests/180
+		修改rb版本号：
+		http://git.lzy.com/lzy/lcm-guard/merge_requests/181
+
+	关联版本测试jira		--ok
+
+	邮件通知rb分支建立		--ok
+	diff					--ok
+	修改rb release note
+	修改master release note
+
+	rb分支做的修改
+	配置检查
+	diff和修改自动部署模板prod-template和dev。确保没有漏掉新增的配置。
+	配置检查二
+	diff和修改自动部署模板prod-template和dev和上一个版本的比较。确保修改的正确，并且加点注释，如果没有的话
+	强行release
+	在每日构造中强行release一下该分支，要保证release成功
+	查一下SNAPSHOT，看看是否有问题
+
+
+2020.05.07
+1.sendfserver一些修改：						--ok
+	SOLEA-2696 【sendfileserever】不要支持batchid，如果预处理要写出batchid，不管
+	SOLEA-2694 【sendfileserver】对缺省的自动做text general，不是string
+
+
+2.guard出版本diff
+
+
+3.SOLEA-2758 【gz语音对接】如何对接gz的语音接口 (异步)
+
+4.现场的jira问一下				明天
+
+
+好像不是配置问题，识别效果的问题
+
+
+6.c环境46.32挂了				--ok
+
+TASK [fileserver2 : run fileserver2_ceph_create_pool_array.sh]
+卡住了
+
+7.
+SOLEA-2677 【solr】】fileserver-2的keepalive配置，参考solr
+location ^~ /solr/address_info_n1_redirect_collection {
+
+    # 保证会走http keepalive
+    proxy_http_version 1.1;
+    proxy_set_header Connection "";
+}
+
+/etc/nginx/location.conf.d/fileserver2.locations.conf
+	
+
+8.gz分支合并到master			--ok
+提交一下
+自动部署改为master
+
+gradle-wrapper.properties
+
+
+2020.05.08
+1.昨天的完善下
+	提交代码										--ok
+	给蔡发一个gz的bundle							--ok
+	SOLEA-2677 【solr】】fileserver-2的keepalive配置，参考solr  听包确认下
+
+
+curl http://10.1.46.32:8018/tika/api/doParse -F "file=@/opt/solea-tika-external-service/test-data/test_ocr.jpg"
+2.
+SOLEA-2730 【ocr】之前可以识别图片中的“香港”，现在不行了
+
+好像是识别效果的问题：
+[{"language":"zh-CHS","content":"碑，\nOtlA\n小支持香滬警\u0027\n、\u0027；丿WeSupportof№\n支掩法窿是公正\n天地啊正\n除暴安良\n““我七的公\n，豳\nNO.丿胃R、E、烈\nao.com\n","score":20634},{"language":"zh-CHT","content":"支持香港警\u0027\n\u0027丿WeSupportofOu0、FOe\n法公\n天地正\n除暴安良\nNO.7AR、\nao.com\n","score":12455}]
+
+结果应该都保存的，或者保存top几
+默认取top3
+a环境更新下
+
+合并然打tag:
+http://git.lzy.com/lzy/solea/merge_requests/1628
+
+放到产品发布
+
+合并到master
+
+自动化测试
+
+
+3.COMMON-5785 【guard】出一个版本！1.8.0  diff一下		--ok
+
+
+4.SOLEA-2689 【文档】solea升级流程，要求不丢数据		--ok
+
+5.音频接口
+
+
+
+6.crow那边可能要修改下，url					--ok
+http://10.1.46.31:15003/solea-showapp/file/show?showAll=true&url=http://10.1.46.31:15003/solea-fserver2/api/v1/getFile?url=ceph://crow_20200508/6e69150e-668f-4b1a-a030-3ad6a1b7e6bb&contentType=application/vnd.openxmlformats-officedocument.wordprocessingml.document&isDownload=true&highlight=%E5%8D%8A%E7%BB%93%E6%9E%84%E5%8C%96%E8%A1%A8%E6%A0%BC.docx
+&amp 应该是&
+
+http://10.1.46.31:15003/solea-showapp/file/show?url=http%3A%2F%2F10.1.46.32%3A15003%2Fthirdparty%2Fdownload%3FfileName%3D9_KirtaniSikhBibian_BibiRavinderKaurKhalsaji%2520.doc%26cephUrl%3Dceph%3A%2F%2Fsolea_20200507%2F3b1b55d7-6130-486c-b795-3f2f5484017c%26importTime%3D20200508&contentType=application/msword
+
+
+2020.05.09
+1.
+SOLEA-2677 【solr】】fileserver-2的keepalive配置，参考solr 听包确认下				--ok
+tcpdump -i any tcp port  46815 -w /opt/tmp/fileserver2_nokeepalive.pcap
+46815
+
+
+
+tcp.port == 40387 and http
+http and ip.src==10.1.30.4 and ip.dst==10.1.30.4
+
+tcpdump -i any  -w /opt/tmp/withkeepalive_20200509.pcap
+
+2.
+SOLEA-2730 【ocr】之前可以识别图片中的“香港”，现在不行了
+
+打tag:
+http://git.lzy.com/lzy/solea/commits/solea-2.0.3-bugfix
+solea-2.0.3-p2
+
+
+强编一下  
+
+放到产品发布
+
+自动化测试
+
+3.音频接口对接设计
+思路参考解密程序的
+	tika中parser文件或者附件是音频文件，对音频文件生成指定格式的media文件，发送到指定的目录，然后返回，生成一条新的记录到solea_asyn_topic
+	另一个async-tika读取solea_asyn_topic里的数据并且扫描转文本的结果目录，有结果就继续消费。
+
+	问题：
+	是否可以通过线程池，保证等的时候，后面的数据继续消费
+
+	音频接口处理能力:
+	单台每天5万条，广州那边只有几台，不到10台
+	处理一条语音文件，时间是语音长度的0.1-0.2,即60s的语音，处理时间在6-12s
+	广州的语音服务用来处理实时数据的，如果数据量多的话需要另外的设备来处理
+
+4.SOLEA-2754 以图找图，没有设置阈值
+
+
+5.crow访问showapp 预览不了文件				--ok
+&amp 应该是&
+
+
+6.现场维护：
+1.
+bad文件，如何重发
+
+
+7.现场的jira:
+SOLEA-2738 【广州预处理】是否实时的过滤掉pmt
+SOLEA-2734 【敏感词】敏感词在英文提取方面识别不准
+SOLEA-2713 【web】	详情页调showapp，没传高亮参数
+SOLEA-2708 【广州im】聊天中包含音频附件，火狐浏览器显示时间不对，chrom是好的
+SOLEA-2707 【广州im】调用客户提供的接口，id更换成显示用户昵称或者备注
+
+
+8.导出自己的box
+
+查看哪些虚拟机：
+vboxmanage list vms
+
+
+打包:
+vagrant package --base solea2-test_ceph-10-1-46-32_1585133232794_95875 --output /opt/solea-box-package/solea2-test_ceph-10-1-46-32_1585133232794_95875.box
+vagrant package --base solea2-test_web-10-1-46-31_1585133049034_76135 --output /opt/solea-box-package/solea2-test_web-10-1-46-31_1585133049034_76135.box
+
+screen vagrant package --base solea2-test_ceph-10-1-46-32_1585133232794_95875 --output /opt/solea-box-package/solea2-test_ceph-10-1-46-32_1585133232794_95875.box
+
+screen vagrant package --base solea2-test_web-10-1-46-31_1585133049034_76135 --output /opt/solea-box-package/solea2-test_web-10-1-46-31_1585133049034_76135.box
+solea2-test_ceph-10-1-46-32_1585133232794_95875
+solea2-test_web-10-1-46-31_1585133049034_76135
+
+
+
+## 本周工作：
+SOLEA-2758 【gz语音对接】如何对接gz的语音接口 (异步)							1d
+SOLEA-2754 【以图找图】：以图找图还是没有设置阈值								4h
+SOLEA-2677 【solr】】fileserver-2的keepalive配置，参考solr						4h
+SOLEA-2730 【ocr】之前可以识别图片中的“香港”，现在不行了						4h		--ok
+SOLEA-2689 【文档】solea升级流程，要求不丢数据									2h		--ok
+SOLEA-2759 【现场维护】solea现场维护											4h		--ok
+SOLEA-2696 【sendfileserever】不要支持batchid，如果预处理要写出batchid，不管	2h		--ok
+SOLEA-2694 【sendfileserver】对缺省的自动做text general，不是string				2h		--ok
+COMMON-5785 【guard】出一个版本！1.8.0											4h		--ok
+
+盯一下现场的jira:
+SOLEA-2679 【web】是英文的语言，怎么显示 This language[French] is not supported ，这个为什么是英文显示		--ok
+		修复了，语种不支持翻译的话就不显示译文，页面不会显示这个
+SOLEA-2706 【广州im】在页面点击或者停留在用户头像，显示用户的手机号，备注等信息						--ok
+	已经做了
+SOLEA-2707 【广州im】调用客户提供的接口，id更换成显示用户昵称或者备注
+	还没有做，（im独立程序如何显示方案还没有定）
+SOLEA-2708 【广州im】聊天中包含音频附件，火狐浏览器显示时间不对，chrom是好的
+	是否需要做（客户不用火狐，优先级不高）
+SOLEA-2713 【web】	详情页调showapp，没传高亮参数
+	家里应该做好了，是否可以给现场更新
+SOLEA-2716 【广州im】im一条记录中内容是空的只有附件，页面会生成两条记录，一个空的消息框跟附件，应该是一条记录--ok
+	已经修复好了
+SOLEA-2734 【敏感词】敏感词在英文提取方面识别不准
+	今天看了下还有些问题，李玉龙还在修改
+SOLEA-2738 【广州预处理】是否实时的过滤掉pmt
+	不知道怎么做
+
+4.邮件收发关系tika吐出的bcp加上批次号
+
+  工作安排
+      王涛：
+          语音处理，设计
+              如何做
+              异步转同步，还是solr-tika可以等？
+          视频？
+          是否spring batch里面可以做
+              如果一个任务变成异步的，继续下一个？
+          SOLEA-2754【以图找图】：以图找图还是没有设置阈值
+
+
+		  
+		  
+2020.05.11
+1.c环境导出？			--ok
+
+
+
+2.准备一下
+  南京：
+      2个方案:
+        停止一下，修改配置，确认
+      另外一个：
+          清理数据，kafka，重新发送
+          如何清理：
+          重新发送
+
+	刻盘
+	
+	出差总结：
+		发了十几天才入库80w文件，发现主要是翻译比较慢，粗略统计1/3的文件翻译在5s以上。
+		解决方法：
+		1.先关掉翻译跟ocr，继续发送数据，剩下120万两天之内可以发完
+		2.等数据全部导入之后：
+			建立新的collection
+			建立新的ceph pool
+			设置kafka超时时间2个月
+			打开翻译跟ocr，然后重新发送所有文件到新的collection
+		3.发送全部完成后再切换到新的collection
+		
+	填jira给工程：				--ok
+		ENGINEERING-6454 【南京sj】打开翻译跟ocr重新发送数据到新的collection，发送完成切换到新的collection
+	电话给市场-王超				--ok
+
+问题：
+1.api的curl命令写在文档中
+2.tika parser ,alternative 只选择一个parser做
+
+3.南京sj的ceph也告警，跟广州一样
+
+
+2.OTTER-136 【上海430】【协议升级】【协议升级兼容】协议升级兼容新老协议
+
+3.SOLEA-2758 【gz语音对接】如何对接gz的语音接口 (异步)
+问题：如何保证对方输出结果了，再消费数据？
+	是否可以生成两个文件： process.json + .media文件
+	另一个tika扫描到media文件，再查找对应process.json文件，进行消费
+
+	
+4.c环境打开				--ok
+
+
+5.李玉龙的jira:
+SOLEA-2774 【广州im】 查询时附件也会被检错出来，是否默认不检索？
+SOLEA-2775 【tika】是否可以配置对于某些类别或者后缀的文件，不判断是否是“修改扩展名”
+SOLEA-2776 【语种检测】图片，视频，音频等文件，语种显示unknow
+
+
+2020.05.12
+1.SOLEA-2758 【gz语音对接】如何对接gz的语音接口 (异步)
+
+ 如果等待超时，是否继续往下处理？还是返回写bad文件？
+java.io.NotSerializableException: com.lzy.solea.tika.util.MediaUtil
+
+序列化
+
+明天工作：
+	解析返回的结果
+	ffmpeg 转换测试
+	性能测试
+ 
+ 
+
+2.【上海430】【协议升级】【协议升级兼容】协议升级兼容新老协议
+
+
+3.COMMON-5843 gardle的离线编译
+
+4.SOLEA-2769 【solea-问题】solea_stat_bcp_uploader.xml有问题导致后台无限起进程
+	问题，出版本时没有发现
+	是否要打一个patch
+	发邮件提示下				--ok
+
+5.im 双向联系，还是单向联系属性? 原来杭州im就没有
+	原来杭州im就没有
+	
+
+2020.05.13
+1.SOLEA-2758 【gz语音对接】如何对接gz的语音接口 (异步)
+	集成解析的程序
+	集成ffmpeg转换的程序
+	测试，如何测试？
+		生成的media文件名是随机的
+		wav文件？
+	
+	跟对方确定了，音频服务最多并发100
+	问题：
+	超时时间是否可以根据音频的时间来算？
+	ffmpeg是否可以截取指定长度的音频？
+	
+	check_env:
+	是否检查ffmpeg
+
+id:59b05e99-f02d-4385-9a49-c2dcfeb7526f
+	
+76b0
+1899
+27399
+	
+		
+
+2.【上海430】【协议升级】【协议升级兼容】协议升级兼容新老协议
+			如何测试
+				result_t_res_20200512134602
+
+				topic: result_<res_name>
+				
+				result_t_res_20200512140240
+				
+				程序的机器：10.1.55.10和10.1.55.12
+				
+						http://10.1.46.15:15003/dataflow-datamanager
+				solr: 10.1.46.29:8983
+			
+			
+	http://git.lzy.com/lzy/data-flow/merge_requests/2393
+
+	http://10.1.46.15:15003/dataflow-etl/index?src=taskManager/index
+
+
+
+
+3.COMMON-5843 gardle的离线编译
+
+
+
+4.现场：					--ok
+	1.web重新编一下，给个包给蔡
+	2.showapp 是否要发，跟磊哥确定下
+
+
+5.A环境看一下
+
+
+2020.05.14
+1.单元测试不过
+
+java.nio.file.InvalidPathException: Illegal char <:> at index 2: /E:/work/g		--ok
+
+
+2.SOLEA-2758 【gz语音对接】如何对接gz的语音接口 (异步)  
+	演示一下
+	id:59b05e99-f02d-4385-9a49-c2dcfeb7526f
+	
+	
+	问题：
+		outpt 删除
+		id:59b05e99-f02d-4385-9a49-c2dcfeb7526f text不对？
+		forkparse 超时时间？
+		check_env ffmpeg
+		是否用携程去做？
+		音频文件在视频分类里面？
+		
+		option：
+				可以打开和关闭，缺少关闭		--ok
+				input和output			--ok
+				
+				MediaParser ？？ 太大了？			--ok
+				
+		
+가이거어쨌든 没有分词？
+	<HANGUL>
+
+
+"mentioned_detail_s_ni_s":"{\"mentioned_name\":[{\"v\":\"Everybody Moving Concert\",\"c\":1},{\"v\":\"Don't modify\",\"c\":1},{\"v\":\"邓紫棋\",\"c\":1}]}",
+	人名错误
+
+
+3.OTTER-136 【上海430】【协议升级】【协议升级兼容】协议升级兼容新老协议
+	测试一下，完成文档
+http://git.lzy.com/lzy/data-flow/commit/00a1e495a88976763fa2971088346d6cbeb261e6/pipelines
+
+http://10.1.46.29:8983/solr/#/lzy_solr_group_static_202005130002/query
+
+/usr/hdp/current/kafka-broker/bin/kafka-console-producer.sh --broker-list 10.1.55.12:6667,10.1.55.10:6667 --topic result_t_res_20200512175832
+
+kafka-console-producer.sh --broker-list 10.1.55.12:6667,10.1.55.10:6667
+
+/usr/hdp/current/kafka-broker/bin/connect-standalone.sh /opt/tmp/connect-standalone.properties /opt/tmp/connect-file-source.properties /opt/tmp/connect-file-sink.properties
+
+
+
+查看topic:
+/usr/hdp/current/kafka-broker/bin/kafka-console-consumer.sh --bootstrap-server 10.1.50.40:6667,10.1.50.41:6667,10.1.50.42:6667 --topic result_t_res_20200512175832 --from-beginning
+
+/usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper 10.1.50.40:2181,10.1.50.41:2181,10.1.50.42:2181 --list
+
+
+ambari:
+10.1.50.40
+
+storage.StringConverter
+
+没有更新之前：
+2020-05-14 14:00:37.704  INFO --- [Timer-7] c.l.d.p.kafka.task.TaskRunnerHandler     : get records 0 from kafka
+2020-05-14 14:01:05.322 ERROR --- [pool-8-thread-1] c.l.d.postprocess.kafka.topic.TopicInfo  : the value size is not equals to fields size, topic:result_t_res_20200512175832, value:test
+
+
+2020-05-14 14:38:35.305  WARN --- [pool-1-thread-1] c.l.d.postprocess.kafka.solr.ServerMgr   : the collection [lzy_solr_group_static] has no corresponding solr server in config file, will select first one.
+2020-05-14 14:38:35.305  INFO --- [pool-1-thread-1] c.l.d.postprocess.kafka.solr.Sender      : start to initConsumer
+2020-05-14 14:38:35.419  INFO --- [pool-1-thread-1] c.l.d.postprocess.kafka.solr.Sender      : the common properties is:{collection.suffix=_redirect_collection, userPrincipal=lzy_kafka, stat.directory=/opt/dataflow/stat, failedDir=/opt/dataflow-postprocess-solr-consumer-data/failed, check_file_time_error_limit=7, topic.dir=/opt/dataflow-preprocess-data-share/resource_dir/solr_topics, stat.keep.time.ms=600000, zkClientTimeout=20000, error.file.keep.ms=18000000, access.file=access_file.txt, stat.schema=simba, isStrictVerifiy=False, secureId=PMAhOFcr5jwm1AdqyCzhyD25Sfa4Exk1ZWaV, topic.prefix=result_, isHWSolr=False, error.file.size=10000, fileserver2.addr=10.1.46.32:15003, bad.directory=/opt/dataflow-bad/solr-kafka-consumer, zkHost=IP1:24002,IP2:24002,IP3:24002/solr, check_file_time_warn_limit=3, zkConnectTimeout=30000, allFieldName=text, flush.cache.size=1m, enable.fs2=True, zookeeperDefaultServerPrincipal=solruser1@HADOOP.COM, ceph.pool.prefix=dataflow_, solrKbsEnable=true, secureKey=cqPOIIDO8mSk20fhDL3mQTiZqTIjeyrF, kafka.authentication=lzy, principal=solruser1@HADOOP.COM, access.directory=/opt/dataflow-solr-consumer/data/, error.file.directory=/opt/dataflow/error, isCsv=True, userKeyTabFileName=user.keytab, flush.cache.num=3000, separator=|++|}
+2020-05-14 14:38:35.422  INFO --- [pool-1-thread-1] c.l.d.postprocess.kafka.solr.Sender      : the number has reach batch size, change a new node, collection:lzy_solr_group_static, size:1000001
+
+ok
+
+1.dataflow 创建查询资源，配置3个字段以上
+2.发送只有一个字段的数据到对应的topic
+3.查看solrconsumer日志可以搞到数据入不进去
+	2020-05-14 14:01:05.322 ERROR --- [pool-8-thread-1] c.l.d.postprocess.kafka.topic.TopicInfo  : the value size is not equals to fields size, topic:result_t_res_20200512175832, value:test
+	
+4.按照升级文档升级
+5.再测试发送数据ok
+
+
+
+
+4.COMMON-5843 gardle的离线编译
+
+\\10.1.11.5\temp\wt王涛
+\\10.1.11.5\share\java\gradle
+
+
+	下载gardle离线安装包和脚本
+	
+	1.gradle 全局配置,默认依赖本地maven
+	http://wiki.lzy.com/gradle%20%E9%85%8D%E7%BD%AE%E5%85%A8%E5%B1%80%E4%BB%93%E5%BA%93%E5%9C%B0%E5%9D%80
+
+	2.项目中配置gradle离线的包
+	修改gradle项目的gradle-wrapper.properties文件,例:
+# distributionUrl=http\://10.1.11.5/share/java/gradle/distributions/gradle-4.10.2-bin.zip
+distributionUrl=file:///d:/soft/gradle-4.10.2-bin.zip
+
+	3.gradle脚本转换,例:
+	python gradle_cache_to_mvn_repo.py --gradle_cache_dir C:\Users\mayn\.gradle --target_mvn_dir C:\Users\mayn\tmp_repo
+
+	4.将刚才生成的依赖移动到本地maven仓库中
+	
+	5.gradlew开始编译
+lzy_chenlong/mylzywiki
+
+http://wiki.lzy.com/gradle%E7%A6%BB%E7%BA%BF%E7%BC%96%E8%AF%91#preview
+
+5.有时间做一下：					--ok
+http://wiki.lzy.com/gradle%E7%A6%BB%E7%BA%BF%E7%BC%96%E8%AF%91#preview
+SIM-3055 【自动部署】ssh config 去掉UseDNS，修改成UseDNS No
+SIM-3056 【自动部署】rm -rf 需要做一个别名，防止现场误操作
+OTTER-136 【上海430】【协议升级】【协议升级兼容】协议升级兼容新老协议
+
+http://wiki.lzy.com/gradle%E7%A6%BB%E7%BA%BF%E7%BC%96%E8%AF%91#preview
+	加到出差流程
+
+6.A 环境nagios
+	
+
+2020.05.15
+1.guard出版本
+修改rb release note
+修改master release note
+
+http://git.lzy.com/lzy/lcm-guard/merge_requests/182/diffs
+http://git.lzy.com/lzy/lcm-guard/merge_requests/183
+
+
+		1.强制编一个版本，guard-1.8.0
+		后面状态
+		2.修改jira lcm-guard-1.8.0 状态 为release
+		3.去掉每日构造
+		4.打tag 1.8.0
+		5.放到产品发布中
+
+		\\10.1.11.5\temp\wt王涛
+
+		\\10.1.11.5\share\产品发布\安装包\lcm.guard
+
+rb分支做的修改
+配置检查
+diff和修改自动部署模板prod-template和dev。确保没有漏掉新增的配置。				--ok 没有
+配置检查二
+diff和修改自动部署模板prod-template和dev和上一个版本的比较。确保修改的正确，并且加点注释，如果没有的话		--ok
+
+强行release
+在每日构造中强行release一下该分支，要保证release成功
+查一下SNAPSHOT，看看是否有问题
+
+安装包的名称:	lcm.guard-1.8.0		是否有问题？
+
+
+http://git.lzy.com/lzy/lcm-guard/merge_requests/184
+
+2.SOLEA-2758 【gz语音对接】如何对接gz的语音接口 (异步)
+	多线程去做
+	forkparse超时时间
+	cpulimit 限制整个进程包括子进程
+	
+	
+spring batch对多线程的支持：
+        .taskExecutor(taskExecutor())
+        // 线程池数量
+        .throttleLimit(8)
+
+是否要加锁：
+2020-05-15 14:46:01.785  INFO 1814743 --- [solea_tika_app6] c.l.s.t.app.batch.KafkaCephItemReader    : have stop file : solea_tika_001.stop, exit
+2020-05-15 14:46:01.786  WARN 1814743 --- [solea_tika_app6] o.s.batch.core.step.item.ChunkMonitor    : ItemStream was opened in a different thread.  Restart data could be compromised.
+		
+forkparse 是否起多个，测试下
+
+		
+
+3.SOLEA-2771 【现场维护】solea现场维护		--ok
+	
+	
+	
+本周工作：
+SOLEA-2758 【gz语音对接】如何对接gz的语音接口 (异步)						3d
+OTTER-136 【上海430】【协议升级】【协议升级兼容】协议升级兼容新老协议		1d
+COMMON-5843 gardle的离线编译												4h
+SOLEA-2771 【现场维护】solea现场维护										4h
+SIM-3056 【自动部署】rm -rf 需要做一个别名，防止现场误操作					2h
+COMMON-5785 【guard】出一个版本！1.8.0										1h
+SIM-3055 【自动部署】ssh config 去掉UseDNS，修改成UseDNS No					1h
+SOLEA-2769 【solea-问题】solea_stat_bcp_uploader.xml有问题导致后台无限起进程
+SOLEA-2770 A环境的nagios错误-20200509
+
+total: 5d 4h
+
+SOLEA-2754 【以图找图】：以图找图还是没有设置阈值
+		还没想好怎么去优化
+
+		
+现场的jira:
+
+SOLEA-2713 【web】	详情页调showapp，没传高亮参数
+SOLEA-2734 【敏感词】敏感词在英文提取方面识别不准
+SOLEA-2738 【广州预处理】是否实时的过滤掉pmt			--ok
+SOLEA-2772 【tika】tika中应该对bad文
+
+
+2020.05.18
+1.SOLEA-2758 【gz语音对接】如何对接gz的语音接口 (异步)
+	cpu limit			可以先不做
+	测试
+	在10.1.65.102 跑起来，5个进程
+bash /opt/solea-docker-vm/docker-perf/start.sh
+
+ssh 10.1.30.2  \
+ "cd /opt/solea-docker-vm/docker-perf/30.2 ; docker-compose start"
+
+ssh 10.1.30.3  \
+ "cd /opt/solea-docker-vm/docker-perf/30.3 ; docker-compose start"
+
+ssh 10.1.30.4  \
+ "cd /opt/solea-docker-vm/docker-perf/30.4 ; docker-compose start"
+
+ 
+多线程问题：
+2020-05-18 17:13:25.927  INFO 1939916 --- [solea_tika_thread2] c.l.s.t.app.batch.KafkaCephItemReader    : have stop file : solea_tika_001.stop, exit
+2020-05-18 17:13:25.930  WARN 1939916 --- [solea_tika_thread2] o.s.batch.core.step.item.ChunkMonitor    : ItemStream was opened in a different thread.  Restart data could be compromised.
+
+
+2020-05-18 19:56:47.530  INFO 2078725 --- [taskExecutor-2] c.l.s.t.app.batch.KafkaCephItemReader    : get file over ceph url: ceph://solea_20200518/a7a806c7-127c-4c2a-8f57-6d58ffce9385
+2020-05-18 19:57:27.543 ERROR 2078725 --- [taskExecutor-2] c.l.s.t.a.b.StandAloneAnnieProcessor     : Session process error:
+
+gate.creole.ResourceInstantiationException: Couldn't unpack markup in document !
+        at gate.corpora.DocumentImpl.init(DocumentImpl.java:319) ~[gate-core-8.1.jar!/:na]
+        at gate.Factory.createResource(Factory.java:432) ~[gate-core-8.1.jar!/:na]
+        at gate.Factory.createResource(Factory.java:139) ~[gate-core-8.1.jar!/:na]
+        at gate.Factory.newDocument(Factory.java:509) ~[gate-core-8.1.jar!/:na]
+
+继续安装：
+common : Install libkeepalive
+ 
+ansible-playbook -i environments/prod site.yml --start-at-task "common : Install libkeepalive" 
+
+
+// 什么意思？
+throttleLimit(threadNumn) 
+并发数量
+
+2.上午过下工作													--ok
+      王涛：
+          SOLEA-2781 【广州】【showapp】所有文件类型的高亮都要支持自定义样式
+              做什么？？
+              showapp 加亮
+              做那几个？email，tika
+              如何实现加亮，可以看看范磊磊
+              
+          SOLEA-2770 A环境的nagios错误-20200509									2h
+          SOLEA-2758 【gz语音对接】如何对接gz的语音接口 (异步)					2h
+	            cpu limit
+	            测试
+          OTTER-136 【上海430】【协议升级】【协议升级兼容】协议升级兼容新老协议	1h
+	            现场升级        
+          崔来的话，merge 代码到gz分支，编译过
+              是否可以安装一下？   
+
+3.SOLEA-2781 【广州】【showapp】所有文件类型的高亮都要支持自定义样式
+				加亮，哪些需要做？
+				email, tika, 压缩文件？txt? media文件应该不需要，pdf
+				本周目录：
+					email先做掉，然后tika,txt,压缩文件
+					pdf这周不一定能搞定，边做其他边想，如何实现
+
+
+4.李玉龙发一个showapp 包		--ok
+
+
+5.SOLEA-2772 【tika】tika中应该对bad文件也要支持重新处理
+
+
+
+6.下午新疆施工方案：
+	提前看下：
+		ENGINEERING-6416
+	1.数据不存ceph,存储在841平台
+	2.841实时数据不翻译，ocr,web上传的数据需要
+	3.装2.0.4？master还是dev?
+
+2020.05.19
+1.65.123 重新安装跑起来
+
+找郑智健要下数据
+
+
+2.
+SOLEA-2772 【tika】tika中应该对bad文件也要支持重新处理
+cd /opt/solea-tika-app
+bash bin/solea_tika_process_retry.sh
+
+retry:
+	{"callBackUrl":null,"data":"{\"solr_id\":\"75426a62-e3db-40fd-ab2a-245f110688ae\",\"status\":\"fail\"}"}
+bad:
+	{"dataSize":"5356","id":"3de011e2-c324-4012-9ae2-c57074544eeb","url":"ceph://solea_20200515/3de011e2-c324-4012-9ae2-c57074544eeb","collectionName":"solea_redirect_collection","exception":"com
+	
+processing:
+	{"dataSize":"32831","id":"e9537452-cda5-4c55-8fd0-d4c525845c53","kafkaTopic":"solea_fileserver","url":"ceph://solea_20200518/e9537452-cda5-4c55-8fd0-d4c525845c53","collectionName":"solea_redirect_collection"
+	
+
+如果没有，发送到默认的topic
+
+http://git.lzy.com/lzy/solea/-/wikis/solea-bad%E6%96%87%E4%BB%B6%E9%87%8D%E5%8F%91
+	
+3.SOLEA-2781 【广州】【showapp】所有文件类型的高亮都要支持自定义样式
+
+    // 解决文件扩展名太长
+    id "com.github.MainfestClasspath" version "0.1.0-RELEASE"
+
+http://127.0.0.1:15003/solea-showapp/file/show?url=http%3A%2F%2F10.1.46.32%3A15003%2Fthirdparty%2Fdownload%3FfileName%3D0001-MLP-1315-collection-cores.patch%26cephUrl%3Dceph%3A%2F%2Fsolea_20200518%2Fb77a422d-64c1-4ab1-93d6-c0fe252b7718%26importTime%3D20200519&contentType=application/mbox&showAll=true
+
+cat /etc/ssh/sshd_config |grep DNS
+
+
+报错：
+command line is too long
+解决增加：
+.idea/workspace.xml
+
+    <property name="dynamic.classpath" value="true"/>
+
+4.河北邮件导出来
+
+2020.05.20
+1. 广州发包，测试音频接口		--ok
+
+
+2.上海430发包，升级协议		--ok
+
+
+3.内蒙发包，发送bad文件		--ok
+
+ceph osd重新安装：
+ 1008  2020-05-20 14:04:17 ceph -s
+ 1009  2020-05-20 14:05:26 ceph osd out osd.0
+ 1010  2020-05-20 14:05:37 systemctl stop ceph-osd@0
+ 1011  2020-05-20 14:05:48 ceph osd crush remove osd.0
+ 1012  2020-05-20 14:05:49 ceph auth del osd.0
+ 1013  2020-05-20 14:05:54 ceph osd rm osd.0
+ 1014  2020-05-20 14:05:58 umount /var/lib/ceph/osd/ceph-0
+ 1015  2020-05-20 14:06:01 lsblk
+ 1016  2020-05-20 14:06:20 lvdisplay
+ 1017  2020-05-20 14:06:31 lvremove /dev/ceph-897eaa6d-d2d6-4b94-ba7a-734505cf974a/osd-block-922b9306-b72b-47df-90fe-a58eae21d36f
+ 1018  2020-05-20 14:06:44 vgremove /dev/ceph-897eaa6d-d2d
+6-4b94-ba7a-734505cf974a
+ 1019  2020-05-20 14:06:48 lsblk
+ 1020  2020-05-20 14:06:58 cd /opt/ceph-cluster
+ 1021  2020-05-20 14:07:13 ceph-deploy osd create --data /dev/sdb ceph-10-1-46-32
+ 
+
+4.SOLEA-2781 【广州】【showapp】所有文件类型的高亮都要支持自定义样式
+	IP现在是10.1.35.212，后面会改成50.16
+	
+http://127.0.0.1:15003/solea-showapp/file/show?url=http%3A%2F%2F10.1.46.32%3A15003%2Fthirdparty%2Fdownload%3FfileName%3D0001-MLP-1315-collection-cores.patch%26cephUrl%3Dceph%3A%2F%2Fsolea_20200518%2Fb77a422d-64c1-4ab1-93d6-c0fe252b7718%26importTime%3D20200519&contentType=application/mbox&showAll=true
+
+
+private List<CustomWord> customWords;
+取customWords[0]?
+
+
+onlyoffice:
+http://10.1.46.31:15003/solea-showapp/file/show?url=http://10.1.46.30/online_edit/test.docx&customWords[0].wordList=%E4%B8%AD%E5%9B%BD&customWords[0].fontColor=%23008000&customWords[0].backGroundColor=%23ffff00&customWords[0].bold=true
+
+5.合并代码
+
+
+
+6.南京sj数据重发		--ok
+
+
+2020.05.21
+1.SOLEA-2781 【广州】【showapp】所有文件类型的高亮都要支持自定义样式
+	一个：
+	http://127.0.0.1:15003/solea-showapp/file/show?url=http://10.1.46.32:15003/fileserver2/api/v1/getFile?url=ceph://solea_20200520/ddb2126b-2710-44c5-bacc-7a3d0ff9fd0f&contentType=&showAll=true&highlight=mike&customWords[0].wordList=项目&customWords[0].fontColor=%231541e8
+
+
+http://127.0.0.1:15003/solea-showapp/file/show?url=file:///E:/work/logbook/2020.05/【出差】温州项目出差，有事请联系：13337713842.eml&contentType=&showAll=true&highlight=mike&customWords[0].wordList=项目&customWords[0].fontColor=%231541e8
+	
+	两个：
+
+http://127.0.0.1:15003/solea-showapp/file/show?url=file:///E:/work/logbook/2020.05/%E3%80%90%E5%87%BA%E5%B7%AE%E3%80%91%E6%B8%A9%E5%B7%9E%E9%A1%B9%E7%9B%AE%E5%87%BA%E5%B7%AE%EF%BC%8C%E6%9C%89%E4%BA%8B%E8%AF%B7%E8%81%94%E7%B3%BB%EF%BC%9A13337713842.eml&contentType=&showAll=true&highlight=mike&customWords[0].wordList=%E9%A1%B9%E7%9B%AE,%E6%95%B0%E6%8D%AE&customWords[0].fontColor=%231541e8&customWords[0].bold=true&customWords[1].wordList=%E6%B8%A9%E5%B7%9E,%E6%B8%85%E6%B4%97&customWords[1].fontColor=%23c3c022&customWords[1].bold=true
+
+
+tika:
+
+
+http://127.0.0.1:15003/solea-showapp/file/show?url=file:///E:/work/logbook/2020.05/FileUtil.class&contentType=&showAll=true&highlight=mike&customWords[0].wordList=servlet&customWords[0].fontColor=%231541e8&customWords[0].bold=true
+
+
+http://127.0.0.1:15003/solea-showapp/file/show?url=file:///E:/work/logbook/2020.05/FileUtil.class&contentType=&showAll=true&highlight=mike&customWords[0].wordList=[servlet]&customWords[0].fontColor=%231541e8&customWords[0].bold=true
+
+测试用例：
+中文，英文
+
+	%231541e8  
+	%23c3c022
+
+
+&lt;em style="color:#1541e8;font-weight:bold;"&gt;Bus
+<em style="color:red;font-weight:bold;">bus</em>
+	
+	
+pdf:
+http://127.0.0.1:15003/solea-showapp/file/show?url=file:///E:/work/logbook/2020.05/1.pdf&contentType=&showAll=true&highlight=mike&customWords[0].wordList=[servlet]&customWords[0].fontColor=%231541e8&customWords[0].bold=true
+	
+	
+问题：
+	1.英文高亮问题			--ok
+(?:项目|PM)
+
+	2.接口参数问题
+逗号需要转移：
+&#44;
+	
+	3. 邮件只对body里面的内容做高亮，应该包含其他
+	
+	4.测试用例，关联
+	
+2.合并代码		--ok
+
+
+
+3.OTTER-136 【上海430】【协议升级】【协议升级兼容】协议升级兼容新老协议
+问一下今天是否可以升级
+
+
+4.南京sj 的im
+	提取excel
+
+2020.05.22
+1.SOLEA-2781 【广州】【showapp】所有文件类型的高亮都要支持自定义样式		--ok
+测试下show-app
+
+email:
+http://10.1.46.31:15003/solea-showapp/file/show?url=http://10.1.46.31:15003/solea-fserver2/api/v1/getFile?url=ceph://solea_20200522/29100bc9-a1c2-4a10-bb21-cc938ee04e6b&contentType=&showAll=true&highlight=mike&customWords[0].wordList=项目&customWords[0].fontColor=%231541e8
+
+txt:
+
+http://10.1.46.31:15003/solea-showapp/file/show?url=http://10.1.46.31:15003/solea-fserver2/api/v1/getFile?url=ceph://solea_20200522/17a1f63b-b75e-43e5-afbe-a56b5a0692bb&contentType=&showAll=true&highlight=mike&customWords[0].wordList=ceph&customWords[0].fontColor=%231541e8
+
+tika:
+http://127.0.0.1:15003/solea-showapp/file/show?url=file:///E:/work/logbook/2020.05/FileUtil.class&contentType=&showAll=true&highlight=mike&customWords[0].wordList=servlet&customWords[0].fontColor=%231541e8&customWords[0].bold=true
+
+
+pdf怎么做？
+http://127.0.0.1:15003/solea-showapp/file/show?url=file:///E:/work/logbook/2020.05/1.pdf&contentType=&showAll=true&highlight=mike&customWords[0].wordList=[servlet]&customWords[0].fontColor=%231541e8&customWords[0].bold=true
+
+
+http://10.1.46.31:15003/solea-showapp/file/show?url=http://10.1.46.31:15003/solea-fserver2/api/v1/getFile?url=ceph://solea_20200522/13dfd5b0-fed9-4549-8e5c-3cae00f431a7&contentType=&showAll=true&highlight=mike&customWords[0].wordList=DATA&customWords[0].fontColor=%231541e8&customWords[0].bold=true&customWords[0].wordList=%E6%95%B0%E6%8D%AE
+
+
+
+
+2.内蒙数据重发的问题
+web.nm701.bd.com
+/opt/store_bak
+
+	1.区分datasource发送到新的collection
+	2.batchId,没有？
+	3.md5问题？
+	4.分类值要更新
+	
+
+分出solea数据与dolphin数据：
+1.启动脚本：
+python filter_solea_data.py --input /opt/tmp/neimong/store --output /opt/tmp/neimong/output
+
+
+	
+	
+
+
+3.部署上广州分支			--ok
+
+http://127.0.0.1:15003/solea-showapp/file/show?url=file:///E:/work/logbook/2020.05/FileUtil.class&contentType=&showAll=true&highlight=mike&customWords[0].wordList=servlet&customWords[0].fontColor=%231541e8&customWords[0].bold=true
+
+http://10.1.46.31:15003/solea-showapp/file/show?
+
+job: "bash /vagrant/auto-deploy/auto-deploy.sh >>/tmp/update_solea.log 2>&1"
+
+4.语音性能测试是否做？		暂时不做，本周没有时间做
+
+
+5.演示下：
+SOLEA-2772 【tika】tika中应该对bad文件也要支持重新处理
+	查看wiki:
+	http://git.lzy.com/lzy/solea/-/wikis/solea-bad%E6%96%87%E4%BB%B6%E9%87%8D%E5%8F%91
+SOLEA-2786 【soleaSendFserver2】 目录是否删除支持配置
+	增加配置，isDelDir配置是否删除空目录
+	
+pdf高亮：
+http://10.1.46.31:15003/solea-showapp/file/show?url=http://10.1.46.31:15003/solea-fserver2/api/v1/getFile?url=ceph://solea_20200522/13dfd5b0-fed9-4549-8e5c-3cae00f431a7&contentType=&showAll=true&highlight=mike&customWords[0].wordList=DATA&customWords[0].fontColor=%231541e8&customWords[0].bold=true&customWords[0].wordList=%E6%95%B0%E6%8D%AE
+
+问题：英文全词匹配的问题还没有解决
+
+
+延期：
+SOLEA-2758 【gz语音对接】如何对接gz的语音接口 (异步)
+
+2020.05.23
+1.c环境演示数据
+
+curl 10.1.131.70:15003/content-analysis/index	--ok
+case_solea_redirect_collection
+
+python /opt/millipede-solr/management/bin/solr_collection.py create-collection \
+ --auto-numshard  --replication-factor 1 --route-name implicit --auto-create-replication=2 \
+ --schema-file /opt/solea-release-2.0.4-dev/solr/conf/schema.xml  case_solea_
+
+ 
+
+python /opt/millipede-solr/management/bin/solr_collection.py create-collection \
+ --auto-numshard  --replication-factor 1 --route-name implicit --auto-create-replication=2 \
+ --schema-file /opt/solea-release-2.0.4-dev/solr/conf/schema.xml  offline_solea
+ 
+http://content-analysis-server.solea_analysis.service.consul:15003/content-analysis/summary
+
+
+curl http://content-analysis-server.solea_analysis.service.consul:15003/content-analysis/index
+ 
+ 
+邮件回复下：
+1.案件相关需要做成配置的，有开关控制
+2.文件详情上面留白空间占用太大了，可以美化一下
+3.铭感词中文提取不准确，如：高卿瑞 提取出来：高卿
+4.邮件数据是否可以做成forxmail客户端的形式去展示
+5.知识图谱可以提供展示邮件收发关系的接口和页面，做成通用的功能
+6.邮件做服务化，类似google 知识图谱，类似tip服务
+
+
+
+2.内蒙数据处理
+	1.batchId 修改		--ok
+	2.分类的值			--ok
+					def get_category(category):
+						if category == "43":
+							category = "723f49cabaf411e8b13590e2ba87e271"
+						if category == "1":
+							category = "8f9c8df2baf411e8b13590e2ba87e272"
+						if category == "2":
+							category = "920e4ee0baf411e8b13590e2ba87e273"
+						if category == "3":
+							category = "962bef8cbaf411e8b13590e2ba87e274"
+						if category == "4":
+							category = "986f76c4baf411e8b13590e2ba87e275"
+						if category == "5":
+							category = "9ebf61f6baf411e8b13590e2ba87e276"
+						return category
+	3.solea跟dolphin数据分类		--ok
+	4.solea的数据发到solea2_
+	
+--input E:\tmp\work\output\solea 
+--host  http://10.1.46.32:15003/fileserver2/api/v1 
+--extend-parameters E:\work\logbook\10-4\extend-parameter.json
+	
+	
+	5.生成update语句，更新md5
+
+
+3.A环境nagios
+	下周看
+
+
+4.pdf高亮是否可以控制前面几页
+	是否需要参数控制？
+	确定下是否高亮引起的慢
+
+	
+## 本周工作
+SOLEA-2758 【gz语音对接】如何对接gz的语音接口 (异步)					2h
+SOLEA-2770 A环境的nagios错误-20200509									2h
+SOLEA-2781 【广州】【showapp】所有文件类型的高亮都要支持自定义样式		3d		--ok
+SOLEA-2772 【tika】tika中应该对bad文件也要支持重新处理					2h		-ok
+OTTER-136 【上海430】【协议升级】【协议升级兼容】协议升级兼容新老协议	1h		--ok
+SOLEA-2786 【soleaSendFserver2】 目录是否删除支持配置					2h		--ok
+SOLEA-2785 【现场维护】solea现场维护									4h
+
+total:4d 5h
+
+SOLEA-2758 【gz语音对接】如何对接gz的语音接口 (异步)
+SOLEA-2707 【广州im】调用客户提供的接口，id更换成显示用户昵称或者备注
+
+
+下周工作：
+南京sj im，是否可以提供电脑，可能需要现场修改代码
+
+20200526
+1.SOLEA-2796 【solea im】南京im处理，目的：处理完成，可以演示
+	联系客户：
+		测试数据？		--o'k
+		数据量？		--ok
+		电脑？		--ok
+		什么时候可以去？	--ok
+		
+问题：
+	1.im聊天中的头像，是否可以拿到？
+		excel表格中插入了头像附件
+	2.im数据量，有多少excel?一个excel 大概多少条记录？
+		几十w条记录，没有详细统计
+	3.im聊天中的一些附件，是否可以拿到？
+		拿不到附件，主要是文字
+		客户说可以用加载失败的图片或者音频表示
+	4.是否可以提供测试的数据可以模仿真实环境去运行
+
+		
+	家里：
+		是否有处理excel的程序
+		data-flow\06sourcecode\preprocess\etl-common\src\main\java\com\lzy\dataflow\table\process
+			上次titan那边说用poi可能有问题，他们用的是OPCPackage，你可以看一下
+
+{"from": "653225154", "record_time": "1531135246754", "to": "2236561213", "send_time": "1531135246754", "message": "Today, I and David go to the airplane exhibition"}
+			
+
+2.pdf高亮是否需要分页？高亮性能问题？			--ok
+	eta :3614
+		测试多个敏感词，在3-4s左右
+	测试限制了一下页数，速度差不多
+
+	暂时不需要去做分页的
+
+
+3.SOLEA-2758 【gz语音对接】如何对接gz的语音接口 (异步)
+
+bash /opt/solea-tika-app/bin/solea_tika_check_status.sh  /opt/solea-tika-app/logs/solea_tika_app_001.log 3600
+
+check_file=/opt/solea-tika-app/logs/solea_tika_app_001.log
+grep "^2.*\[main|taskExecutor\]" $check_file | awk '{print $1 " " $2}' | tail -1
+process_time=`grep "^2.*\[main\]" $check_file | awk '{print $1 " " $2}' | tail -1`
+
+o.s.batch.core.step.item.ChunkMonitor：ItemStream was opened in a different thread.  Restart data could be compromised.
+
+
+晚上发起来
+
+http://10.1.65.101:15003/fileserver2/api/v1,http://10.1.65.102:15003/fileserver2/api/v1,http://10.1.65.103:15003/fileserver2/api/v1
+
+4.内蒙数据重发:
+
+python /opt/tmp/neimong/send-fileserver/bin/filter_solea_data.py --input /opt/tmp/neimong/store  --output /opt/tmp/neimong/output
+
+python fserver_file_uploade_nm.py --input /opt/tmp/neimong/output/solea --host  http://10.1.46.32:15003/fileserver2/api/v1 --extend-parameters /opt/tmp/neimong/extend-parameter.json
+
+给现场发过去
+
+
+5.sonar检查				--ok
+
+
+2020.05.26
+1.性能测试，跑的怎么样？
+
+		--ok
+
+
+2.SOLEA-2796 【solea im】南京im处理，目的：处理完成，可以演示
+	继续提取excel信息
+	跑通im
+123456	232423	2018-06-04 12:30:00	你好	123456	大宝	86	1342323232									232423	小宝	female	1990-10-31 00:00:00	中国上海	86	13022222222	https://dfsdafsfdsfsdfsdf
+123456	232423	2018-06-04 12:31:00	这么早	123456	大宝	86	1342323232									232423	小宝	female	1990-10-31 00:00:00	中国上海	86	13022222222	https://dfsdafsfdsfsdfsdf
+123456	232423	2018-06-04 12:32:00	难道还有夜生活啊	123456	大宝	86	1342323232									232423	小宝	female	1990-10-31 00:00:00	中国上海	86	13022222222	https://dfsdafsfdsfsdfsdf
+232423	123456	2018-06-04 12:33:00	可以微我	123456	大宝	86	1342323232									232423	小宝	female	1990-10-31 00:00:00	中国上海	86	13022222222	https://dfsdafsfdsfsdfsdf
+232423	123456	2018-06-04 12:34:00	加微信	123456	大宝	86	1342323232									232423	小宝	female	1990-10-31 00:00:00	中国上海	86	13022222222	https://dfsdafsfdsfsdfsdf
+232423	123456	2018-06-04 12:35:00	哪里人	123456	大宝	86	1342323232									232423	小宝	female	1990-10-31 00:00:00	中国上海	86	13022222222	https://dfsdafsfdsfsdfsdf
+
+
+号码A	号码B	时间	内容	用户ID	昵称	注册手机区号	手机号	注册时间	注册IP	最后活跃时间	最后活跃坐标	最后活跃城市	性别	出生日期	字段12	号码	昵称	性别	出生日期	所在地	国家码	手机号	头像链接
+
+E:\work\gits\solea\solea-master\04sourcecode\tools\preprocess\interface\nanjing_sj\extract-excel\test-data\\123456_20200526174606_dd4164c1-1721-4295-b56a-d7faf9cc13f2.bcp
+
+2020.05.27
+1.SOLEA-2796 【solea im】南京im处理，目的：处理完成，可以演示
+	123456_20200526180613_2e011a8c-8402-4dcb-be15-811e92632371.bcp
+	java程序整理下
+		打包：mvn assembly:assembly -f pom.xml
+		java -jar im-excel-process-2.0.4-SNAPSHOT-jar-with-dependencies.jar E:\work\gits\solea\solea-master\04sourcecode\tools\preprocess\interface\nanjing_sj\im-excel-process\src\test\resources\test-data E:\work\gits\solea\solea-master\04sourcecode\tools\preprocess\interface\nanjing_sj\im-excel-process\src\test\resources\test-data
+		
+	im预处理
+				--ok
+	
+	准备明天出差：
+		1.刻盘：
+			spark 安装包
+			solea-tools 安装包
+			鼠标
+		2.出差目的：
+			1.检查发送情况
+			2.im预处理
+
+2.上海430,如何修改schemal
+	1.目录:
+	/opt/dataflow-preprocess-data-share/resource_dir/solr_topics
+
+	2.找到目标topic对应的yml文件
+
+	3.做个备份，然后加新的字段
+
+
+3.SOLEA-2797 【内蒙数据处理】dolphin和solea数据迁移的问题
+
+20200528
+1.im 南京im处理，目的：处理完成，可以演示
+	字段还要修改下，适配不同长度
+
+		需求：
+			1.字段长度适配一下
+			2.手机号码，昵称等加到text中
+			3.im列表按照用户去展示
+			4.处理结果可以通知
+
+2.没有自动部署，查一下
+
+
+3.SOLEA-2776	【语种检测】图片，视频，音频等文件，语种显示unknow
+
+20200529
+	
+	gz-showapp.rar
+	广州发一下
+
+1.SOLEA-2796 【solea im】南京im处理，目的：处理完成，可以演示
+	测试一下，不同字段
+	下午出差：
+		jar + cmd + utils
+\\10.1.11.5\temp\wt王涛\20200529_nanjingsj.rar		--ok
+	密码：二零二零0529
+		目的：
+			1.解决多个字段格式的问题
+			2.im数据全部处理完
+			3.手机号，昵称等入库可以查询
+
+
+	回复邮件：
+        20200528南京sj工作汇总：
+
+        1.检查solea数据发送情况：
+            230w数据，发送一周，入库18w,预计需要2-3个月发送完成
+            增加kafka超时时间，三个月
+        2.im数据处理,抽取excel的数据为bcp,进行聚合展示
+       
+        3.导入了批量数据给客户展示
+            1.是否可以提取im中的微信，qq等信息
+            2.提供ftp目录给用户上传im数据，是否可以监控数据处理情况（上传数，成功数，失败数）
+       
+    问题：
+        1.现场发现有三种长度的excel数据，需要适配一下。本周客户不在，下周一过去重新处理
+
+
+
+2.SOLEA-2776	【语种检测】图片，视频，音频等文件，语种显示unknow		--ok
+	图片：
+		对ocr结果做语种检测
+			没有语种之前:
+				http://10.1.46.31:15003/solea/fileDetail/index?docId=e648bb63-7334-41c2-85ce-604acbd1d439&collectionPrefix=solea
+			设置语种后:
+				http://10.1.46.31:15003/solea/fileDetail/index?docId=4dc96815-bf51-45d6-937a-72bd28d1f32e&collectionPrefix=solea
+	视频：
+		现在没有文本内容，是否应该不展示语种
+	音频：
+		应该检测转文本的文字
+			是否在广州分支做
+		正好测试语音转文本的接口
+	
+	问题：
+		如果text中只有文件名，语种检测对短文本的效果不太好
+			是否判断如果text过短，就不做检测
+
+
+3.SOLEA-2797 【内蒙数据处理】dolphin和solea数据迁移的问题
+	生成更新md5的sql
+	
+	update user_upload set md5 = 'new_md5' where md5 = 'old_md5';
+	
+	
+4.语音接口测试
+	1.性能测试：		--ok
+		两台机器，每台3个进程，每个进程10个线程，发送一晚：100g，15w的测试文件
+	2.处理100个文件，分别看看一个线程跟10个现场的效率
+		1个线程：
+			start: 2020-05-29 15:30:27.789
+			end:   2020-05-29 16:07:20.343
+			time:	37 min
+		
+		10个线程：
+			start: 2020-05-29 16:18:59
+			end： 2020-05-29 16:40:38
+			time: 12 min
+		
+	3.启10个线程，输入9个音频文件使挂9个线程起，再上传一个文本文件，是否会有另外一个线程去处理		--ok
+	
+	10.1.65.4 
+	10.1.65.5
+	10.1.65.6
+	
+	 docker images
+	 
+	 docker-compose up -d
+	 
+	 wget http://10.1.30.12/daily_releases/millipede/master/202005230234/millipede-release-2.7.1-dev.tar.gz
+
+vim /opt/millipede-solr/millipede/bin/solr-startup-script-8983.sh
+	
+
+延期：
+SOLEA-2796 【solea im】南京im处理，目的：处理完成，可以演示
+SOLEA-2707 【广州im】调用客户提供的接口，id更换成显示用户昵称或者备注
+
+20200530
+1.性能测试
+	30.4起不来
+
+python /opt/millipede-solr/management/bin/solr_collection.py create-collection \
+ --auto-numshard  --replication-factor 1 --route-name implicit --auto-create-replication=2 \
+ --schema-file /opt/solea-deploy-install/solr/conf/schema.xml  solea_
+	
+
+2.A环境nagios			--ok
+
+ systemctl 启动服务失败
+      是否不要
+      systemctl --failed --type=service
+      不要：
+          systemctl disable jexec.service
+      如果要：
+          解决一下
+
+3.申请搞一下
+
+
+4.加个配置，不发solr,性能测试		--ok
+
+	2020-05-30 16:42:24.612  WARN 67825 --- [consumer-0-C-1] essageListenerContainer$ListenerConsumer : Paused consumer resumed by Kafka due to rebalance; the container will pause again before polling, unless the container's 'paused' property is reset by a custom rebalance listener
+
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU %MEM     TIME+ COMMAND
+  97426 root      20   0   35.8g   1.0g  13776 S 499.7  0.8   0:34.68 java
+ 104926 root      20   0 8457032 430880  13732 S 175.4  0.3   0:31.30 java
+ 104578 root      20   0 8461596 417548  13952 S 173.8  0.3   0:39.50 java
+ 102708 root      20   0   11.1g   3.2g  14476 S 141.9  2.5   2:28.70 java
+ 103372 root      20   0 8457032 419180  13776 S 120.3  0.3   0:14.02 java
+ 103543 root      20   0 8459548 407400  13996 S 110.0  0.3   0:19.93 java
+ 105058 root      20   0 8461168 423356  13780 S 103.0  0.3   0:17.89 java
+
+	
+5.安排一下下周的工作：
+	show-app?
+
+  80179 root      20   0 8433528 344432  13448 S 493.3  0.3   0:05.72 java
+
+  81080 root      20   0 9436884   1.2g  13700 S 472.4  1.0   0:38.05 java
+  
+cpu: 200 - 490
+  
+  
+
+  
+  
+## 本周工作：
+1.SOLEA-2796 【solea im】南京im处理，目的：处理完成，可以演示			3d
+2.SOLEA-2797 【内蒙数据处理】dolphin和solea数据迁移的问题				4h
+	todo: 更新md5的sql
+3.SOLEA-2800 【现场维护】solea现场维护									4h
+4.SOLEA-2770 A环境的nagios错误-20200509									2h
+		上周没时间做的
+5.SOLEA-2776	【语种检测】图片，视频，音频等文件，语种显示unknow		4h
+total:
+	4d 6h
+
+###########
+20200601
+
+
+
+
+## 本周工作
+
+SOLEA-2797 【内蒙数据处理】dolphin和solea数据迁移的问题									2h
+SOLEA-2685 【tika】pdf里面的	是否可以去掉 当前页数:xxx 是否可以去掉					2h
+SOLEA-2796 【solea im】南京im处理，目的：处理完成，可以演示								4h
+SOLEA-2758 【gz语音对接】如何对接gz的语音接口 (异步)									4h
+SOLEA-2794 【showapp】高亮问题，邮件高亮只对body中的内容做处理							4h
+SOLEA-2775 【tika】是否可以配置对于某些类别或者后缀的文件，不判断是否是“修改扩展名”		4h
+SOLEA-2686	【tika】pgp文件当成加密文件													4h
+SOLEA-2793 【高亮】：email中包含.等高亮有问题											4h
+SOLEA-1897 【showApp】excel部分单元格的自定义格式无法解析								4h
+
+4d 
+SOLEA-2763 【showapp】展示的内容没有格式 ,输出是否可以是xhtml
+	是否要做
+	
+	
+todo:
+1.
+邮件收发关系tika吐出的bcp加上批次号
+现场修改
+
+
+
+2.提醒李玉龙：
+\\10.1.11.5\研发项目管理\项目组
+周报
+风险表
+nagios检查表
+
+3.param 优先级别
+
+4.SOLEA-2759 【现场维护】solea现场维护											
+内蒙-张燕斌
+
+
+5.问一下音频的能力			--ok
+并发100
+处理一个音频文件时间的1/5 - 1/6
+
+
+6.
+    ocrUnits.sort(Comparator.comparing(OcrUnit::getScore).reversed());
+7.
+iconv -f utf8 -t gb18030
+
+
+8.bad文件重发有问题，不是retry文件
+2020-05-09 17:26:42.606  INFO 3373863 --- [main] c.l.s.t.retryapp.SoleaRetryApplicaiton   : send kafka topic:null url:ceph://solea_20200509/0a7b0fea-00c0-4022-889c-5f01fe50ee1c processnum:1
+2020-05-09 17:26:42.607 ERROR 3373863 --- [main] c.l.s.t.retryapp.SoleaRetryApplicaiton   : process file fail, fileName: 0a7b0fea-00c0-4022-889c-5f01fe50ee1c.json
+2020-05-09 17:26:42.627  INFO 3373863 --- [main] c.l.s.t.retryapp.SoleaRetryApplicaiton   : send kafka topic:null url:ceph://solea_20200509/010cb98d-0221-4f19-b1c8-0a063f592820 processnum:1
+
+9.
+以图找图没有设置阈值， 如何取优化？
+
+
+10.
+listary
+
+
+11.
+1889
+0761
+和
+1899
+076b
+
+
+
+12.
+工作之前确认最终目的
+
+13.月度培训
+http://wiki.lzy.com/%E5%87%BA%E5%B7%AE%E6%B5%81%E7%A8%8B%E8%A7%84%E8%8C%83
+SOLEA-2769 【solea-问题】solea_stat_bcp_uploader.xml有问题导致后台无限起进程
+
+
+14.
+showapp 对所有的文件都支持敏感词高亮
+	填个jira
+	SOLEA-2779 【showapp】敏感词加亮，office文件在onlyoffice中支持了，showapp对其他文件也要支持		--ok
+	
+15.pst
+预处理
+
+soleaSOLEA-2786
+【soleaSendFserver2】 目录是否删除支持配置
+
+
+16.看下研发维护记录
+
+
+17.培训
+	合并线程的代码，要用git
+	
+	
+18.
+  private List<String[]> parseSheet4_Chats(Sheet sheet) {
+    String[] chats = new String[ImExcelInfo.SHEET4_FILED_NUM];
+    List<String[]> lines = Lists.newArrayList();
+    Iterator<Row> rowIterator = sheet.rowIterator();
+    rowIterator.next(); // 第一行不要，是字段说明
+    while(rowIterator.hasNext()){
+      Row row = rowIterator.next();
+      for(int i = 0; i < ImExcelInfo.SHEET4_FILED_NUM; i++){
+        chats[i] = getCellValDefStr(row.getCell(i));
+      }
+      lines.add(chats);
+    }
+	
+有啥问题？
+
+
+19.
+ 
+YWang(王燕) 17:51:26
+邮箱分类要修改下，周五会检查

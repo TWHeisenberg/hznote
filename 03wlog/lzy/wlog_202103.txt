@@ -1,0 +1,446 @@
+记录：
+
+sourcegraph * 地址：http://10.1.13.1:7080/search * 用户名密码: lzy/ lzy@123456@lzy 
+sourcegraph
+
+    地址：http://10.1.13.1:7080/search
+    用户名密码: lzy/123456
+
+
+maven 配置：
+D:\soft\maven\apache-maven-3.3.9\conf\settings.xml
+
+ceph 建新的osd:
+ 1013  2020-05-21 19:34:10 ceph -s
+ 1014  2020-05-21 19:34:17 ceph osd out osd.0
+ 1015  2020-05-21 19:34:28 systemctl stop ceph-osd@0
+ 1016  2020-05-21 19:34:35 ceph osd crush remove osd.0
+ 1017  2020-05-21 19:34:45 ceph auth del osd.0
+ 1018  2020-05-21 19:34:53 ceph osd rm osd.0
+ 1019  2020-05-21 19:34:59 umount /var/lib/ceph/osd/ceph-0
+ 1020  2020-05-21 19:35:04 lsblk
+ 1021  2020-05-21 19:35:10 lvdisplay
+ 1022  2020-05-21 19:35:25 lvremove /dev/ceph-897eaa6d-d2d6-4b94-ba7a-734505cf974a/osd-block-922b9306-b72b-47df-90fe-a58eae21d36f
+ 1023  2020-05-21 19:35:43 vgremove /dev/ceph-897eaa6d-d2d6-4b94-ba7a-734505cf974a
+ 1024  2020-05-21 19:35:50 lsblk
+ 1025  2020-05-21 19:35:58 cd /opt/ceph-cluster
+ 1026  2020-05-21 19:36:07 ceph-deploy osd create --data /dev/sdb ceph-10-1-46-32
+
+46.12是solea的web,showApp和数据库, 
+46.13是solea的后台这些七七八八的
+jgcai(蔡建国) 2019-07-31 11:59:44
+solr在46.29
+arm：10.1.132.78 root/arm654321
+gradlew:f
+gradlew -Pprod bootDistTar test / gradlew -Pprod clean bootDistTar
+推荐书籍：
+http://wiki.lzy.com/%E6%96%B0%E5%91%98%E5%B7%A5%E5%85%A5%E8%81%8C%E5%BF%85%E7%9C%8B
+
+10.1.12.4 share 123456
+10.1.11.5 user 123456
+# solea 1.9 solea-1.9 B环境：
+连接：l
+10.2.30.4 root/123456	高级》隧道：10.1.50.18 gw/123456
+prometheus
+:15018
+
+c环境分配：
+http://wiki.lzy.com/%E7%A0%94%E5%8F%91%E6%B5%8B%E8%AF%95%E7%8E%AF%E5%A2%83%28C%E7%8E%AF%E5%A2%83%EF%BC%89ip%E5%88%86%E9%85%8D?highlight=%2810.1.58.1%29
+
+消费情况：
+/usr/hdp/current/kafka-broker/bin/kafka-consumer-groups.sh  --bootstrap-server 10.1.46.32:6667 --describe --group solea-tika
+
+
+远程调试forkparse:
+-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8012
+
+清除kafka数据：
+清除kafka数据  --ok
+		  kafka 清掉数据
+ZK_HOSTS="10.1.61.5:2181"
+		  /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper ${ZK_HOSTS} --topic  solea_fileserver_web  --alter --config  retention.ms=10 
+/usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper ${ZK_HOSTS} --topic solea_fileserver_web --alter --config cleanup.policy=delete
+		  
+		  查看等到log大小为0
+		  ll /opt/kafka-logs/solea_fileserver_web-*
+		  
+		  kafka还原设置
+		  /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper ${ZK_HOSTS} --topic solea_fileserver  --alter --config  retention.ms=604800000 
+		
+	  清空solr数据	--ok
+		  python /opt/millipede-solr/management/bin/solr_collection.py delete-collection solea_
+
+		  创建collection:
+cd /opt/solea-release-2.0.0-r1/solr
+python /opt/millipede-solr/management/bin/solr_collection.py create-collection --auto-numshard  --replication-factor 1 --route-name implicit --auto-create-replication=2 --schema-file /opt/solea_schema/schema.xml  solea_
+
+ /opt/solea-release-2.0.3-r1/solr/conf/schema.xml  solea_
+ 
+ /usr/hdp/current/kafka-broker/bin/kafka-topics.sh  --zookeeper $ZK_HOSTS  --topic solea_fileserver  --describe
+ 
+听包：
+tcpdump -i any tcp port  15003 -w 1.pcap
+
+http and ip.src==10.1.30.4 and ip.dst==10.1.30.4
+ 
+
+liyulong:
+lovexiafe1314
+ 
+ 
+source /opt/solea-tika-app/bin/solea_tika_profile.sh
+export SOLEA_TIKA_APP_OPTS="$SOLEA_TIKA_APP_OPTS -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8019"
+
+cd /opt/solea-tika-app
+bash /opt/solea-tika-app/bin/solea-tika-app start-tika-api \
+ --app.id=api
+ 
+curl http://10.1.46.32:8018/tika/api/doParse  -F "file=@/opt/solea-tika-external-service/test-data/test_ocr.jpg" -d "config=@{\"translateEnable\":\"true\",\"ocrEnable\":\"true\"}" -X POST
+ 
+ 
+source /opt/solea-tika-app/bin/solea_tika_profile.sh
+export SOLEA_TIKA_APP_OPTS="$SOLEA_TIKA_APP_OPTS -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8019"
+	 
+ bash /opt/solea-tika-app/bin/solea-tika-app run-tika \
+ --app.id=xxx.test --application.tika.file.debug=false \
+ --application.kafka.topic=solea_fileserver \
+ --application.solr.collection=solea_redirect_collection
+ 
+远程调试forkparse:
+-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8021
+-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=28983
+
+netstat -nap | grep 1096
+ 
+ solea数据库：
+ 10.1.46.31/solea/123456/ora11g
+ 
+
+
+A环境：
+http://10.1.12.4/ssh%20proxy#preview
+
+查询占用端口进程：
+netstat -nlp | grep :8080 | awk '{print $7}' |awk -F"/" '{ print $1 }'
+
+c mntos:
+ http://10.1.16.1/mntos/
+
+20210301
+1.本周工作
+4d 6h
+SOLEA-3522 【南京sj】对接烽火的邮件数据															1d
+SOLEA-3576 【先入后更新】【solea_then_update_service】定时获取solr临时数据, 补充耗时字段		2d
+COMMON-6784 【guard】：检查java security的random类型											4h
+SOLEA-3645 【后台】升级springboot, EmbeddedKafka 可以支持设置 zk 的 timeout						4h
+SOLEA-3687 【hz部署问题】【后台】内容分析服务的是否注册consul配置不生效							2h
+SOLEA-3685 【hz部署问题】【后台】media-service 的upstream 重复了， web跟mediaservice的			2h
+SOLEA-3641 【tika】确认tika各参数含义, 并给出git-wiki说明										2h
+SOLEA-3580 【先入后更新】【solea_then_update_service】记录并报告web先入后更新的进度				想一下有没有必要做，如果做怎么做？
+
+2.SOLEA-3576 【先入后更新】【solea_then_update_service】定时获取solr临时数据, 补充耗时字段
+	单元测试		--ok
+	shell修改		--ok
+	测试一下
+	10.1.50.18:36670
+	
+	/opt/solea-tika-app/delay-process
+	
+	1.配置latest
+					1.上传外语文件，入库 配置延迟翻译
+					入库确定两个字段，并且翻译和ocr没有的
+					
+					2.修改导出程序配置
+						vim /opt/solea-tika-app/bin/deley-process/config
+						
+						mkdir -p /opt/solea-delay-process/bcpdirs/input
+						mkdir -p /opt/solea-delay-process/bcpdirs/output
+						
+						find /opt/solea-delay-process/bcpdirs/input -type f | xargs rm -f && echo "2021-03-01T15:05:50Z" > /opt/solea-delay-process/bcpdirs/input/latest
+						
+						cd /opt/solea-tika-app && bash delay-process/run-delayprocess.sh
+						
+						可以从latest开始一小时内需要延迟处理的数据。
+						
+					3.启动处理程序
+						
+						调试：
+						
+						source /opt/solea-tika-app/bin/solea_tika_profile.sh
+						export SOLEA_TIKA_APP_OPTS="$SOLEA_TIKA_APP_OPTS -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8011"
+						
+commit_dir="/opt/solea-delay-process/bcpdirs/output"
+collection_name="case_solea_redirect_collection"
+/opt/solea-tika-app/bin/solea-tika-app json-commit-solr \
+  --app.id=commitToSolr \
+  --application.deplayprocess.commitPath="$commit_dir" \
+  --application.delayprocess.sendCollection="$collection_name"
+						
+						
+						预期结果：在output里面输出更新后的json文件
+								处理完应该退出
+					4.提交程序
+						source /opt/solea-tika-app/bin/solea_tika_profile.sh
+						cd /opt/solea-tika-app && bin/solea-tika-app json-to-solr --app.id=updateData
+							
+						预期结果：
+							新数据发进去，然后删除老数据，考虑是否另外程序去删除
+							
+							校验下数据，确保数据对的
+							
+						
+					
+
+					
+					
+					   json.put(key, doc.getFieldValues(key));
+					   输出json字段都变成数组，否则会取不到多值的。 但是doc发送时会自动转换。
+					warning
+					
+	
+	solr commit 问题， overwrite =false					--ok
+		  UpdateRequest req = new UpdateRequest();
+		  req.add(doc, false);
+		  req.setCommitWithin(-1);
+		  req.process(solrClient, sendCollection);
+
+删除数据？
+		  
+
+3.下午去南京sj检查
+	1.nagios	
+	
+		#### 3.8 test_fs_inotify_max_user_instances
+		解决方法：
+		```
+		sysctl fs.inotify.max_user_instances=1024
+		确认下：
+		cat /proc/sys/fs/inotify/max_user_instances
+		1024
+		重新上报： 
+		bash $LCM_GUARD_ROOT/bin/check_machine_common.sh
+	2.mntos
+	
+	3.找客户要台电脑检查
+
+4.codereview
+
+
+20210302
+1.SOLEA-3576 【先入后更新】【solea_then_update_service】定时获取solr临时数据, 补充耗时字段		2d
+	修改下，昨天的几个问题
+	
+	
+2.COMMON-6784 【guard】：检查java security的random类型
+
+
+SOLEA-3522 【南京sj】对接烽火的邮件数据			--
+	下午去南京sj检查
+	mntos配置
+
+20210303
+1.COMMON-6784 【guard】：检查java security的random类型
+	检查加密256的
+	动态扫描类
+	jdk11运行
+	
+	
+2.SOLEA-3576 【先入后更新】【solea_then_update_service】定时获取solr临时数据, 补充耗时字段
+	继续做，争取晚上跑起来
+	1.给个列子，ocr跟图片分类实时做了， 翻译异步做，更新后结果都有： 再solrgenProcess中加一下		--OK
+		原来没有的字段，set
+		原来有但少的字段:text   ???, 取多的一份
+		writer的时候再把新的merge到base中合并回来
+		
+		测试一下
+	2.新老的doc做合并						--ok
+	3.生成任务的程序a, 执行任务程序b
+		生成任务的程序a怎么配置？
+			导出什么时候的数据
+			导出和发送的collection
+			一直运行？
+				guard程序，python 或者shell不停的去查solr？如果有tmp_data数据，从最老的开始，按照配置的时间，生成任务。
+			temp_data_b_i_s_dv:true
+			http://10.1.50.18:36670/solr/case_solea_202102071419/select?q=temp_data_b_i_s_dv:true&sort=import_time asc
+			考虑停止后可以继续
+			
+			
+		tox -e py27-release
+	
+执行：
+bash /opt/solea-tika-app/delay-process/bin/run_delayprocess.sh /opt/solea-delay-process/tasks/ebea161d-51e5-450b-bfa2-2fb59e812212 temp_data_b_i_s_dv:true 2021-02-08T10:07:48Z http://10.1.50.18:15003/solr case_solea_search_collection http://10.1.50.18:15003/solr case_solea_search_collection http://solea-10-1-61-3:15003/fileserver2/api/v1 10
+	
+http://10.1.50.18:15003/solr/case_solea_202102071419_implicit_shard_1_replica_n1/export_data_by_query?indent=on&q=temp_data_b_i_s_dv:true AND import_time:[ TO 2021-02-08T10:17:48Z]&max_doc=false&wt=json
+	
+	
+timeout --signal=KILL 7210 /bin/bash -c /opt/solea-tika-app/delay-process/bin/run_delayprocess.sh /opt/solea-delay-process/tasks/fe0ae394-3b2e-47c5-aa33-09416ea0b4cd temp_data_b_i_s_dv:true 2021-02-08T10:07:48Z http://10.1.50.18:15003/solr case_solea_search_collection http://10.1.50.18:15003/solr case_solea_search_collection http://solea-10-1-61-3:15003/fileserver2/api/v1 10
+	
+删除数据：
+http://10.1.50.18:15003/solr/case_solea_202102071419/update/?stream.body=<delete><query>temp_data_b_i_s_dv:true AND import_time:[2021-02-08T10:07:48Z TO 2021-02-08T10:17:48Z]</query></delete>&stream.contType=text/xml&&commit=true
+	
+curl http://10.1.50.18:36670/solr/case_solea_202102071419/update?commit=true --data-binary "<delete><query>temp_data_b_i_s_dv:true AND import_time:[2021-02-08T10:07:48Z TO 2021-02-08T10:17:48Z]</query></delete>" -H "Content-Type:text/xml"
+	
+开始执行：
+cd /opt/solea-tika-app/delay-process && python bin/task_scheduler.py
+
+
+###################
+20210304
+1.SOLEA-3576 【先入后更新】【solea_then_update_service】定时获取solr临时数据, 补充耗时字段
+	跑起来
+	ocr只能一个一个去加了		--ok
+	
+	问题：
+		delete 有问题
+		
+		write json是空的？
+	
+/opt/solea-tika-app/delay-process/bin/run_delayprocess.sh /opt/solea-delay-process/tasks/2021/03/04/11/c1ea64b8-fe07-44bf-86c0-c56e41ba858b temp_data_b_i_s_dv:true 2021-03-04T11:29:42Z http://10.1.50.18:15003/solr case_solea_search_collection http://10.1.50.18:15003/solr case_solea_search_collection http://solea-10-1-61-3:15003/fileserver2/api/v1 10
+	
+	可以先跑起来		--ok
+	
+	guard 做一下			--ok
+	
+	release 做一下			--ok
+	
+	测试
+	
+	问题：
+		超时时间如何配置？
+		自动部署， 文档完成一下
+		如果start_time 一直不变，程序就报告错误
+	
+		杀掉进程：
+			
+			ps -ef | grep task_scheduler.py | awk '{print $2}' | xargs kill 9
+	测试ocr的：
+		/opt/solea-delay-process/tasks/2021/03/04/18/28d63324-eb9c-4423-9e9f-7d716779b5fe
+		
+		
+  cd /opt/solea-tika-app
+  /opt/solea-tika-app/bin/solea-tika-app run-delay-process \
+    --app.id=delayprocess \
+    --application.fileserver2.baseUrl="http://solea-10-1-61-3:15003/fileserver2/api/v1" \
+    --application.delayprocess.input="/opt/solea-delay-process/tasks/2021/03/04/18/28d63324-eb9c-4423-9e9f-7d716779b5fe/export" \
+    --application.delayprocess.commitPath="/opt/solea-delay-process/tasks/2021/03/04/18/28d63324-eb9c-4423-9e9f-7d716779b5fe/commit"
+		
+		
+		
+		
+	测试100个文档：
+	/opt/solea-delay-process/tasks/2021/03/04/19/193ca282-f32d-4a87-9d80-a563ffec0b16
+	
+	
+2.guard检查的看一下
+	动态扫描类  --ok
+	
+
+3.准备下？
+	solea:
+		1.安装文档
+		介绍文档
+		
+		titan:
+			10.1.62.2:15003/titan
+
+
+todo：
+明天看一下guard
+
+
+
+
+## 本周工作
+total: 4d 6h
+SOLEA-3576 【先入后更新】【solea_then_update_service】定时获取solr临时数据, 补充耗时字段		2d	
+SOLEA-3645 【后台】升级springboot, EmbeddedKafka 可以支持设置 zk 的 timeout						4h
+SOLEA-3687 【hz部署问题】【后台】内容分析服务的是否注册consul配置不生效							2h
+SOLEA-3685 【hz部署问题】【后台】media-service 的upstream 重复了， web跟mediaservice的			2h
+SOLEA-3641 【tika】确认tika各参数含义, 并给出git-wiki说明										2h
+SOLEA-3580 【先入后更新】【solea_then_update_service】记录并报告web先入后更新的进度				想一下有没有必要做，如果做怎么做？
+
+本周ok的：
+SOLEA-3522 【南京sj】对接烽火的邮件数据															1d
+COMMON-6784 【guard】：检查java security的random类型
+
+延期的：
+
+
+
+
+
+
+# 广州：
+SOLEA-3312 【广州】广州的一些问题和需求-20210130
+SOLEA-3505 【gz需求】对接讯飞的精翻
+SOLEA-3629 【gz问题】上传列表加载批次报错， 偶发的
+# 南京sj:
+SOLEA-3534 【showapp】邮件附件未显示
+SOLEA-3368 【南京sj】onlyoffice问题，不能高亮文档
+SOLEA-3557 【南京sj】下次出差南京sj需要做的事
+# 其他
+SOLEA-2866 【翻译】合肥xxx张校校发现的问题，日语没有进行翻译
+
+TODO:
+ git-check 装一下
+ 
+YWang(王燕) 13:37:04
+## pre commit 安装计划
+两周内，所有的 pm 和组长安装完成 到 20201226
+一个月内，所有的人安装完成 到 20201116
+http://wiki.lzy.com/%E5%9C%A8git%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%81%9Ahooks%EF%BC%88git-hooks%EF%BC%89
+
+月度培训，zip解压的
+
+月度培训：
+ COMMON-6763 【guard kill 进程问题】原来10进程， 修改配置成6进程， 然后reaload再kill-all, 原来的4进程还存活？ 没有杀
+
+培训一下， 浏览器不能上传文件的设置
+
+
+
+
+
+
+马利
+10.1.131.51 端口2022
+root/123456
+
+目录 
+/opt_data
+
+开启screen 解压
+
+screen 
+cd /opt_data
+
+tar -zxvf cheetah_data.dbf.tar.gz
+
+
+json write 的时候错了
+
+todo:
+1.工作日志
+2.solea和titan文档，安装文档和项目文档看看
+3.titan代码看看
+
+进程：
+        1570811         2021-03-04 05:08:31     15:45:41.599980         titan_process_config_api        [/opt/titan-process-3.2.3-dev/config-api  /usr/java/default/bin/java -XX:ParallelGCThreads=2 -XX:CICompilerCount=2 -Xms1024m -Xmx1024m -Djava.awt.headless=true -XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintClassHistogram -XX:+PrintTenuringDistribution -XX:+PrintGCApplicationStoppedTime -Xloggc:/opt/titan-process-3.2.3-dev/config-api/logs/gc_titan_process_config_api.out -XX:+HeapDumpOnOutOfMemoryError -XX:+DisableExplicitGC -Djava.io.tmpdir=/opt/titan_tmpdir/config-api -cp :/opt/titan-process-3.2.3-dev/config-api/etc:/opt/titan-process-3.2.3-dev/config-api/lib/titan_process_config_api-3.2.3-SNAPSHOT.jar:/opt/titan-process-3.2.3-dev/config-api/lib/* -Drootdir=/opt/titan-process-3.2.3-dev/config-api -DKETTLE_PLUGIN_BASE_FOLDERS=/opt/titan-process/runner/plugins -XX:OnOutOfMemoryError=kill -9 %p org.springframework.boot.loader.JarLauncher --spring.profiles.active=prod --logging.file=/opt/titan-process-3.2.3-dev/config-api/logs/titan_process_config_api.log]
+root            572721          2021-03-04 20:40:26     0:13:46.089980          titan_process_jdbc_proxy_server [/opt/titan-process-3.2.3-dev/runner-ambari  /usr/java/default/bin/java -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintClassHistogram -XX:+PrintTenuringDistribution -XX:+PrintGCApplicationStoppedTime -Xloggc:/opt/titan-process-3.2.3-dev/runner-ambari/logs/gc_titan_runner_jdbc_proxy_server.out -Dproc_jdbc_proxy_server -Djava.net.preferIPv4Stack=true -Dhadoop.log.dir=/opt/titan-process-3.2.3-dev/runner-ambari/logs -Dhadoop.log.file=hadoop.log -Dhadoop.home.dir=/opt/titan-process-3.2.3-dev/runner-ambari -Dhadoop.id.str=root -Dhadoop.root.logger=INFO,console -Dhadoop.policy.file=hadoop-policy.xml -Dhadoop.security.logger=INFO,NullAppender com.lzy.titan.process.jdbc.JdbcProxyServer --port 15027]
+root            1570782         2021-03-04 05:08:31     15:45:41.769980         titan_process_task_manager      [/opt/titan-process-3.2.3-dev/task-manager  /usr/java/default/bin/java -XX:ParallelGCThreads=2 -XX:CICompilerCount=2 -Xms1280m -Xmx1280m -Djava.awt.headless=true -XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintClassHistogram -XX:+PrintTenuringDistribution -XX:+PrintGCApplicationStoppedTime -Xloggc:/opt/titan-process-3.2.3-dev/task-manager/logs/gc_titan_task_manager.out -XX:+HeapDumpOnOutOfMemoryError -XX:+DisableExplicitGC -Djava.io.tmpdir=/opt/titan_tmpdir/task-manager -cp :/opt/titan-process-3.2.3-dev/task-manager/etc:/opt/titan-process-3.2.3-dev/task-manager/lib/titan_task_manager-3.2.3-SNAPSHOT.jar:/opt/titan-process-3.2.3-dev/task-manager/lib/* -Drootdir=/opt/titan-process-3.2.3-dev/task-manager -Dfile.encoding=UTF-8 -XX:OnOutOfMemoryError=kill -9 %p org.springframework.boot.loader.JarLauncher --spring.profiles.active=prod --logging.file=/opt/titan-process-3.2.3-dev/task-manager/logs/titan_task_manager.log]
+root            1570841         2021-03-04 05:08:31     15:45:41.409980         titan_process_task_runner_high_001      [/opt/titan-process-3.2.3-dev/runner-ambari  /bin/bash bin/titan_runner_wrapper.sh  --work-dir /opt/titan-process-data/runner/work --send-failed-dir /opt/titan-process-data/runner/send-failed -Dtask.manager.queue=high -Did=001]
+root            1570960         2021-03-04 05:08:32     15:45:40.809980         titan_process_task_runner_middle_001    [/opt/titan-process-3.2.3-dev/runner-ambari  /bin/bash bin/titan_runner_wrapper.sh  --work-dir /opt/titan-process-data/runner/work --send-failed-dir /opt/titan-process-data/runner/send-failed -Dtask.manager.queue=middle -Did=001]
+
+
+
+solea-web:
+root            4022039         2021-03-04 02:23:28     18:32:19.928518         solea_jcseg_server_app          [/opt/solea-tools-2.2.0-dev/split-word-jcseg  /usr/java/default/bin/java -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintClassHistogram -XX:+PrintTenuringDistribution -XX:+PrintGCApplicationStoppedTime -Xloggc:/opt/tools/split-word-jcseg/logs/jcseg_server_gc.out -cp /opt/solea-tools-2.2.0-dev/split-word-jcseg/lib/jcseg-server-*.jar://opt/solea-tools-2.2.0-dev/split-word-jcseg/lib/* org.lionsoul.jcseg.server.Bootstrap /opt/solea-tools-2.2.0-dev/split-word-jcseg/resource/jcseg-server.properties]
+root            4022131         2021-03-04 02:23:29     18:32:19.498518         solea_send_fserver2_001         [/opt/solea-send-fserver2-boot-2.2.0-SNAPSHOT  /usr/java/default/bin/java -Djava.io.tmpdir=/opt/solea-send-fserver2/tmp -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintClassHistogram -XX:+PrintTenuringDistribution -XX:+PrintGCApplicationStoppedTime -Xloggc:/opt/solea-send-fserver2/logs/solea-send-fserver2-raw-841-lzyzip_gc.out -jar /opt/solea-send-fserver2/lib/solea-send-fserver2-2.2.0-SNAPSHOT.jar --filetype=raw-841-lzyzip --filter-size-mod=1 --filter-size=0 --filter-type=file_size --id=001]
+root            4022386         2021-03-04 02:23:29     18:32:18.628518         solea_show_app                  [/opt/solea-show-app-boot-2.2.0-SNAPSHOT  /usr/java/default/bin/java -Xms256m -Xmx6g -Xss256k -Djava.awt.headless=true -XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintClassHistogram -XX:+PrintTenuringDistribution -XX:+PrintGCApplicationStoppedTime -Xloggc:/opt/solea-show-app/logs/solea_show_app_gc.out -XX:+HeapDumpOnOutOfMemoryError -XX:+DisableExplicitGC -Djava.io.tmpdir=/opt/show-app-tmp -cp :/opt/solea-show-app-boot-2.2.0-SNAPSHOT/etc:/opt/solea-show-app-boot-2.2.0-SNAPSHOT/lib/solea-show-app-*.jar:/opt/solea-show-app-boot-2.2.0-SNAPSHOT/lib/* -Drootdir=/opt/solea-show-app-boot-2.2.0-SNAPSHOT -XX:OnOutOfMemoryError=kill -9 %p org.springframework.boot.loader.JarLauncher --spring.profiles.active=prod]
+root            4022342         2021-03-04 02:23:29     18:32:18.938518         solea_userdata_dispatch         [/opt/python-common-1.3.6-dev/ftp-upload  python /opt/python-common/ftp-upload/bin/ftp_upload_dispatch.py --inputdir=/opt/solea-server-bcup/bcpdirs/lzyzip --distributedir=/opt/solea-server-bcup/bcpdirs --ftp-server-config-file=/opt/solea-send-fserver2/config/solea_userdata_dispatch.config --logconfig=/opt/solea-send-fserver2/config/solea_userdata_dispatch.log.conf]
+root            612970          2021-03-04 18:02:09     2:53:39.478518          tomcat_web                      [/opt/apache-tomcat-9.0.41  /usr/java/default/bin/java -Djava.util.logging.config.file=/opt/apache-tomcat-9.0.41/conf/logging.properties -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -Djavax.net.ssl.trustStore=/opt/apache-tomcat9/etc/key/cacerts -Ddruid.registerToSysProperty=true -XX:PermSize=256m -XX:MaxPermSize=512m -Xmx16g -XX:OnOutOfMemoryError=kill -9 %p -Dlzy.tomcat.local_ip=10.1.61.2 -Djdk.tls.ephemeralDHKeySize=2048 -Djava.protocol.handler.pkgs=org.apache.catalina.webresources -Dorg.apache.catalina.security.SecurityListener.UMASK=0022 -Dignore.endorsed.dirs= -classpath /opt/apache-tomcat-9.0.41/bin/bootstrap.jar:/opt/apache-tomcat-9.0.41/bin/tomcat-juli.jar -Dcatalina.base=/opt/apache-tomcat-9.0.41 -Dcatalina.home=/opt/apache-tomcat-9.0.41 -Djava.io.tmpdir=/opt/apache-tomcat-9.0.41/temp org.apache.catalina.startup.Bootstrap start]
+root            4022498         2021-03-04 02:23:30     18:32:18.318518         tomcat_web_jdk_11               [/opt/apache-tomcat-9.0.41-jdk-11  /usr/java/jdk-11/bin/java -Djava.util.logging.config.file=/opt/apache-tomcat-9.0.41-jdk-11/conf/logging.properties -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager -Djavax.net.ssl.trustStore=/opt/apache-tomcat9/etc/key/cacerts -Ddruid.registerToSysProperty=true -XX:PermSize=256m -XX:MaxPermSize=512m -Xmx16g -XX:OnOutOfMemoryError=kill -9 %p -Dlzy.tomcat.local_ip=10.1.61.2 -Djdk.tls.ephemeralDHKeySize=2048 -Djava.protocol.handler.pkgs=org.apache.catalina.webresources -Dorg.apache.catalina.security.SecurityListener.UMASK=0022 -Dignore.endorsed.dirs= -classpath /opt/apache-tomcat-9.0.41-jdk-11/bin/bootstrap.jar:/opt/apache-tomcat-9.0.41-jdk-11/bin/tomcat-juli.jar -Dcatalina.base=/opt/apache-tomcat-9.0.41-jdk-11 -Dcatalina.home=/opt/apache-tomcat-9.0.41-jdk-11 -Djava.io.tmpdir=/opt/apache-tomcat-9.0.41-jdk-11/temp org.apache.catalina.startup.Bootstrap start]
+
+
+root            3748166         2021-03-04 15:21:59     5:34:10.609086          solea-tika-001                  [/opt/solea-tika-app-boot-2.2.0-SNAPSHOT  /usr/java/default/bin/java -Xmx6g -Djava.io.tmpdir=/opt/solea-tika-app/tmp -Dexternal.tika.xml=config/tika-external-parsers.xml -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8011 -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintClassHistogram -XX:+PrintTenuringDistribution -XX:+PrintGCApplicationStoppedTime -Xloggc:/opt/solea-tika-app/logs/solea_tika_app_001_gc.out -XX:ParallelGCThreads=1 -jar /opt/solea-tika-app-boot-2.2.0-SNAPSHOT/lib/solea-tika-app-2.2.0-SNAPSHOT.jar run-tika --app.id=001 --app.stopfile=solea_tika_001.stop]
+root            2647915         2021-03-04 02:18:39     18:37:30.549086         solea-tika-decypt-001           [/opt/solea-tika-app-boot-2.2.0-SNAPSHOT  /usr/java/default/bin/java -Xmx6g -Djava.io.tmpdir=/opt/solea-tika-app/tmp -Dexternal.tika.xml=config/tika-external-parsers.xml -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintClassHistogram -XX:+PrintTenuringDistribution -XX:+PrintGCApplicationStoppedTime -Xloggc:/opt/solea-tika-app/logs/solea_tika_app_decypt_001_gc.out -XX:ParallelGCThreads=1 -jar /opt/solea-tika-app-boot-2.2.0-SNAPSHOT/lib/solea-tika-app-2.2.0-SNAPSHOT.jar run-tika --app.id=decypt_001 --app.stopfile=solea_tika_decypt_001.stop --application.tika.decryProcessFlag=true --application.kafka.topic=solea_fileserver_decypt]

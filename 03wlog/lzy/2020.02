@@ -1,0 +1,1140 @@
+建表：
+create tablespace solea
+logging
+datafile 'E:\wt\lzy\solea\solea.dbf'
+size 50m
+autoextend on
+next 50m maxsize 20480m
+extent management local;
+
+create temporary tablespace solea_tmp
+tempfile 'E:\wt\lzy\solea\solea_tmp.dbf'
+size 50m
+autoextend on
+next 50m maxsize 20480m
+extent management local;
+
+create user solea identified by 123456
+default tablespace solea
+temporary tablespace solea_tmp;
+
+grant connect,resource,dba to solea;
+
+加载bcp 到数据库
+bash solea_db_data_load_bcp.sh
+
+
+E:\opt\solea_data_bcup
+
+
+
+grep: /e/wt/lzy/solea/solea/db/etc/ctl/stat.ctl: No such file or directory
+BEGIN lcm_dataimport.before_load_bcp('',509,'solea-tika-keywords_stat_20200218114246_519462ba-0020-46b2-815c-c5753523cff7.bcp'); END;
+
+
+basename solea-tika-keywords_solea-data-stat-flow_20200218114246_519462ba-0020-46b2-815c-c5753523cff7.bcp
+
+sqlplus -L -S solea/123456 E:\\wt\\lzy\\solea\\solea\\db\\bin\\sql\\add_buffer_table_parttiton.sql
+
+
+
+bash bcp_sqlldr.sh solea-data-stat-flow E:\\wt\\lzy\\solea\\solea\\solea-tika-keywords_solea-data-stat-flow_20200218114246_519462ba-0020-46b2-815c-c5753523cff7.bcp /e/wt/lzy/solea/solea/db/etc/ctl/solea-data-stat-flow.ctl 
+
+
+
+E:\\wt\\lzy\\solea\\solea\\db\\db_scripts\\data
+$real_table_name,$bcp_line,$bcp_name
+SOLEA_DATA_STAT_FLOW,507,solea-tika-keywords_solea-data-stat-flow_20200218114246_519462ba-0020-46b2-815c-c5753523cff7.bcp
+
+
+    STAT_TIME      "TO_DATE(:STAT_DATE, 'YYYY-MM-DD HH24:MI:SS')",
+	
+	
+	
+		sqlplus -S $db_username/$db_password <<EOF
+        set serveroutput on
+        call add_partitions();
+        set feedback off
+        exec lcm_dataimport.before_load_bcp('$real_table_name',$bcp_line,'$bcp_name');
+        exit;
+EOF
+
+
+2020.02.11
+1.准备
+	年前工作:
+		1.图片分类后续工作，安装文档
+		2.图片分类跟相似度的继承
+			这个需要公司的环境去调试效果
+
+2.问下自动分类跟自动摘要在solea中如何继承
+	https://github.com/miso-belica/sumy
+	
+		1.自动摘要
+			textsumy_dir.py
+			是否需要字段保存？在哪里展示摘要结果？
+
+		2.自动分类
+			训练模型
+			如果原文特别长，可能需要先摘要然后再做分类，提高效率
+			
+			news_model_5000_n1_e20.h5
+			
+			
+			环境：tensflow + keras + jieba(分词)
+
+3.开发环境搭建
+
+	fileserver2_init不过
+		mvn dependency:get -Dartifact=org.openapitools:openapi-generator-cli:3.3.4:jar   -Dtransitive=false   -Ddest=openapi-generator-cli.jar
+
+报错：
+BUILD FAILED
+E:\wt\lzy\solea_04sourcecode\04sourcecode\build.xml:367: Execute failed: java.io
+.IOException: Cannot run program "mvn.bat" (in directory "E:\wt\lzy\solea_04sour
+cecode\04sourcecode\fileserver2"): CreateProcess error=2, 系统找不到指定的文件。
+
+
+
+gradlew eclipse 报错：
+修改gradle-wrapper.properties 》》distributionUrl=file:///D:/soft/gradle/gradle-4.10.2-bin.zip
+
+
+gradlew -Pprod bootDistTar
+
+setting.gradle
+// enableFeaturePreview('STABLE_PUBLISHING')
+
+缺少依赖：
+Build file 'E:\wt\lzy\solea_04sourcecode\04sourcecode\solea-tika2\build.gradle'
+line: 18
+
+* What went wrong:
+Plugin [id: 'net.ltgt.apt-eclipse', version: '0.19', apply: false] was not found
+ in any of the following sources:
+
+- Gradle Core Plugins (plugin is not in 'org.gradle' namespace)
+- Plugin Repositories (could not resolve plugin artifact 'net.ltgt.apt-eclipse:n
+et.ltgt.apt-eclipse.gradle.plugin:0.19')
+  Searched in the following repositories:
+    MavenLocal(file:/C:/Users/Administrator/.m2/repository/)
+    maven(http://artifact.lzy.com/nexus/repository/lzy/)
+	
+	
+	
+	
+
+
+maven { url "http://artifact.lzy.com/nexus/repository/lzy/" }
+
+https://plugins.gradle.org/m2/
+
+
+
+      > Please use the ObjectFactory.mapProperty() method to create a property of type Map<K, V>.
+
+
+报错：
+* Where:
+Build file 'E:\wt\lzy\solea_04sourcecode\04sourcecode\solea-tika2\solea-tika-app
+\build.gradle' line: 23
+
+* What went wrong:
+A problem occurred evaluating project ':solea-tika-app'.
+> java.net.UnknownHostException: artifact.lzy.com
+
+
+
+solea-tika2/solea-tika-app/build.gradle 20:
+// TODO(cjg): 这边能否用依赖下载后再解压,而不是链接下载的方式
+task getGeolite{
+    ant.get(
+            src:'http://artifact.lzy.com/nexus/repository/maven-releases/com/lzy/common/geolite/20190731/geolite-20190731.zip',
+            dest:'src/main/resources',
+            skipexisting:'true'
+    )
+    ant.unzip(
+            src: 'src/main/resources/geolite-20190731.zip',
+            dest:'src/main/resources/config'
+    )
+    delete 'src/main/resources/geolite-20190731.zip'
+}
+
+gradlew eclipse卡在这一步？
+filemetaparser:eclipseClasspath > Resolve files of :filemetaparser:runtimeCl
+
+退出重新运行
+
+缺少jar：
+ooxml-schemas-1.4.jar
+
+
+
+相关jira:
+SOLEA-2502,81860,,Task,【solea】梳理下solea中有哪些对外通用的服务，如showapp，fileserver2等，写一个wiki说明下
+SOLEA-2524,82111,,Task,【以图找图】完成以图找图的集成，完成安装文档。
+SOLEA-2490,81636,,New Feature,文件根据语义做自动分类
+SOLEA-2485,81580,,Task,【showapp】压缩包文件太多预览超时
+SOLEA-2434,80869,,Task,【铭感词】敏感IP 是否去掉，太多了
+SOLEA-2254,78326,,Bug,【tika】加密文件没有被识别成加密文件
+	
+
+密码：
+二零二零0211
+
+    <server>
+      <id>vant</id>
+      <username>lzy</username>
+      <password>123456@lzy</password>
+    </server>
+放到servers配置段中
+
+    <mirror>
+      <id>vant</id>
+      <mirrorOf>*</mirrorOf>
+      <name>vant maven nexus</name>
+      <url>http://v.vant.in:8081/repository/maven-public/</url>
+    </mirror>
+放到mirrors配置段中
+// http://artifact.lzy.com/nexus/repository/lzy/
+中央仓库是用的官方的仓库做的代理，速度挺快，直接使用即可
+
+Cannot run program "mvn.bat" (in directory): CreateProcess error=2
+
+     [exec]    > Could not get resource 'https://repo.maven.apache.org/maven2/or
+g/apache/poi/ooxml-schemas/1.4/ooxml-schemas-1.4.jar'.
+
+
+Could not resolve all files for configuration ':solea-tika-app:compileClasspath'
+.
+> Could not resolve org.arabidopsis.ahocorasick:ahocorasick:2.x.
+  Required by:
+      project :solea-tika-app
+   > Could not resolve org.arabidopsis.ahocorasick:ahocorasick:2.x.
+      > Could not get resource 'http://maven.lzy.com:8081/nexus/content/groups/l
+zy/org/arabidopsis/ahocorasick/ahocorasick/2.x/ahocorasick-2.x.pom'.
+         > Could not HEAD 'http://maven.lzy.com:8081/nexus/content/groups/lzy/or
+g/arabidopsis/ahocorasick/ahocorasick/2.x/ahocorasick-2.x.pom'.
+            > maven.lzy.com
+> Could not resolve org.ansj:ansj_seg:1.4.1.
+  Required by:
+      project :solea-tika-app
+   > Could not resolve org.ansj:ansj_seg:1.4.1.
+      > Could not get resource 'http://maven.lzy.com:8081/nexus/content/groups/l
+zy/org/ansj/ansj_seg/1.4.1/ansj_seg-1.4.1.pom'.
+         > Could not HEAD 'http://maven.lzy.com:8081/nexus/content/groups/lzy/or
+g/ansj/ansj_seg/1.4.1/ansj_seg-1.4.1.pom'.
+
+
+C:\Users\Administrator\.m2\repository\org\ansi\ansi_seg\1.4.1\ansj_seg-1.4.1.pom
+
+
+1.solea后台环境搭建，后台代码编译过。
+
+2.跟高伟男学习了自动分类，自动摘要部分的功能和代码。
+	明天在本地搭建可以跑起来
+	
+	
+2020.02.12
+1.搭建自动分类跟自动摘要的运行环境，在本地可以运行
+	python 
+	python -m pip install --upgrade pip
+	pip install sumy
+	pip install tensorflow
+	pip install keras
+	pip install tensorflow -i https://mirrors.aliyun.com/pypi/simple/
+
+
+阿里云 http://mirrors.aliyun.com/pypi/simple/
+中国科技大学 https://pypi.mirrors.ustc.edu.cn/simple/
+豆瓣 (douban) http://pypi.douban.com/simple/
+清华大学 https://pypi.tuna.tsinghua.edu.cn/simple/
+中国科学技术大学 http://pypi.mirrors.ustc.edu.cn/simple/
+————————————————
+版权声明：本文为CSDN博主「isowang」的原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接及本声明。
+原文链接：https://blog.csdn.net/isowang/article/details/78759758
+	
+	
+2.本周是否要做摘要跟分类的集成
+	先出方案
+	先做自动摘要，设计一下自动摘要的功能
+	https://github.com/miso-belica/sumy
+	
+	
+3.自动摘要是保存solr中还是showapp中
+	运行的性能，实时分析一篇文章是否可以
+	如何展示？
+	翻译的内容是否需要分析
+		暂时不需要做，但是要支持
+
+	自动摘要程序初始化8-9百毫秒
+	1m的文本，5s左右
+
+	文章太长，比如上传的一本书，内容章节很多的pdf，如何做摘要
+		是否可以截取前面制定长度的内容。
+	哪些文件需要做摘要？
+		txt pdf doc 这些文本文件？
+		
+	
+	自动摘要：输入字文章内容，返回摘要。
+	通过TextRank这种比较传统的抽取式摘要,相比于训练网络的生成式摘要，效果会差些，对内容较短的文本效果不太好，但是比较稳定，受影响的因素较少。
+	
+	程序初始化8-9百毫秒
+	测试处理1m的文本，5s左右
+	正常的新闻类文本，3、4百毫秒
+	
+
+	自动摘要：通过django作服务调用。
+	tika中解析文本，调用自动摘要服务返回结果
+	保存solr到字段：summary_s_ni_s，这样既可以节约查询时间，也方便作扩展。
+	不用indexed
+	页面展示
+		详情页面
+		类似知网展示文本的摘要
+问题：
+1.
+	翻译的内容是否需要分析
+		暂时不需要做，但是要支持
+		
+2.哪些文件需要做摘要？
+	txt pdf doc 常见文本文件？
+	
+3.内容过短应该不做？内容过长截取限制大小？
+	
+	
+理论上来说训练网络是比其他的方法好的，但是在实际应用过程中不一定，训练依赖于样本的质量，参数之类的，都可能有影响。而像TextRank这种比较传统的抽取式摘要可能相对稳定一点，受影响的因素不是太多，但因为是从原文中做的计算和抽取，所以受原文的影响相对会大一点。而且相比于生成式摘要，它的所有句子都来源于原文，没有提炼和总结。
+	
+1.搭建自动摘要程序的运行环境，运行程序测试效果
+	numpy + jieba + sumy
+		pycharm 下载：
+https://www.jetbrains.com/pycharm/download/other.html
+
+2.设计自动摘要功能的流程
+
+
+2020.02.13
+1.自动摘要服务化，可以做接口调用
+
+python manage.py runserver 127.0.0.1:8080
+
+curl http://127.0.0.1:8080/content/index
+
+curl http://127.0.0.1:8080/content/summary -X POST -d "content=hello word"
+
+
+curl http://127.0.0.1:8080/content/summary -X POST -d "content=【新民晚报·新民网】疫情当前，新冠病毒疫苗的研发受到关注。在上海市政府今天下午2时举办的疫情防控新闻发布会上，中科院院士陈凯先表示，疫苗的研发需要一个过程，需要比较长的时间。围绕着疫苗的研究和开发，上海也正在积极推进，有些已经取得了进展。当然，最后能不能成功，还需要一步步的研究结果的验证。
+新民晚报上海时刻出品
+
+陈凯先具体介绍了疫苗研发的过程和周期。疫苗通常可以分为减毒活疫苗、灭活疫苗、亚单位疫苗、基因重组疫苗、核酸疫苗等。疫苗研发的大体流程和周期，包括两个阶段：
+
+其一是疫苗前期研发过程，包括：获得免疫原（获得活病毒、分离相关亚单位、通过基因重组技术获得重组蛋白或者合成相关的DNA（RNA）、免疫反应测试、动物保护测试、免疫原生产工艺（放大）优化、临床前毒理研究等环节。
+
+其二是疫苗研发及注册过程，包括：临床前研究、申报临床、开展临床试验。所有这些环节都成功完成以后，才能实现疫苗的最终上市。"
+
+
+乱码问题
+
+
+can only concatenate str (not "list") to str
+
+
+2.
+
+
+
+
+
+
+
+输入内容：
+【新民晚报·新民网】疫情当前，新冠病毒疫苗的研发受到关注。在上海市政府今天下午2时举办的疫情防控新闻发布会上，中科院院士陈凯先表示，疫苗的研发需要一个过程，需要比较长的时间。围绕着疫苗的研究和开发，上海也正在积极推进，有些已经取得了进展。当然，最后能不能成功，还需要一步步的研究结果的验证。
+新民晚报上海时刻出品
+
+陈凯先具体介绍了疫苗研发的过程和周期。疫苗通常可以分为减毒活疫苗、灭活疫苗、亚单位疫苗、基因重组疫苗、核酸疫苗等。疫苗研发的大体流程和周期，包括两个阶段：
+
+其一是疫苗前期研发过程，包括：获得免疫原（获得活病毒、分离相关亚单位、通过基因重组技术获得重组蛋白或者合成相关的DNA（RNA）、免疫反应测试、动物保护测试、免疫原生产工艺（放大）优化、临床前毒理研究等环节。
+
+其二是疫苗研发及注册过程，包括：临床前研究、申报临床、开展临床试验。所有这些环节都成功完成以后，才能实现疫苗的最终上市。
+
+输出摘要：
+【新民晚报·新民网】疫情当前，新冠病毒疫苗的研发受到关注。
+
+昨天：
+自动摘要服务的开发
+
+2020.02.14
+1.自动摘要程序在tika process中的实现
+
+
+问题，没有环境，怎么跑通流程
+tika处理文章，调用摘要的接口返回保存到solr，这个流程怎么跑通。
+
+考虑分类可能跟翻译一样，分类服务是可以替换的
+
+
+
+是否支持中文繁体？
+
+summary_s_ni_s
+
+curl http://127.0.0.1:8080/content/summary -X POST -d "content=test"
+
+
+
+return:
+{"returnCode": 0, "result": "疫情当前，新冠病毒疫苗的研发受到关注"}
+
+
+
+
+报错：
+Exception happened during processing of request from ('127.0.0.1', 55920)
+Traceback (most recent call last):
+  File "D:\soft\Python\Python37-32\lib\socketserver.py", line 650, in process_re
+quest_thread
+    self.finish_request(request, client_address)
+  File "D:\soft\Python\Python37-32\lib\socketserver.py", line 360, in finish_req
+uest
+    self.RequestHandlerClass(request, client_address, self)
+  File "D:\soft\Python\Python37-32\lib\socketserver.py", line 720, in __init__
+    self.handle()
+  File "D:\soft\Python\Python37-32\lib\site-packages\django\core\servers\basehtt
+p.py", line 174, in handle
+    self.handle_one_request()
+  File "D:\soft\Python\Python37-32\lib\site-packages\django\core\servers\basehtt
+p.py", line 182, in handle_one_request
+    self.raw_requestline = self.rfile.readline(65537)
+  File "D:\soft\Python\Python37-32\lib\socket.py", line 589, in readinto
+    return self._sock.recv_into(b)
+ConnectionResetError: [WinError 10054] 远程主机强迫关闭了一个现有的连接。
+
+
+2020.02.17
+1.晨会
+
+2.solea中对外的服务，写一个wiki,图片分类服务的安装文档
+	
+	
+让bo总帮忙看下jira附件：
+
+SOLEA-2254 [tika]加密文件没有被识别成加密文件
+SOLEA-2522	Bug	【译文】没有解析出译文
+
+思考如何实现：
+SOLEA-2106	Task	【后台】流量控制功能，避免tika解析队列太长
+SOLEA-2489[web]关键词命中统计
+	类似tika处理文件的统计？
+	关键词是动态，会被删除和修改，如何处理？
+	是累加还是统计
+	关键词命中统计：
+	
+	写一个定时任务，统计5分钟内的命中关键词及其次数，吐出bcp，format_bcp将bcp入数据库
+	bcp内容：
+		关键词id	5分钟内命中的次数	时间
+	凌晨去合并一天的数据， web用sql去统计指定时间内的关键词命中情况
+	
+	假如联调
+
+
+统计命中关键词：
+map.put("rule_id1",1);
+map.put("rule_id2", 2+1);
+map.put("rule_id3", 5+1);
+
+定时任务读取map中的数值：
+ 
+map:
+	rule_id1 : 1
+	rule_id2 : 3
+	rule_id3 : 6
+	
+吐出bcp：
+	rule_id1 1 2020-02-17 16:33:00
+	rule_id2 3 2020-02-17 16:33:00
+	rule_id3 6 2020-02-17 16:33:00
+
+4.hbase + hive
+
+5.spark程序
+
+总结了一下solea中对外通用的服务，图片分类的安装文档
+跟蔡建国过了一下关键词统计的实现
+
+关键词统计
+
+两个bug的jira是否有
+
+看两个bug统计
+
+SOLEA-2106	Task	【后台】流量控制功能，避免tika解析队列太长	1d
+kafka里面堆积的文件过多是否可以控制
+
+
+2020.02.18
+1.关键词统计：		--ok
+	生成bcp文件：solea-tika-keywords_stat_20200218114246_519462ba-0020-46b2-815c-c5753523cff7.bcp
+datastat	{"remark": "", "moduleName": "solea-tika-app-keywords", "statValue1": 1, "statKey": "ruleId01", "statTime": "2020-02-18 14:41:26", "statType": "keywords-stat"}
+datastat	{"remark": "", "moduleName": "solea-tika-app-keywords", "statValue1": 2, "statKey": "ruleId02", "statTime": "2020-02-18 14:41:26", "statType": "keywords-stat"}
+datastat	{"remark": "", "moduleName": "solea-tika-app-keywords", "statValue1": 3, "statKey": "ruleId03", "statTime": "2020-02-18 14:41:26", "statType": "keywords-stat"}
+
+
+
+3.hbash
+
+2020.02.19
+晨会：
+1.关键词统计，吐出bcp,保证退出时也会执行，找了下有个注解，preDestroy,上午试一下
+2.流量控制功能，控制一下数量或者这优先级
+	没有优先级，可以放web队列
+3.加密文件没有被识别成加密文件
+
+1.@preDestory试一下，退出前是否可以执行
+2020.02.18
+1.关键词统计，吐出bcp文件
+
+2020.02.19
+1.关键词统计，测试使用@preDestroy是否可以保证退出之前会吐出bcp
+
+java -jar -Xmx512m lib/solea-tika-app-2.0.3-SNAPSHOT.jar run-tika --app.id=01
+
+2.关键词统计，bcp入库的db设计
+
+问题：
+1.数据库合并的策略
+
+2.怎么实现每天的合并操作
+	load_db 配置
+	
+
+3.如果在solea中实现，是否需要重写程序
+ctl中注册一下表
+
+2020.01.19
+1.解决tika程序退出时关键词统计程序吐出bcp
+2.跟马力沟通了关键词统计db的设计方案，可以参照simba的统计db设计。中间需要简单的修改就ok
+
+
+2020.01.20
+1.今天继续关键词统计的流程设计，可以跑通流程
+	db设计
+	bcp入库
+	合并统计操作
+	
+问题：
+
+1.三个表的流程，中间具体的流程还是不太清楚：
+ stat1 stat2 flow
+bcp入库到数据合并到查询？
+ 
+2.为什么这样建立分区
+	SOLEA_DATA_STAT_FLOW按照天建分区
+	data_stat按照月建分区，定时删除，如果我想统计半年或者一年的数据咋办？
+	
+3.看sql好像是按照小时进行合并？
+
+
+4.
+	#get ctlfile table_name
+	# XXXX_YYYY-1_20130418_171007_417_c3e61e8a_a807_11e2_9d8c_000c296e5124_0_merge.bcp
+	# --> YYYY-1
+	
+	control_file=$ROOT_DIR/etc/ctl/$table_name.ctl
+	
+	solea_data_stat_20200218114246_519462ba-0020-46b2-815c-c5753523cff7.bcp
+	
+	
+建表
+加载bcp到数据库
+统计
+
+
+	
+
+本周工作：
+1.
+SOLEA-2502 梳理下solea中有那些对外通用的服务，如showapp，fileserver2等，写一个wiki说明下		4h
+SOLEA-2524,82111,,Task,【以图找图】完成以图找图的集成，完成安装文档。		4h
+
+SOLEA-2254 [tika]加密文件没有被识别成加密文件		4h
+				完成安装文档
+SOLEA-1822	Bug	【tika】压缩包无法解析		4h
+SOLEA-2434,80869,,Task,【铭感词】敏感IP 是否去掉，太多了		4h
+SOLEA-2522	Bug	【译文】没有解析出译文		4h
+SOLEA-2489[web]关键词命中统计		1d
+SOLEA-2106	Task	【后台】流量控制功能，避免tika解析队列太长	1d
+
+
+
+
+
+1.修改
+
+
+1.今天看自动统计还有问题，没有做，上午再看一下
+手动触发一下：
+call lcm_gen_merge_data_tasks();
+select count(*) from data_stat;
+E:\\wt\\lzy\\solea\\solea\\db\\db_scripts\\data\\lcm_data_init_tasks.sql
+
+pyton环境搭建：
+
+报错：
+
+error in nltk setup command: 'install_requires' must be a string or list of strings containing valid project/version requirement specifiers; Expected version spec in singledispatch; python_version < "3.4" at ; python_version < "3.4"
+
+解决：
+pip install setuptools -U
+
+
+1.bcp 文件名修改，内容也需要修改
+
+2.ctl
+
+3.sql文件
+
+4.如果报错：
+        set serveroutput on
+        call add_partitions();
+		
+	
+
+
+
+
+2.下午做敏感词ip配置化
+
+2020.02.22
+昨天
+1.继续做solea统计，完成从bcp入库到统计表
+2.下午实现铭感词ip的配置化
+
+今天：
+1.做内容分类，搭建内容分类的运行环境
+
+
+
+
+要带的：
+1.项目
+	完成敏感词后重新拷
+
+
+3.日志		--ok
+
+后面工作：
+
+1.内容摘要					--ok
+
+安装依赖：jieba
+Chinese tokenizer requires jieba. Please, install it by command 'pip install jieba'.
+
+sumy + jieba
+
+2.内容分类 环境搭建
+	pip install tensorflow
+	import tensorflow as tf
+	报错：
+	ImportError: Could not find the DLL(s) 'msvcp140_1.dll'.
+	安装tensorflow
+
+tensorflow + keras + jieba
+
+报错：
+model = load_model(cf.get("classify", "model"))
+keras _thread._local' object has no attribute 'value'
+
+升级一下keras试一试？
+
+可能原因是keras和tensorflow版本不同，导致有些特性不能支持
+
+FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a 
+numpy 版本问题：
+pip install "numpy<1.17"
+
+还是报错：
+Unexpected keyword argument passed to optimizer: learning_rate
+
+当我们在load keras模型的时候，可能会出现以下报错：
+
+
+TypeError: Unexpected keyword argument passed to optimizer: amsgrad
+原因：
+
+AMSgrad只支持2017年12月11日后发行的keras版本。
+
+解决办法：
+
+pip install --upgrade keras
+
+报错：TypeError: not all arguments converted during string formatting
+
+初始化没问题了，处理报错：
+process error:'<' not supported between instances of 'int' and 'str'
+修改：
+    maxlen = int(options["maxlen"])
+    max_features = int(options["max_features"])
+
+E:\\wt\\lzy\\solea_04sourcecode\\04sourcecode\\content-summary\\data\news_model.h5
+
+	
+	
+	wireshark
+
+2020.02.24
+1.自动分类服务程序
+
+2.带到公司提交
+	1.关键词统计		--ok
+	2.图片分类服务安装文档,solea中对外通用的服务wiki		--ok
+	3.敏感词配置化		--ok
+	4.自动文本摘要（python + java）		--ok5-6/*
+	69-+
+	5.自动文本分类服务程序		--ok
+
+2020.02.25
+1.提交代码：
+	1.关键词统计				--ok
+		bcp文件名：
+			solea-tika-keywords_solea-data-stat-flow_date_uuid.bcp
+		SOLEA-2489 【web】关键字命中统计
+	2.图片分类服务安装文档,solea中对外通用的服务wiki				--ok
+		SOLEA-2524 【以图找图】完成以图找图的集成，完成安装文档。
+	3.敏感词配置化													--ok
+		SOLEA-2434 【铭感词】敏感IP 是否去掉，太多了
+	4.自动文本摘要（python + java）				--ok
+		SOLEA-245 支持对文档进行摘要分类
+	5.自动文本分类服务程序							--ok
+
+
+2.准备明天下午可以演示：
+	1.关键词统计
+		建表			--ok
+		吐出bcp
+			上传 离线工作日志.txt
+		bcp入库			--ok
+			root    	13248   	2020-02-25 04:32:31 	8:22:42.916554      	solea_db_data_load_bcp        	[/opt/solea-db-2.0.3-dev  bash bin/solea_db_data_load_bcp.sh]
+		ftp upload 到db目录				--ok
+			python /opt/python-common/ftp-upload/bin/ftp_upload.py --inputdir /opt/solea_data_bcup/bcpdirs --groupname dbn --ftp-server-config-file /opt/solea_stat/etc/solea_stat_upload_server.config --logconfig /opt/solea_stat/etc/ftpuploader.conf
+			
+			配置guard:
+			
+		自动合并记录
+	2.敏感词ip配置化							--ok
+	3.自动文本摘要								--ok
+	Processing ./requests-2.23.0-py2.py3-none-any.whl
+ERROR: Package 'requests' requires a different Python: 3.4.3 not in '>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*'
+
+Collecting requests>=2.7.0
+  Downloading https://pypi.lzy.com:3142/devpi/root/pypi/%2Bf/d53/27a0023c190fe/requests-2.22.0-py2.py3-none-any.whl (57kB)
+     |████████████████████████████████| 61kB 69.7MB/s
+ERROR: Package 'requests' requires a different Python: 3.4.3 not in '>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*'
+
+报错：
+Installing collected packages: idna, certifi, chardet, requests
+  Found existing installation: certifi 14.5.14
+ERROR: Cannot uninstall 'certifi'. It is a distutils installed project and thus we cannot accurately determine which files belong to it which would lead to only a partial uninstall.
+
+pip install requests==2.20.0 --ignore-installed
+pip install sumy==0.8.0
+	4.自动文本分类服务程序								--ok
+	5.图像分类服务安装文档，solea中对外通用的服务wiki					--ok
+	6.SOLEA-2484 【tika】email parse ,发现tika提取邮件内容，提取了两份，兼容一下			--ok
+	7.SOLEA-2411 【solea-tika-parser】是否可以提取邮件中的签名档信息						--ok
+
+图像分类服务报错：
+process error:Tensor embedding_1_input:0, specified in either feed_devices or fetch_devices was not found in the Graph
+Exception ignored in: <bound method _Callable.__del__ of <tensorflow.python.client.session.BaseSession._Callable object at 0x7fe124f35e48>>
+Traceback (most recent call last):
+  File "/root/anaconda3/lib/python3.4/site-packages/tensorflow/python/client/session.py", line 1455, in __del__
+    self._session._session, self._handle, status)
+  File "/root/anaconda3/lib/python3.4/site-packages/tensorflow/python/framework/errors_impl.py", line 528, in __exit__
+    c_api.TF_GetCode(self.status.status))
+tensorflow.python.framework.errors_impl.InvalidArgumentError: No such callable handle: 140593514386976
+
+	
+	
+2020.02.26
+1.是否自动统计？
+	是的
+关键词统计 修改下module_name:solea-tika-app
+
+	
+2.准备下午的演示：
+
+SOLEA-2484 【tika】email parse ,发现tika提取邮件内容，提取了两份，兼容一下		--ok
+SOLEA-2434 【铭感词】敏感IP 是否去掉，太多了		--ok
+SOLEA-245 支持对文档进行摘要分类
+			分类还没有集成
+SOLEA-2411 【solea-tika-parser】是否可以提取邮件中的签名档信息
+		提取的规则需要加强
+SOLEA-2489 【web】关键字命中统计
+		后台到db统计数据已经ok
+SOLEA-2502 【solea】梳理下solea中有哪些对外通用的服务，如showapp，fileserver2等，写一个wiki说明下
+		
+
+
+
+	1.关键词统计
+		程序5分钟吐出bcp 》ftp 上传到db机器(solea_stat_bcp_uploader) 》solea_db_data_load_bcp 加载bcp入库 》》每天凌晨自动统计一天的记录 》》 web展示
+		自动部署，安装文档做一下
+		
+			solea-tika-keywords_solea-data-stat-flow_%s_%s.bcp 例：solea-tika-keywords_solea-data-stat-flow_20200218114246_519462ba-0020-46b2-815c-c5753523cff7.bcp
+			solea-tika-app-keywords	2020-02-24 14:41:26	keywords-stat	be2fc66405704a1c88325776ecc48a09	8	0	0	0	
+	2.敏感词ip配置化
+		加了一个开关,默认关闭：
+			ipEnabled: false
+			名字打了，修改下
+		jseam@mea.gov.in(104344)_7e334_20161108093329+0530.eml
+		http://10.1.46.31:15003/solea/fileDetail/index?docId=0a6b283b-b9ae-4feb-a629-af9f28003f21
+		http://10.1.46.31:15003/solea/fileDetail/index?docId=28702555-d9fd-41f7-9e0a-cfe36d64da4e
+	3.自动文本摘要
+		batch_id:20200226133236
+		tika process封装内容，请求 》》 summary-service返回摘要 》》 保存solr summary_s_ni_s
+		抽取式摘要比较简单稳定，但是抽取的效果受原文内容质量影响较大
+		
+	4.自动文本分类服务程序
+		TODO: tika 中process的实现，流程基本和摘要相同，但要考虑分类服务可以替换
+		保存分类结果？
+			保存多个，根据score过滤
+			分类名称保存英文
+	5.SOLEA-2484 【tika】email parse ,发现tika提取邮件内容，提取了两份，兼容一下
+		1tbiBwM65FVVnPQubAAAsw.eml
+		原因：邮件类型为multipart/alternative，存在两份内容，一份text类型，一份html类型，这里只提取text
+			
+	6.SOLEA-2411 【solea-tika-parser】是否可以提取邮件中的签名档信息
+		E:\work\logbook\2020.02\02.26演示一下\签名档
+		加强规则
+		
+	7.图像分类服务安装文档，solea中对外通用的服务wiki
+		http://git.lzy.com/lzy/solea/-/wikis/home
+			每个服务可以是单独章节，可以扩展
+		
+fileserver2：基于ceph的文件上传下载服务
+
+showapp：独立启动的sprintBoot程序。用来查看文件，可以通过上传文件和输入ceph的url进行展示文件
+
+solea-send-fserver2:扫描目录文件发送到fileserver2的程序，分为两个子进程：
+	solea_send_fserver2_841：处理并发送类似841文件的半结构化文件，可用于发送预处理后的数据
+	solea_send_fserver2_raw：发送普通文件
+
+tika-api-service：基于tika解析文件的服务。调用接口上传文件，返回文件解析结果，包括文件meta，语种识别，翻译和图片ocr等。
+
+filemetaparser：用来解析类似841文件的半结构化文件的工具类，调用接口，输入841文件，输出普通文件和meta信息。
+
+		
+		
+分类：
+{"result": "[('游戏', 0.979261), ('科技', 0.0042851567), ('财经', 0.00090215774), ('家居', 0.00067195296), ('时尚', 0.00046622753), ('教育', 0.0004246533), ('房产', 0.00038456917), ('彩票', 0.00037291646), ('社会', 0.00034955144), ('时政', 0.00031661987), ('股票', 0.00019143442), ('星座', 4.1157007e-05), ('体育', 3.0070543e-05), ('娱乐', 5.096197e-06)]", "returnCode": 0}
+		
+{"returnCode": 0, "result": "[('科技', 0.9745579), ('股票', 9.442339e-06), ('财经', 8.471529e-06), ('游戏', 2.9802322e-08), ('房产', 0.0), ('星座', 0.0), ('时尚', 0.0), ('家居', 0.0), ('社会', 0.0), ('彩票', 0.0), ('娱乐', 0.0), ('教育', 0.0), ('体育', 0.0), ('时政', 0.0)]"}
+		
+报错：
+2020-02-26 14:01:05.647121: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1115] Created TensorFlow device (/job:localhost/replica:0/task:0/device:GPU:1 with 5542 MB memory) -> physical GPU (device: 1, name: GeForce RTX 2060, pci bus id: 0000:04:00.0, compute capability: 7.5)
+process error:Tensor embedding_1_input:0, specified in either feed_devices or fetch_devices was not found in the Graph
+Exception ignored in: <bound method _Callable.__del__ of <tensorflow.python.client.session.BaseSession._Callable object at 0x7f7e65bb4438>>
+Traceback (most recent call last):
+  File "/root/anaconda3/lib/python3.4/site-packages/tensorflow/python/client/session.py", line 1455, in __del__
+    self._session._session, self._handle, status)
+  File "/root/anaconda3/lib/python3.4/site-packages/tensorflow/python/framework/errors_impl.py", line 528, in __exit__
+    c_api.TF_GetCode(self.status.status))
+tensorflow.python.framework.errors_impl.InvalidArgumentError: No such callable handle: 140169463102864
+
+
+review后工作：
+1.后台敏感ip的开关名字设置的太大了(ipEnable)
+	application.sensitive.ipEnabled
+2.摘要在tika中的处理次序(在tika最后,抽出来的摘要中会出现\u0001字符)
+		不改
+3.签名档是否需要在solea中入库
+		不需要
+4.签名档的测试用例完备(外网的邮件等,需要验证抽取效果)
+		测试下
+5.关键词组统计,是否有必要做到达到一定程度(数量),提前吐出bcp
+6.关键词统计自动部署与安装文档补充
+7.对外通用服务的wiki文档(没有写接口,没有分章节)
+8.签名档集成到tika,测试一下性能
+9.文本自动分类存储的数量设置(存几个,怎么存)
+
+10.文本分类集成
+11.图像分类安装文档
+12.填一个jira:目录增量同步，对应分类
+
+
+
+
+2020.02.27
+1.SOLEA-2411 【solea-tika-parser】是否可以提取邮件中的签名档信息			--ok
+	签名档跑一边，规则加强
+	
+
+2.文本分类集成
+	SOLEA-2541 【文本摘要、分类】solea中支持对文本进行摘要和分类
+
+		两个配置，score和topN ,判断返回的第一个结果是否大于score,如果大于，继续判断面的结果是否相似，取top NestedServletException
+		如果第一个结果小于score,那就不要
+		默认配置:
+			top 3
+			score 0.5
+		取top N 为了解决可能有些文本的分类比较相似，如财经，股票
+		score过滤，是为了保证一定的准确度。
+		
+		solr字段：
+		classification_ms_i_s
+		
+14个分类：
+体育	sports
+娱乐	entertainment
+家居	home
+彩票	lottery
+房产	estate
+教育	education
+时尚	fashion
+时政	politics
+星座	constellation
+游戏	game
+社会	Sociology
+科技	technology
+股票	shares
+财经	Finance
+
+
+list跟数组?
+		
+
+报错：
+Error while reading resource variable dense_1/bias from Container: localhost. This could mean that the variable was uninitialized. Not found: Container localhost does not exist. (Could not find resource: localhost/dense_1/bias)
+	 [[{{node dense_1/BiasAdd/ReadVariableOp}}]]
+	 [[{{node dense_1/Sigmoid}}]]
+
+        global graph, sess
+        graph = tf.get_default_graph()
+        sess = tf.Session()
+        set_session(sess)
+        model = load_model(cf.get("classify", "model"))
+		
+		
+        with graph.as_default():
+            set_session(sess)
+            result = model.predict(predict_vec)
+            print('predict cost time:', time.time() - process_start_time)
+	 
+注意：
+set_session(sess)在load_model之前
+
+3.演示环境的测试用例		--ok
+	下次升级再放上去
+	
+4.SOLEA-2479 【tika】升级到Apache Tika 1.23		--ok
+	所有单元ok
+
+单元测试报错：
+> Task :solea-show-app:test
+
+com.lzy.solea.poi.AutoDetectConverterTest > testConvert_normalDocx FAILED
+    java.lang.NoClassDefFoundError at AutoDetectConverterTest.java:47
+        Caused by: java.lang.ClassNotFoundException at AutoDetectConverterTest.java:47
+
+com.lzy.solea.poi.AutoDetectConverterTest > testConvert_returnConvertFile FAILED
+    java.lang.NoClassDefFoundError at AutoDetectConverterTest.java:47
+        Caused by: java.lang.ClassNotFoundException at AutoDetectConverterTest.java:47
+
+com.lzy.solea.poi.AutoDetectConverterTest > testConvert_normalZip FAILED
+    java.lang.NoClassDefFoundError at AutoDetectConverterTest.java:47
+        Caused by: java.lang.ClassNotFoundException at AutoDetectConverterTest.java:47
+
+com.lzy.solea.poi.AutoDetectConverterTest > testConvert_encryptionZip FAILED
+    java.lang.NoClassDefFoundError at AutoDetectConverterTest.java:47
+        Caused by: java.lang.ClassNotFoundException at AutoDetectConverterTest.java:47
+
+com.lzy.solea.show.CompressControllerTest > testShowCompressHtmlValue FAILED
+    org.springframework.web.util.NestedServletException at CompressControllerTest.java:86
+        Caused by: java.lang.NoClassDefFoundError
+            Caused by: java.lang.ClassNotFoundException
+
+com.lzy.solea.show.TikaControllerTest > testTikaShow FAILED
+    org.springframework.web.util.NestedServletException at TikaControllerTest.java:91
+        Caused by: java.lang.NoClassDefFoundError
+            Caused by: java.lang.ClassNotFoundException
+
+com.lzy.solea.tika.TikaParserEngineTest > testToHtmlValue_zip FAILED
+    java.lang.NoClassDefFoundError
+        Caused by: java.lang.ClassNotFoundException
+		
+是否跟升级tika有关？
+项目删除重新拉			--ok
+
+5.
+SOLEA-2541 【文本摘要、分类】solea中支持对文本进行摘要和分类
+		
+6.填一个jira:
+SOLEA-2542 - 【solea】支持对目录的文件增量同步，并且一个目录对应一个category.id
+		
+7.修改wiki模板：
+
+### 1. 
+
+### 2. 使用说明
+
+#### 2.1. 文件上传
+
+8.图像分类：
+OOM
+2020-02-27 20:41:15.714037: W tensorflow/compiler/xla/service/platform_util.cc:240] unable to create StreamExecutor for CUDA:0: failed initializing StreamExecutor for CUDA device ordinal 0: Internal: failed call to cuDevicePrimaryCtxRetain: CUDA_ERROR_OUT_OF_MEMORY: out of memory; total memory reported: 6222446592
+
+
+2020.02.28
+1.sonar check_source没过，看一下		--ok
+	showapp的
+
+2.图片分类，上传图片
+
+2020-02-28 10:27:13.140040: I tensorflow/stream_executor/dso_loader.cc:152] successfully opened CUDA library libcublas.so.10.0 locally
+2020-02-28 10:27:13.539694: E tensorflow/stream_executor/cuda/cuda_dnn.cc:334] Could not create cudnn handle: CUDNN_STATUS_INTERNAL_ERROR
+2020-02-28 10:27:13.543036: E tensorflow/stream_executor/cuda/cuda_dnn.cc:334] Could not create cudnn handle: CUDNN_STATUS_INTERNAL_ERROR
+
+failed to get convolution algorithm. This is probably because cuDNN failed to initialize, so try looking to see if a warning log message was printed above.
+    config = tf.ConfigProto()
+    config.gpu_options.allow_growth = True
+    sess = tf.Session(config=config)
+    set_session(sess)
+
+	
+E tensorflow/stream_executor/cuda/cuda_blas.cc:510] failed to create cublas handle: CUBLAS_STATUS_NOT_INITIALIZED
+	
+
+3.文本分类，摘要是否有
+classification_ms_i_s
+summary_s_ni_s
+
+4.分类服务端口问题
+	动态端口
+		
+		
+5.安装环境：
+centos 6的：
+
+	  安装python 3 
+	   安装 scl 
+	  	yum install centos-release-scl
+  Installing : centos-release-scl-rh-2-4.el6.centos.noarch            
+  Installing : 10:centos-release-scl-7-4.el6.centos.noarch              
+  yum --disablerepo="*" --enablerepo="centos-sclo-rh" list *python3*
+			rh-python36.x86_64
+		
+		backup rpm 
+			/var/cache/yum/rh-python36
+		有效
+			scl enable rh-python36 bash
+			/opt/rh/rh-python36/root/usr/bin
+centos 7应该一样
+
+
+卸载python
+rpm -qa|grep python|xargs rpm -ev --allmatches --nodeps # 强制删除所有安装包
+whereis python |xargs rm -frv #删除残余文件
+whereis python #验证删除
+
+
+不能用，会破坏其他环境
+
+yum install -y python34u.x86_64
+
+ln -s /usr/bin/python3.4 /usr/bin/python
+
+
+/usr/local/lib/python2.7/site-packages/pip-1.4.1-py2.7.egg
+
+
+/usr/lib/python3.4/site-packages/pip-1.4.1-py3.4.egg
+
+/usr/lib/python3.4/site-packages/pip-1.4.1-py3.4.egg/pip/runner.py
+		
+切换默认的python 为python 3.4之后yum不能用：
+  File "/usr/bin/yum", line 30
+    except KeyboardInterrupt, e:
+                            ^
+SyntaxError: invalid syntax
+
+
+2020.02.29
+
+1.提交一下代码			--ok
+
+2.动态端口				--ok
+	使用动态端口
+	http://git.lzy.com/lzy/solea/commit/b72f3016fb173e7f8b4575141fb57db0ac2ee867
+
+3.安装的依赖问题
+
+	使用动态端口   --ok
+	升级python导致yum用不了
+	pip install numpy 
+	报错：
+
+	pip install tensorflow
+	pip install "numpy<1.17"
+	pip install --upgrade keras
+	
+	pip install requests==2.20.0 --ignore-installed
+pip install sumy==0.8.0
+
+
+	python 
+	pip install sumy
+	pip install tensorflow
+	pip install keras
+	pip install tensorflow -i https://mirrors.aliyun.com/pypi/simple/
+	pip install jieba
+
+ERROR: b'/bin/sh: xslt-config: command not found\n'
+yum instal libxslt-devel
+pyton 升级导致的
+解决：
+vim /usr/bin/yum
+#!/usr/bin/python2
+	
+	
+安装numpy报错：
+    SystemError: Cannot compile 'Python.h'. Perhaps you need to install python-dev|python-devel.
+    ----------------------------------------
+ERROR: Command errored out with exit status 1: /usr/bin/python3 -u -c 'import sys, setuptools, tokenize; sys.argv[0] = '"'"'/tmp/pip-install-jjxph9iy/numpy/setup.py'"'"'; __file__='"'"'/tmp/pip-install-jjxph9iy/numpy/setup.py'"'"';f=getattr(tokenize, '"'"'open'"'"', open)(__file__);code=f.read().replace('"'"'\r\n'"'"', '"'"'\n'"'"');f.close();exec(compile(code, __file__, '"'"'exec'"'"'))' install --record /tmp/pip-record-x32ze0nt/install-record.txt --single-version-externally-managed --compile Check the logs for full command output.
+	
+lxml==3.4.2
+sumy==0.8.0
+numpy==1.16.5
+tensorflow==1.13.1
+
+###############
+下周工作：
+
+
+1.先按照原来anaconda的方式安装环境
+	使用nginx代理的方式访问分类服务
+2.
+
+
+
+		
+TODO
+1.
+WNGao(高伟南) 10:00:18
+那你有时间帮我看一下这个压缩包里的图片，好像都没有识别出文字
+TWang(王涛) 10:00:28
+好的
+
+2.王超超
+是否可以增量上传指定目录文件，每个目录对应一个用户（权限）
+	确定目录是固定的还是动态？	固定的
+	目录对应文件分类是否需要定制化	文件分类已经创建好，现在只需要配置目录对应文件分类
+
+
+3.提取邮件签名档
+	debugsignature
+		1.可以配置
+		2.只对邮件有效
+
+mht文件和eml文件的contentType是一样的
+message/rfc822
+		
+		
+4.学习一下dolphin

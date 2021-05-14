@@ -1,0 +1,929 @@
+记录：
+
+
+sourcegraph
+
+    地址：http://10.1.13.1:7080/search
+    用户名密码: lzy/123456
+
+
+maven 配置：
+D:\soft\maven\apache-maven-3.3.9\conf\settings.xml
+
+ceph 建新的osd:
+ 1013  2020-05-21 19:34:10 ceph -s
+ 1014  2020-05-21 19:34:17 ceph osd out osd.0
+ 1015  2020-05-21 19:34:28 systemctl stop ceph-osd@0
+ 1016  2020-05-21 19:34:35 ceph osd crush remove osd.0
+ 1017  2020-05-21 19:34:45 ceph auth del osd.0
+ 1018  2020-05-21 19:34:53 ceph osd rm osd.0
+ 1019  2020-05-21 19:34:59 umount /var/lib/ceph/osd/ceph-0
+ 1020  2020-05-21 19:35:04 lsblk
+ 1021  2020-05-21 19:35:10 lvdisplay
+ 1022  2020-05-21 19:35:25 lvremove /dev/ceph-897eaa6d-d2d6-4b94-ba7a-734505cf974a/osd-block-922b9306-b72b-47df-90fe-a58eae21d36f
+ 1023  2020-05-21 19:35:43 vgremove /dev/ceph-897eaa6d-d2d6-4b94-ba7a-734505cf974a
+ 1024  2020-05-21 19:35:50 lsblk
+ 1025  2020-05-21 19:35:58 cd /opt/ceph-cluster
+ 1026  2020-05-21 19:36:07 ceph-deploy osd create --data /dev/sdb ceph-10-1-46-32
+
+46.12是solea的web,showApp和数据库, 
+46.13是solea的后台这些七七八八的
+jgcai(蔡建国) 2019-07-31 11:59:44
+solr在46.29
+arm：10.1.132.78 root/arm654321
+gradlew:f
+gradlew -Pprod bootDistTar test / gradlew -Pprod clean bootDistTar
+推荐书籍：
+http://wiki.lzy.com/%E6%96%B0%E5%91%98%E5%B7%A5%E5%85%A5%E8%81%8C%E5%BF%85%E7%9C%8B
+
+10.1.12.4 share 123456
+10.1.11.5 user 123456
+# solea 1.9 solea-1.9 B环境：
+连接：l
+10.2.30.4 root/123456	高级》隧道：10.1.50.18 gw/123456
+prometheus
+:15018
+
+c环境分配：
+http://wiki.lzy.com/%E7%A0%94%E5%8F%91%E6%B5%8B%E8%AF%95%E7%8E%AF%E5%A2%83%28C%E7%8E%AF%E5%A2%83%EF%BC%89ip%E5%88%86%E9%85%8D?highlight=%2810.1.58.1%29
+
+消费情况：
+/usr/hdp/current/kafka-broker/bin/kafka-consumer-groups.sh  --bootstrap-server 10.1.46.32:6667 --describe --group solea-tika
+
+
+远程调试forkparse:
+-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8012
+
+清除kafka数据：
+清除kafka数据  --ok
+		  kafka 清掉数据
+ZK_HOSTS="10.1.61.5:2181"
+		  /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper ${ZK_HOSTS} --topic  solea_fileserver_web  --alter --config  retention.ms=10 
+/usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper ${ZK_HOSTS} --topic solea_fileserver_web --alter --config cleanup.policy=delete
+		  
+		  查看等到log大小为0
+		  ll /opt/kafka-logs/solea_fileserver_web-*
+		  
+		  kafka还原设置
+		  /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper ${ZK_HOSTS} --topic solea_fileserver  --alter --config  retention.ms=604800000 
+		
+	  清空solr数据	--ok
+		  python /opt/millipede-solr/management/bin/solr_collection.py delete-collection solea_
+
+		  创建collection:
+cd /opt/solea-release-2.0.0-r1/solr
+python /opt/millipede-solr/management/bin/solr_collection.py create-collection --auto-numshard  --replication-factor 1 --route-name implicit --auto-create-replication=2 --schema-file /opt/solea_schema/schema.xml  solea_
+
+ /opt/solea-release-2.0.3-r1/solr/conf/schema.xml  solea_
+ 
+ /usr/hdp/current/kafka-broker/bin/kafka-topics.sh  --zookeeper $ZK_HOSTS  --topic solea_fileserver  --describe
+ 
+听包：
+tcpdump -i any tcp port  15003 -w 1.pcap
+
+http and ip.src==10.1.30.4 and ip.dst==10.1.30.4
+ 
+
+liyulong:
+lovexiafe1314
+ 
+ 
+source /opt/solea-tika-app/bin/solea_tika_profile.sh
+export SOLEA_TIKA_APP_OPTS="$SOLEA_TIKA_APP_OPTS -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8019"
+
+cd /opt/solea-tika-app
+bash /opt/solea-tika-app/bin/solea-tika-app start-tika-api \
+ --app.id=api
+ 
+curl http://10.1.46.32:8018/tika/api/doParse  -F "file=@/opt/solea-tika-external-service/test-data/test_ocr.jpg" -d "config=@{\"translateEnable\":\"true\",\"ocrEnable\":\"true\"}" -X POST
+ 
+ 
+source /opt/solea-tika-app/bin/solea_tika_profile.sh
+export SOLEA_TIKA_APP_OPTS="$SOLEA_TIKA_APP_OPTS -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8019"
+	 
+ bash /opt/solea-tika-app/bin/solea-tika-app run-tika \
+ --app.id=xxx.test --application.tika.file.debug=false \
+ --application.kafka.topic=solea_fileserver \
+ --application.solr.collection=solea_redirect_collection
+ 
+远程调试forkparse:
+-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8021
+
+netstat -nap | grep 1096
+ 
+ solea数据库：
+ 10.1.46.31/solea/123456/ora11g
+ 
+
+
+A环境：
+http://10.1.12.4/ssh%20proxy#preview
+
+查询占用端口进程：
+netstat -nlp | grep :8080 | awk '{print $7}' |awk -F"/" '{ print $1 }'
+
+c mntos:
+ http://10.1.16.1/mntos/
+ 
+
+20201201
+
+文档翻译：
+翻译内容错误？窗体：
+	
+
+1.SOLEA-3362 【zip解压】省厅升级发现的部分zip压缩包解压失败
+	准备下安装包
+	
+
+2.SOLEA-3325 【广州】支持.fox后缀文件的解析入库
+	造一下fox文件
+	
+
+3.SOLEA-3354 【文档翻译】文档翻译问题汇总
+	删除任务
+	失败报错的
+	中文乱码
+		： Vue js培训_V1.0.0.pptx
+	
+
+20201202
+1.SOLEA-3362 【zip解压】省厅升级发现的部分zip压缩包解压失败			--ok
+	问一下数据发的怎么样
+	
+	
+2.SOLEA-3325 【广州】支持.fox后缀文件的解析入库
+	tika不支持，没找到解析的方法
+	跟客户确认下文件内容
+	文件来源
+	
+	
+3.SOLEA-3354 【文档翻译】文档翻译问题汇总
+		task不存在			--ok
+		翻译问题			--ok
+		删除任务							--ok
+			定一下几种状态：
+			status.json中增加状态
+				 ready, processing, success, fail, cancelled
+				 增加字段：msg(保存一些信息，如转换中，错误信息，错误信息要是常量)
+				 
+			operation.json中增加字段：
+				control: cancelled
+			
+		失败报错的信息显示					--ok
+		中文乱码					--ok
+			： Vue js培训_V1.0.0.pptx
+			
+		文档问题
+
+		虚拟机安装的问题
+			改成nat					--ok
+			端口转发
+			
+			
+			
+				#先查看虚拟机状态
+				vboxmanage list -l runningvms
+					winserver2016
+				vboxmanage modifyvm "winserver2016" --natpf1 ",tcp,127.0.0.1,15031,,15031"
+				
+					测试下：
+					curl 127.0.0.1:15031/solea-document-service/document/_test
+					telnet 127.0.0.1 15031
+			重新snapshot
+			
+			重新导出 ova				--ok
+			/root/Documents
+			
+			
+			
+		四个文件失败
+		
+					2020-12-01 17:30:14.122 ERROR --- [main] c.l.s.d.convert.impl.PptxConverter       : Exception:
+			java.lang.IllegalStateException: You cannot change text of a line break, it is always '\n'
+					at org.apache.poi.xslf.usermodel.XSLFLineBreak.setText(XSLFLineBreak.java:30)
+
+		6d35804f9d854ace9b71d81eb23326e2.ppt
+		8f15e963877d45a2984736461263741d.doc
+		
+				转换失败了，好像不是doc, 是docx?
+		818d8a507be34320b720810df42dc988.doc
+		7d4dad128d1d49368c792363e324dbb3.ppt
+		
+		字体的问题
+		
+问题：
+原文预览变成下载：قانون الهيئة العليا للحج والعمرة رقم  23 لسنة 2005.doc
+pdf下载还是pdf?其他好像也是
+
+
+sftp -P 18669  sftpuser@218.17.144.69
+
+218.17.144.68 可以ping通，69能通
+
+# test: sftp -P 18669  sftpuser@218.17.144.69
+#  p SZga@!163
+
+4.
+## formail：arcf
+
+先判断前面 4 个 byte 是 ARCF
+10 10 10 10 10 10 10 11 11 11 11 11 11 53 0d 0a --这个是个头
+是风格福
+head
+0x 80200 --有点数据
+10675000 =237A00 --有点数据 好像是描述
+150777300 =1A3FEC0 开始邮件数据
+10 10 10 10 10 10 10 11 11 11 11 11 11 53 0d 0a --这个是个头
+151545700 = 1A6CBC0
+^P^P^P^P^P^P^P^Q^Q^Q^Q^Q^QS^M --做分割
+grep -E "10\s+10\s+10\s+10\s+10" ro.fox.head40.hex
+grep -e "\x10\x10\x10" ro.fox
+grep -P "\x10\x10\x10\x10\x10" ro.fox -a -A 3 -B 3
+grep -P "\x10\x10\x10\x10\x10" ro.fox -a -A 3 |grep Return-Path -a |wc -l
+782
+
+fox convert
+fox parser
+foxmail sdk
+.fox
+foxmail lib
+
+
+html格式的doc应该支持
+
+20201203
+1.SOLEA-3362 【zip解压】省厅升级发现的部分zip压缩包解压失败				--ok
+	问一下马总
+		跑了880w 进度81%，上传失败12，解析失败8
+	
+	
+2.SOLEA-3325 【广州】支持.fox后缀文件的解析入库
+	效率太慢用buffer
+	有限状态机去做
+	
+	看看box文件
+		BOX是foxmail的邮件夹文件，如in.BOX表示收件箱，out.BOX表示发件箱，sent.BOX表示已发送，trash.BOX表示垃圾箱
+		
+	确定文件个数		
+				927个
+	确定解压出来的大小
+		fox文件：2.04 GB 解压文件大小：2.02 GB
+
+3.SOLEA-3354 【文档翻译】文档翻译问题汇总
+	check
+	删除，错误信息提示联调
+		先更新下：		--ok
+	文档修改
+	
+	端口转发：
+	是否要关机？
+	vboxmanage modifyvm "winserver2016" --natpf1 ",tcp,127.0.0.1,15032,,15032"
+	
+	问题：
+	[Think.Python(2012.8)].Allen.B.Downey.文字版.pdf
+	
+[root@ca03.lob.bd.com Documents]# vboxmanage modifyvm "winserver2016" --natpf1 ",tcp,127.0.0.1,15031,,15031"
+VBoxManage: error: A NAT rule of this name already exists
+VBoxManage: error: Details: code NS_ERROR_INVALID_ARG (0x80070057), component NATEngineWrap, interface INATEngine, callee nsISupports
+VBoxManage: error: Context: "AddRedirect(Bstr(strName).raw(), proto, Bstr(strHostIp).raw(), RTStrToUInt16(strHostPort), Bstr(strGuestIp).raw(), RTStrToUInt16(strGuestPort))" at line 1911 of file VBoxManageModifyVM.cpp
+
+	
+启动失败，guard启动是否有超时设置
+	
+showapp报错;
+Worklist in 2020
+http://10.1.50.18:15003/solea-showapp/file/showing?url=http%3A%2F%2F10.1.61.2%3A15003%2Fsolea-showapp%2Fdownload%2F5fb91dc8-b8da-4724-84e6-eab83019bf6d-123059-12.xls&showAll=true
+	
+	
+SOLEA-3393 【showapp】邮件附件不能预览，页面报错
+
+4.报销		--ok
+
+
+
+问题：
+两个进程？？
+solea_task_status                               True    start   pid=[2459328, 2459704]
+
+guard报错：
+2020-12-03 09:15:55,275 ERROR start  location:[/root/lcm.guard-1.9.2-dev/etc/guard/conf.d/solea_show_app.xml] name : [solea_show_app].
+Traceback (most recent call last):
+  File "/root/lcm.guard-1.9.2-dev/lib/lcm/guard/mains/guard.py", line 216, in main
+  File "/root/lcm.guard-1.9.2-dev/lib/lcm/guard/guard/monitor.py", line 417, in start
+  File "/root/lcm.guard-1.9.2-dev/lib/lcm/guard/guard/monitor.py", line 581, in gettmpcmd
+  File "/root/lcm.guard-1.9.2-dev/lib/lcm/guard/guard/monitor.py", line 385, in createShellScript
+AttributeError: 'module' object has no attribute 'version'
+
+20201204
+1.SOLEA-3354 【文档翻译】文档翻译问题汇总				--ok
+
+	安装文档
+	虚拟机问题
+		起不来了？
+		vboxmanage startvm winserver2016
+		
+		
+Waiting for VM "winserver2016" to power on...
+VBoxManage: error: The virtual machine 'winserver2016' has terminated unexpectedly during startup because of signal 6
+VBoxManage: error: Details: code NS_ERROR_FAILURE (0x80004005), component MachineWrap, interface IMachine
+	
+	试试：
+	vboxmanage startvm winserver2016 --type headless 好了？		--ok
+	要用后台启动的方式
+	
+	ERROR: cannot launch bash - run is locked
+	/var/run/solea_winserver_lockrunlockrun
+	
+	lockrun -L /var/run/solea_winserver_lockrun -- bash bin/winserver_start.sh 总是超时？
+看看日志在哪里？
+		
+
+	
+删除任务
+错误提示
+check
+安装文档
+	
+SOLEA-3220 【省厅solea】省厅1.1.9版本，跟马利考虑是否升级solea到新版本
+	还要一批841文件
+SOLEA-3325 【广州】支持.fox后缀文件的解析入库 
+	下周完成
+	
+	
+
+	
+	
+	
+	
+2.SOLEA-3322 【自动部署】支持修改翻译语种之间的转换关系
+
+
+3.SOLEA-3325 【广州】支持.fox后缀文件的解析入库
+	集成到sendFserver
+	
+	// TODO(wangtao): 为啥8192最合适
+	
+0 = {Integer@550} 34
+1 = {Integer@552} 1441
+2 = {Integer@563} 2066
+3 = {Integer@564} 707
+	
+SOLEA-3394
+
+solr支持字段值必须包含哪些内容，是否可以用来加强图片特征值的
+	
+本周工作：
+total: 4d 6h
+SOLEA-3354 【文档翻译】文档翻译问题汇总							2d 4h	@预测试方法
+SOLEA-3362 【zip解压】省厅升级发现的部分zip压缩包解压失败		1d	@预测试方法
+SOLEA-3325 【广州】支持.fox后缀文件的解析入库					1d	@预测试方法
+SOLEA-3322 【自动部署】支持修改翻译语种之间的转换关系			2h
+	
+todo:
+翻译报错重试？
+tmpwatch
+端口申请
+1.提供一个脚本去展开压缩包
+
+安装多台虚拟机，可以修改成其它IP，外面加一层nginx配置
+虚拟机模板，自动生成
+
+恢复：  
+ mv /opt/lzy-dockers/solea-c/init.sh /opt/lzy-dockers/solea-c/init.sh.bak
+  mv /vagrant/auto-deploy/auto-deploy.sh /vagrant/auto-deploy/auto-deploy.sh.bak
+
+## 本周工作：
+total: 5d
+SOLEA-3354 【文档翻译】文档翻译问题汇总										2d	@预测试方法
+	snapshot自动恢复
+	删除任务的功能
+	翻译接口重试，和失败多少算任务失败
+SOLEA-3362 【zip解压】省厅升级发现的部分zip压缩包解压失败					1d
+SOLEA-3325 【广州】支持.fox后缀文件的解析入库								4h
+SOLEA-3357 【邮件收发关系】对接知识图谱，bcp中带上权限字段					4h 
+@ 预测试方法：
+	上传一个foxmail文件，sendFserver解开发送
+	跟pst一个效果
+SOLEA-3356 【现场维护】solea现场维护(W48 20201123))							4h
+SOLEA-3340 【南京sj】 客户反馈在页面点击翻译，页面会卡住					4h
+
+
+20201207
+1.本周工作：					--ok
+total: 3d 4h
+SOLEA-3325 【广州】支持.fox后缀文件的解析入库					1d
+	集成fox和tgz
+SOLEA-3373 【测试】安装文档翻译									4h
+SOLEA-3399 【广州出差】升级系统，更新一些客户需求				4h
+	准备
+SOLEA-3363 【tika】提供一个工具，可以对文件做处理				1d	@预测试方法
+SOLEA-3335 【tika】目前系统支持哪些加密文件识别, 能否做扩展		4h
+周四如果不出差，看一下怎么用abbyy实现ocr
+
+
+	
+
+
+
+SOLEA-3220 【省厅solea】省厅1.1.9版本，跟马利考虑是否升级solea到新版本
+	841文件？
+	
+	SOLEA-3335 【tika】目前系统支持哪些加密文件识别, 能否做扩展
+
+2.文档翻译测试下					--ok
+
+问题，pdf打包后损坏了？
+
+
+3.fox集成，tgz
+solea：
+
+加上contentType, 看看http
+custom-mimetypes.xml
+
+application/foxmail-fox
+application/gzip
+
+
+- 广州更新
+  fox 和 tgz
+  新闻网站，图片
+  crow 更新
+- 准备出版本
+  周五拉分支
+  不要做大修改了
+- SOLEA-3373 【测试】安装文档翻译
+  再测试一下
+
+  
+20201208
+1.SOLEA-3325 【广州】支持.fox后缀文件的解析入库
+	提交一下
+	测试一下					--ok
+	发文件测试					--ok
+
+2.SOLEA-3373 【测试】安装文档翻译			--ok
+	测试一下
+	测试pdf的问题
+		Using 'UTF-8' encoding to copy filtered resources.
+
+        <fileSet>
+            <filtered>true</filtered>
+            <directory>test-task</directory>
+            <outputDirectory>test-task</outputDirectory>
+            <includes>
+                <include>*.*</include>
+                <include>**/*</include>
+            </includes>
+        </fileSet>
+		
+被过滤转码了？
+filtered改成false试试
+		
+	错误信息显示？
+
+3.SOLEA-3399 【广州出差】升级系统，更新一些客户需求
+	准备出差东西
+	1.知识图谱升级安装
+	2.新闻网站图片的问题 ？？
+	
+@王涛
+CZZhang(张传证) 14:22:23
+\\10.1.11.5\temp\zcz
+CZZhang(张传证) 14:22:32
+知识图谱的patch 我放这个目录了
+CZZhang(张传证) 14:22:36
+20201208-gz-patch.rar
+CZZhang(张传证) 14:23:06
+解压没有密码
+CZZhang(张传证) 14:23:18
+步骤还是比较多的 ，写的比较清晰 有问题找我
+
+知识图谱升级安装看看
+
+
+
+ ${LCM_GUARD_ROOT}/bin/lcm_guard_process_error.py
+ 
+ SOLEA-3405 【文本翻译】pdf转换，加密或损坏的pdf会导致虚拟机内adobe弹出对话框卡住
+
+ SOLEA-3406 【文本翻译】编辑加密的pdf转换失败（可以打开），是否可以支持转换
+	
+4.演示
+演示下：
+SOLEA-3322 【自动部署】支持修改翻译语种之间的转换关系
+/opt/solea-deploy/environments/dev/files.ini/solea-web/solea-transl
+/opt/apache-tomcat/webapps/solea-transl/WEB-INF/classes
+
+	
+	prod 英文到中文		--ok
+	
+SOLEA-3357 【邮件收发关系】对接知识图谱，bcp中带上权限字段
+	tika
+	离线处理
+	
+
+SOLEA-3220 【省厅solea】省厅1.1.9版本，跟马利考虑是否升级solea到新版本
+	跟马利确认
+
+20201209
+1.单元测试不过				--ok
+
+	26 + 119+ 782= 927
+	
+203.eml 少了几个字节？
+223.eml
+
+
+7872 + 
+\\10.1.11.5\share\项目相关\solea\虚拟机
+2.文档翻译问题修改					--ok
+	翻译内容问题，英到中乱码		--ok
+		很多窗体					--ok
+			加上debug
+		
+Solr基础_V1.0.0.pptx 中文到日语，变成了txt
+SVN培训_V1.0.0.pptx 中文到日语，是空的txt
+		
+check:
+		
+26712:2020-12-09 08:41:36,224 INFO [location:[/root/lcm.guard-1.9.2-dev/tmp/lcm_guard.xml] name : [solea_document_winserver]. ] running real check cmd [bash /opt/solea-document-processor/document-process-modules/bin/winserver_check.sh  /opt/solea-document-processor/document-process-modules/logs/solea_winserver_check.out].
+26941:2020-12-09 09:41:39,767 INFO [location:[/root/lcm.guard-1.9.2-dev/tmp/lcm_guard.xml] name : [solea_document_winserver]. ] running real check cmd [bash /opt/solea-document-processor/document-process-modules/bin/winserver_check.sh  /opt/solea-document-processor/document-process-modules/logs/solea_winserver_check.out].
+27174:2020-12-09 10:41:43,756 INFO [location:[/root/lcm.guard-1.9.2-dev/tmp/lcm_guard.xml] name : [solea_document_winserver]. ] running real check cmd [bash /opt/solea-document-processor/document-process-modules/bin/winserver_check.sh  /opt/solea-document-processor/document-process-modules/logs/solea_winserver_check.out].
+27403:2020-12-09 11:41:48,297 INFO [location:[/root/lcm.guard-1.9.2-dev/tmp/lcm_guard.xml] name : [solea_document_winserver]. ] running real check cmd [bash /opt/solea-document-processor/document-process-modules/bin/winserver_check.sh  /opt/solea-document-processor/document-process-modules/logs/solea_winserver_check.out].
+27404:2020-12-09 11:41:48,703 WARNING [location:[/root/lcm.guard-1.9.2-dev/tmp/lcm_guard.xml] name : [solea_document_winserver]. ] check cmd [bash /opt/solea-document-processor/document-process-modules/bin/winserver_check.sh  /opt/solea-document-processor/document-process-modules/logs/solea_winserver_check.out] failed: [('status file not exists\n', '')].
+		
+3.明天是否去广州
+	准备一下？
+
+	
+预测试方法：
+1.更新sendFserver支持解压fox文件和tgz文件
+2.新闻网站能显示图片，找李玉龙，要提供文档安装
+3.知识图谱的邮件分析的权限，crow提供patch, 并且有升级文档
+4.上次带回的两个问题确认：SOLEA-3271， SOLEA-3268
+5. 现场solea代码bundle带回来。
+6.给客户一个运维计划（计划多久去一次，巡检系统，升级等）
+
+上面的工作尽量再周三前都完成
+	
+ftp:
+218.17.144.69 2220
+wbsj/Mjson2020@srvtowbjs6688
+
+
+[root@jingshu-192-168-15-1 ~]# ftp
+
+ftp> open 218.17.144.69 2220
+Connected to 218.17.144.69 (218.17.144.69).
+220 Welcome Meiya FTP service.
+Name (218.17.144.69:root): wbsj
+331 Please specify the password.
+Password:
+230 Login successful.
+Remote system type is UNIX.
+Using binary mode to transfer files.
+ftp> pass
+Passive mode off.
+ftp> ls
+200 PORT command successful. Consider using PASV.
+425 Failed to establish connection.
+ftp> ls -l
+200 PORT command successful. Consider using PASV.
+425 Failed to establish connection.
+ftp> pass on
+Passive mode on.
+ftp> ls
+227 Entering Passive M
+
+	
+4.
+parse-file
+	
+check-git
+	
+	
+TODO:
+// @Test
+  public void processTGZFile() throws IOException, TikaException, SAXException {
+    String filePath = "src/test/resources/tgz_lzy.zip";
+    File zip = new File(filePath);
+    System.setProperty("java.io.tmpdir", tmpDir);
+    LzyZipFileProcessor processor =
+        (LzyZipFileProcessor)
+            LzyZipFileProcessor.newFileServer2Processor(
+                "src/test/resources/tika-config-override-test.xml");
+    CallBackInfo callBackInfo = new CallBackInfo();
+    List<SenderItem> list = processor.processLzyZipToSendItems(zip, callBackInfo);
+    assertEquals(6, list.size());
+
+    for (int i = 0; i < 6; i++) {
+      assertEquals(true, list.get(i).getFile().delete());
+    }
+  }
+	
+## 推荐一下 check git
+
+用 guard 安装，windows
+cron 启动，检查一次
+
+E:\work\gits\lzy\common\dev_tools\check-local-git
+见 readme，如果有问题一下
+
+http://git.lzy.com/lzy-dev-tool/cookiecutter-lzy-java-springboot
+http://git.lzy.com/lzy-dev-tool/cookiecutter-lzy-python
+
+
+4.SOLEA-3363 【tika】提供一个工具，可以对文件做处理
+命令行：
+bash /opt/solea-tika-app/bin/solea-tika-app parse --app.id=parse
+
+20201210
+
+
+1.SOLEA-3363 【tika】提供一个工具，可以对文件做处理
+	继续做
+	org.apache.tika.sax.RecursiveParserWrapperHandler
+	org.apache.tika.parser.RecursiveParserWrapper$RecursivelySecureContentHandler
+	"org.apache.tika.parser.RecursiveParserWrapper$RecursivelySecureContentHandler" -> "<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta name="X-Parsed-By" content="org.apache.tika.parser.CompositeParser">
+<meta name="X-Parsed-By" content="org.apache.tika.parser.DefaultParser">
+<meta name="X-Parsed-By" content="com.lzy.solea.tika.parser.pkg.PackageParser">
+<meta name="X-TIKA:digest:MD5" content="b6e7348529a6124b206fdc2f070a44e3">
+<meta name="attach_file_list" content="wt/云度改动说明.txt">
+<meta name="Content-Type" content="application/zip">
+<title></title>
+</head>
+<body><div class="embedded" id="wt/云度改动说明.txt"></div>
+<div class="package-entry"><h1>wt/云度改动说明.txt</h1>
+</div>
+<div class="embedded" id="wt/改动图例/1.pdf"></div>
+<div class="package-entry"><h1>wt/改动图例/1.pdf</h1>
+</div>
+<div class="embedded" id="wt/改动图例/2.pdf"></div>
+<div class="package-entry"><h1>wt/改动图例/2.pdf</h1>
+</div>
+<div class="embedded" id="wt/改动图例/3.pdf"></div>
+<div class="package-entry"><h1>wt/改动图例/3.pdf</h1>
+</div>
+<div class="embedded" id="wt/改动图例/4.pdf"></div>
+<div class="package-entry"><h1>wt/改动图例/4.pdf<"
+	
+测试下：
+E:\work\gits\solea\solea2\04sourcecode\solea-tika2\solea-tika-app
+	
+cd /opt/solea-tika-app
+bash /opt/solea-tika-app/bin/solea-tika-app parse --app.id=parse --input=/opt/solea-tika-app/tika-parse/3.docx  --outDir=/opt/solea-tika-app/tika-parse/out
+	
+2.文档翻译，上传文件看看效果
+	http://git.lzy.com/lzy-opensource-group/tika/-/tree/main
+E:\work\gits\lzy-opensource-group\tika\tika-parser-modules\tika-parser-pdf-module\src\test\resources\test-documents
+
+看看中译的？
+
+看看文件错误？
+
+
+3.演示：
+	1.SOLEA-3373 【测试】安装文档翻译							
+		重新安装下  --ok
+		
+	2.SOLEA-3363 【tika】提供一个工具，可以对文件做处理
+	
+zip + zip
+eml + 附件
+zip + eml
+txt
+	
+	3.SOLEA-3325 【广州】支持.fox后缀文件的解析入库
+	
+文件给一下bo总
+
+20201211
+1.代码提交		--ok
+
+
+2.文档翻译内容问题看看		--ok
+	pictures.ppt
+	protectedFile.xlsx 加密的是未知错误？
+	testEXCEL_various.xlsb ???
+	testEXCEL_protected_passtika_2.xlsx 加密的 位置错误		--ok
+	testEXCEL.strict.xlsx	正常的打不开？
+	testAnnotations.pdf 打不开
+	testOCR.pdf 打不开		--ok
+	
+	
+poi打不开：
+	testEXCEL.strict.xlsx
+		org.apache.poi.ooxml.POIXMLException: Strict OOXML isn't currently supported, please see bug #57699
+		
+	因为保存格式是Strict Open XML格式：
+		1.可以手动转换Excel workbook格式
+		2.libreoffice也支持转换
+soffice --headless --invisible --convert-to xlsx E:\work\gits\lzy-opensource-group\tika\tika-parser-modules\tika-parser-microsoft-module\src\test\resources\test-documents\testEXCEL.strict.xlsx  --outdir E:\work\logbook\202012\data\文档翻译\otherr
+convert E:\work\gits\lzy-opensource-group\tika\tika-parser-modules\tika-parser-microsoft-module\src\test\resources\test-documents\testEXCEL.strict.xlsx -> E:\work\logbook\202012\data\文档翻译\other\testEXCEL.strict.xlsx using filter : Calc MS Excel 2007 XML
+
+soffice转换不了：
+	pictures.ppt
+	
+目录和bookmark没有翻译
+	
+libreoffice支持转换的：
+xlsb xlsm pptm
+docm dotx dotm
+
+是否加上？
+
+填个jira
+
+
+	
+
+3.SOLEA-3363 【tika】提供一个工具，可以对文件做处理
+
+	secureContentHandler.updateContentHandler(preContextHandler);
+	RecursiveMetadataContentHandlerProxy
+	
+	org.apache.tika.fork.RecursiveMetadataContentHandlerProxy@49c386c8
+	
+	
+	com.lzy.solea.tika.app.batch.RecursiveParserWrapperNoContentHandler@565b064f
+
+	forkparse打开看看
+	
+zip + zip
+eml + 附件
+zip + eml
+txt
+	
+测试：
+cd /opt/solea-tika-app
+bash /opt/solea-tika-app/bin/solea-tika-app parse-file --app.id=parse-file --input=/opt/solea-tika-app/tika-parse/zip-zip.zip  --outDir=/opt/solea-tika-app/tika-parse/out
+	
+	
+4.SOLEA-3335 【tika】目前系统支持哪些加密文件识别, 能否做扩展
+
+	soffice --headless --invisible --convert-to pptx C:\Users\mayn\Downloads\pictures.ppt --outdir C:\Users\mayn\Downloads
+
+5.abbyy
+	guard 杀windows窗口的
+${LCM_GUARD_ROOT}/bin/lcm_guard_process_error.py
+
+怎么实现的？
+	找到所有的窗口title,拿指定的title去匹配：程序错误，找到就关掉
+	好像不行？adobe的title只有Adobe Acrobat Pro DC，
+		能不能拿到窗口的详细信息？
+		
+	杀掉： Adobe Acrobat
+	
+	关闭，adobe 卡住？
+	
+
+
+COMMON-73 【guard】写一个python脚本，点击一下windows 窗口的ok
+
+问题： 
+1.title不能配
+2.如果出错， close Adobe Acrobat会卡住？
+要先杀Adobe Acrobat Pro DC 再杀
+
+
+win32api.PostMessage(hwnd, win32con.WM_CLOSE, 0, 0)
+找到对话框坐标点ok?
+win32api.keybd_event(hwnd, 0, win32con.KEYEVENTF_KEYUP, 0)
+
+
+
+SOLEA-2866 【翻译】合肥xxx张校校发现的问题，日语没有进行翻译
+SOLEA-3399 【广州出差】升级系统，更新一些客户需求
+
+
+20201212
+1.出差准备		--ok
+
+2.SOLEA-3335 【tika】目前系统支持哪些加密文件识别, 能否做扩展		--ok
+	是否写个wiki
+	测试一下
+	
+zip, rar, 7z 
+doc, 
+	
+	
+3.SOLEA-3363 【tika】提供一个工具，可以对文件做处理	演示下		--ok
+
+填个jira 文档翻译：
+SOLEA-3417 【文档翻译】2.1.3版本处理的一些问题和改进
+
+## 本周工作
+total: 3d 4h
+SOLEA-3325 【广州】支持.fox后缀文件的解析入库					1d
+	集成fox和tgz
+SOLEA-3373 【测试】安装文档翻译									4h
+SOLEA-3399 【广州出差】升级系统，更新一些客户需求				4h
+	准备
+SOLEA-3363 【tika】提供一个工具，可以对文件做处理				1d	@预测试方法
+SOLEA-3335 【tika】目前系统支持哪些加密文件识别, 能否做扩展		4h
+周四如果不出差，看一下怎么用abbyy实现ocr
+
+
+20201231
+1.整理一下
+
+邮件回复		--ok
+
+填jira		--ok
+
+关闭jira	--ok
+
+报销
+
+
+
+
+################
+20210104
+1.本周工作：4d 6h
+SOLEA-3501 【gz需求】新闻网站实现推荐系统，推荐相似新闻										1d @预测试方法
+SOLEA-3405 【文本翻译】pdf转换，加密或损坏的pdf会导致虚拟机内adobe弹出对话框卡住			1d
+SOLEA-3444 【tika】文件上传解压逻辑修改														4h
+SOLEA-3304 【sendFserver】压缩包解压发送的问题												4h
+COMMON-6719 【python-common】format to bcp 支持全path的过滤									4h
+SOLEA-3502 【现场维护】solea现场维护(W54 20210104)											4h
+SOLEA-3496 【tika】gz现场发现的bad文件。													4h
+SOLEA-3454 【内容标签】上传枪支、飞机、证件类的图片，不会自动显示相关的标签					2h
+
+节前的jira延期：										--ok
+	SOLEA-3444 【tika】文件上传解压逻辑修改
+	SOLEA-3405 【文本翻译】pdf转换，加密或损坏的pdf会导致虚拟机内adobe弹出对话框卡住
+	SOLEA-3367 【南京sj】权限的bug,新建用户权限过滤的问题
+	SOLEA-3340 【南京sj】 客户反馈在页面点击翻译，页面会卡住
+	SOLEA-3312 【广州】广州的一些问题和需求
+	SOLEA-2866 【翻译】合肥xxx张校校发现的问题，日语没有进行翻译
+
+2.SOLEA-3501 【gz需求】新闻网站实现推荐系统，推荐相似新闻
+	内容推荐，如何去做？
+	
+	
+本周工作：4d 6h
+SOLEA-3501 【gz需求】新闻网站实现推荐系统，推荐相似新闻										1d @预测试方法
+SOLEA-3405 【文本翻译】pdf转换，加密或损坏的pdf会导致虚拟机内adobe弹出对话框卡住			1d
+SOLEA-3444 【tika】文件上传解压逻辑修改														4h
+SOLEA-3304 【sendFserver】压缩包解压发送的问题												4h
+COMMON-6719 【python-common】format to bcp 支持全path的过滤									4h
+SOLEA-3502 【现场维护】solea现场维护(W54 20210104)											4h
+SOLEA-3496 【tika】gz现场发现的bad文件。													4h
+SOLEA-3454 【内容标签】上传枪支、飞机、证件类的图片，不会自动显示相关的标签					2h
+	
+新闻网站需求
+SOLEA-3501 【gz需求】新闻网站实现推荐系统，推荐相似新闻
+
+
+2.新闻网站推荐的需求是否要做？
+
+
+MLi(李敏) 16:15:29
+去程的机票还要麻烦你去找王洪拿下哦
+
+
+
+
+TODO:
+
+月度培训，zip解压的
+
+idea的format插件更新到1.7
+
+
+A环境演示数据:
+
+演示数据放在\\10.1.11.5\share\项目相关\solea
+ ** 每次安装升级完成后，删除数据，并且全部重发，保证下面的测试也过
+
+ nanj sj
+ 
+ 登录账号密码:
+admin/1qaz@WSX
+
+服务器登录：
+root/qazwsx@okm
+
+检查下所有nginx都应该有：
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+http://wiki.lzy.com/shell%E5%A6%82%E4%BD%95%E6%94%AF%E6%8C%81%E6%AF%8F%E4%B8%80%E4%B8%AA%E5%91%BD%E4%BB%A4%E4%B8%8D%E8%83%BD%E9%94%99%E8%AF%AF
+
+
+南京sj 再建一个collection 测试下
+
+文档写一下，force-clean
+
+
+1.工程文档修改：
+	1. 机房楼层12改成6
+	2. 服务器密码修改：lzy@qazokm
+	
+	
+c环境solr切一下50.18

@@ -1,0 +1,1092 @@
+记录：
+
+
+sourcegraph
+
+    地址：http://10.1.13.1:7080/search
+    用户名密码: lzy/123456
+
+
+maven 配置：
+D:\soft\maven\apache-maven-3.3.9\conf\settings.xml
+
+ceph 建新的osd:
+ 1013  2020-05-21 19:34:10 ceph -s
+ 1014  2020-05-21 19:34:17 ceph osd out osd.0
+ 1015  2020-05-21 19:34:28 systemctl stop ceph-osd@0
+ 1016  2020-05-21 19:34:35 ceph osd crush remove osd.0
+ 1017  2020-05-21 19:34:45 ceph auth del osd.0
+ 1018  2020-05-21 19:34:53 ceph osd rm osd.0
+ 1019  2020-05-21 19:34:59 umount /var/lib/ceph/osd/ceph-0
+ 1020  2020-05-21 19:35:04 lsblk
+ 1021  2020-05-21 19:35:10 lvdisplay
+ 1022  2020-05-21 19:35:25 lvremove /dev/ceph-897eaa6d-d2d6-4b94-ba7a-734505cf974a/osd-block-922b9306-b72b-47df-90fe-a58eae21d36f
+ 1023  2020-05-21 19:35:43 vgremove /dev/ceph-897eaa6d-d2d6-4b94-ba7a-734505cf974a
+ 1024  2020-05-21 19:35:50 lsblk
+ 1025  2020-05-21 19:35:58 cd /opt/ceph-cluster
+ 1026  2020-05-21 19:36:07 ceph-deploy osd create --data /dev/sdb ceph-10-1-46-32
+
+46.12是solea的web,showApp和数据库, 
+46.13是solea的后台这些七七八八的
+jgcai(蔡建国) 2019-07-31 11:59:44
+solr在46.29
+arm：10.1.132.78 root/arm654321
+gradlew:f
+gradlew -Pprod bootDistTar test / gradlew -Pprod clean bootDistTar
+推荐书籍：
+http://wiki.lzy.com/%E6%96%B0%E5%91%98%E5%B7%A5%E5%85%A5%E8%81%8C%E5%BF%85%E7%9C%8B
+
+10.1.12.4 share 123456
+10.1.11.5 user 123456
+# solea 1.9 solea-1.9 B环境：
+连接：l
+10.2.30.4 root/123456	高级》隧道：10.1.50.18 gw/123456
+prometheus
+:15018
+
+c环境分配：
+http://wiki.lzy.com/%E7%A0%94%E5%8F%91%E6%B5%8B%E8%AF%95%E7%8E%AF%E5%A2%83%28C%E7%8E%AF%E5%A2%83%EF%BC%89ip%E5%88%86%E9%85%8D?highlight=%2810.1.58.1%29
+
+消费情况：
+/usr/hdp/current/kafka-broker/bin/kafka-consumer-groups.sh  --bootstrap-server 10.1.46.32:6667 --describe --group solea-tika
+
+
+远程调试forkparse:
+-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8012
+
+清除kafka数据：
+清除kafka数据  --ok
+		  kafka 清掉数据
+ZK_HOSTS="10.1.61.5:2181"
+		  /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper ${ZK_HOSTS} --topic  solea_fileserver_web  --alter --config  retention.ms=10 
+/usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper ${ZK_HOSTS} --topic solea_fileserver_web --alter --config cleanup.policy=delete
+		  
+		  查看等到log大小为0
+		  ll /opt/kafka-logs/solea_fileserver_web-*
+		  
+		  kafka还原设置
+		  /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper ${ZK_HOSTS} --topic solea_fileserver  --alter --config  retention.ms=604800000 
+		
+	  清空solr数据	--ok
+		  python /opt/millipede-solr/management/bin/solr_collection.py delete-collection solea_
+
+		  创建collection:
+cd /opt/solea-release-2.0.0-r1/solr
+python /opt/millipede-solr/management/bin/solr_collection.py create-collection --auto-numshard  --replication-factor 1 --route-name implicit --auto-create-replication=2 --schema-file /opt/solea_schema/schema.xml  solea_
+
+ /opt/solea-release-2.0.3-r1/solr/conf/schema.xml  solea_
+ 
+ /usr/hdp/current/kafka-broker/bin/kafka-topics.sh  --zookeeper $ZK_HOSTS  --topic solea_fileserver  --describe
+ 
+听包：
+tcpdump -i any tcp port  15003 -w 1.pcap
+
+http and ip.src==10.1.30.4 and ip.dst==10.1.30.4
+ 
+
+liyulong:
+lovexiafe1314
+ 
+ 
+source /opt/solea-tika-app/bin/solea_tika_profile.sh
+export SOLEA_TIKA_APP_OPTS="$SOLEA_TIKA_APP_OPTS -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8019"
+
+cd /opt/solea-tika-app
+bash /opt/solea-tika-app/bin/solea-tika-app start-tika-api \
+ --app.id=api
+ 
+curl http://10.1.46.32:8018/tika/api/doParse  -F "file=@/opt/solea-tika-external-service/test-data/test_ocr.jpg" -d "config=@{\"translateEnable\":\"true\",\"ocrEnable\":\"true\"}" -X POST
+ 
+ 
+source /opt/solea-tika-app/bin/solea_tika_profile.sh
+export SOLEA_TIKA_APP_OPTS="$SOLEA_TIKA_APP_OPTS -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8019"
+	 
+ bash /opt/solea-tika-app/bin/solea-tika-app run-tika \
+ --app.id=xxx.test --application.tika.file.debug=false \
+ --application.kafka.topic=solea_fileserver \
+ --application.solr.collection=solea_redirect_collection
+ 
+远程调试forkparse:
+-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8021
+
+netstat -nap | grep 1096
+ 
+ solea数据库：
+ 10.1.46.31/solea/123456/ora11g
+ 
+
+
+A环境：
+http://10.1.12.4/ssh%20proxy#preview
+
+查询占用端口进程：
+netstat -nlp | grep :8080 | awk '{print $7}' |awk -F"/" '{ print $1 }'
+
+c mntos:
+ http://10.1.16.1/mntos/
+
+
+20200806
+1.合并代码
+git checkout  -b solea-gz-mr-20200806 remotes/origin/solea-gz-mr-20200806
+
+git remote add solea_gz_20200806_bundle  solea.bundle
+
+git pull -v --progress  "solea_gz_20200806_bundle" solea-gz-mr-20200806
+
+看看pull的：
+git pull -v --progress "origin" solea-gz-mr-20200806
+
+bundle合并到gz
+gz合并到master
+master 合并到rb
+合并projectinfo		--ok
+
+2.出差jira
+	工作日志
+	出差邮件		--ok
+	报销
+
+3.问题：
+1.马力反馈省厅1.x版本接数据到/opt/solea-data下，为什么没有入到系统
+2.音频转换改成ffmpeg
+3.合肥局，修改铭感词限制，1000
+升级
+
+申请延期：
+到明天：
+SOLEA-2854 【出差】【solea】广州全文现场定制化开发
+SOLEA-2795 【pdf高亮】英文全词的问题，是否可以支持解决这个问题
+COMMON-6057 【长期出差】【广州】solea开发
+
+到下周：
+SOLEA-2951 【新疆zz】pst文件抽出eml进行发送
+SOLEA-2952 【新疆zz】支持通过后缀检索
+SOLEA-2967 【A环境】缺省安装的不能运行二次分析，报告错误
+SOLEA-2956 【云度】：数据升级兼容程序
+SOLEA-2669 规划部指出的一些solea问题
+
+
+20200807
+1.SOLEA-2968 【send to filserver】输出统计信息的，日志里面也重置了，有问题		--ok
+
+2.SOLEA-2887 【江苏GA厅JZ云度项目】客户需求
+
+3.SOLEA-2967 【A环境】缺省安装的不能运行二次分析，报告错误		--ok
+/mlp_get_cores
+
+http://10.1.61.11:8983/solr/case_solea_search_collection/mlp_get_cores
+
+二次分析功能 2.0.2做的，那是下载csv直接查询导出csv
+在19年12月31日修改了下载的方法，通过先获取所有core通过core下载，这时mlp 是2.7.1
+
+4.合并代码
+	http://git.lzy.com/lzy/solea/merge_requests/1746
+
+5.报销		--ok
+
+6.合肥局的问题处理		--ok
+
+确认下：
+tika铭感词检测缺省的是否有限制
+二次分析问题，2.1.0依赖mlp 2.7.1及以上
+
+##
+本周工作：
+1.SOLEA-2948 【自动部署】solea-media-service的自动部署		--ok
+2.SOLEA-2968 【send to filserver】输出统计信息的，日志里面也重置了，有问题
+3.SOLEA-2795 【pdf高亮】英文全词的问题，是否可以支持解决这个问题		--ok
+4.SOLEA-2887 【江苏GA厅JZ云度项目】客户需求
+	邮件发送时间提取
+5.SOLEA-2956 【云度】:数据升级兼容程序
+	先设计一下
+6.SOLEA-2967 【A环境】缺省安装的不能运行二次分析，报告错误
+
+
+20200810
+1.编译不过		--ok
+
+2.SOLEA-2948 【自动部署】solea-media-service的自动部署		--ok
+lrwxrwxrwx  1 root root    44 Aug  9 14:48 solea-media-service -> /opt/solea-media-service-boot-2.1.0-SNAPSHOT
+
+
+3.jira评估下		--ok
+
+4.SOLEA-2956 【云度】：数据升级兼容程序
+		2.0.3的数据迁移到2.1.0
+		1.从solr中导出json。指定collection?查询条件？
+		2.导入程序，需要考虑两个方面：
+
+		solr字段有变动的，如：xxx_s_i_s > xxx_s_i_s_dv,考虑可以维护一份新老字段的映射表
+		solr字段有新增的，如：duration_l，file_save_date_d_i_s等是新版本才有的功能字段。
+		可以考虑：整理出来哪些功能或者字段，用tika重新跑一遍这些功能得到字段属性。
+		3.重新发送solr
+	导出程序：
+		1.导成json
+http://10.1.61.11:8983/solr/case_solea_202008100000_implicit_shard_1_replica_n1/export_data_by_query?indent=on&q=*:*&max_doc=false&wt=json&fl=text&rows=309&json.header=false
+
+wget http://10.1.61.11:8983/solr/case_solea_202008100000_implicit_shard_1_replica_n1/export_data_by_query?indent=on&q=*:*&max_doc=false&wt=json&fl=text&rows=309&json.header=false -O /opt/tmp/download-file/_1597047679.json
+		
+http://10.1.61.11:8983/solr/case_solea_202008100000/select?q=*%3A*&wt=json
+http://10.1.61.11:8983/solr/case_solea_202008100000/export_data_by_query?q=*%3A*&wt=json
+	有什么区别？
+
+timeout 1h wget -O - http://10.1.47.106:8983/solr/case_solea_202009240000_implicit_shard_1_replica_n1/export_data_by_query?indent=on&q=content_type:message/rfc822&max_doc=false&wt=json&start=0&rows=10000
+
+solrurl="http://10.1.47.103:8983/solr/case_solea_202009250000_implicit_shard_1_replica_n3/export_data_by_query?indent=on&q=content_type:message/rfc822&max_doc=false&wt=json&start=0&rows=10000"
+
+file="/opt/solea-tools/solea-data-migration/input/202009250000_email_1.json"
+
+一次性导出内存可能不够，分批次导出到不同的文件		--ok
+
+
+维护一个映射表，是否替换，扩展属性
+用schema,还是json?
+
+发送solr
+
+
+
+
+20200811
+1.SOLEA-2956 【云度】：数据升级兼容程序
+
+
+
+  
+  --conf inputDir=E:\work\logbook\202008\data\json
+  --conf mappingFilePath=E:\work\logbook\202008\data\mapping_2.0.2_to_2.10.xml
+  --conf collection=case_solea_202008110000
+  --conf solrUrl=http://10.1.61.11:8983/solr 
+
+  
+"_version_" -> "_version_=1674637657918930944"
+  
+1.导出成json		--ok
+2.做一个映射 （有哪些字段需要修改？）
+3.修改schemal		--ok
+4.发送solr		--ok
+
+
+20200812
+测试
+1.修改schemal
+
+打包：
+mvn assembly:assembly -f pom.xml
+
+运行：
+collection=case_solea_202008120000
+inputDir=/opt/solr-doc-migrate/json-output
+mappingFilePath=/opt/tmp/solea-tools-2.1.1-dev/solea-data-migration/config/dict_2.0.2_to_2.1.0.xml
+solrUrl=http://10.1.61.11:8983/solr/
+
+java -jar lib/solea-data-migration-2.1.1-SNAPSHOT-jar-with-dependencies.jar com.lzy.solea.migration.main.SoleaDataMigrationLauncher \
+  --conf inputDir=${inputDir} \
+  --conf mappingFilePath=${mappingFilePath} \
+  --conf collection=${collection} \
+  --conf solrUrl=${solrUrl} 
+
+
+迁移数：2304
+
+collection:2174
+
+expect:4478
+
+
+清楚一下：
+<delete>
+  <query>
+   screen_name:@thelabdude
+  </query>
+</delete>
+  
+1.导出json
+solrUrl="http://10.1.47.106:8983/solr/solea_202003100140_implicit_shard_1_replica_n1/export_data_by_query?&q=*:*&max_doc=false&wt=json&rows=1000000"
+downloadFile="/opt/tmp/solr-doc-migration/json-input/solr_doc.json"
+wget ${solrUrl} -O ${downloadFile}
+
+2.配置xml(默认配置好的)
+
+3.用新的schemal创建collection
+
+4.运行java程序，开始迁移数据
+
+5.确认
+  
+  
+关闭debug日志：
+12:51:58.969 [main] DEBUG org.apache.http.wire -  http-outgoing-0 >> "[0x1][0xe7][0xbb][0x93][0xe6][0x9e][0x9c][0xef][0xbc][0x9a].[\n]"
+
+
+2.SOLEA-2958 【南京局】：机器规划，新版本安装
+
+
+3.SOLEA-3004 solea-media-service 如果做 的多台，是用 iphash 吗
+
+4.确认一下：
+SOLEA-2952 【新疆 zz】支持通过后缀检索
+
+5.出版本问题，没有高亮：
+http://10.1.30.9:15003/solea/fileDetail/index?docId=ce082d05-491d-4c1a-a5c0-fbc3e508ba5e&collectionPrefix=case_solea
+yuyang049@163.com
+
+
+
+有空的时候帮忙看下测试环境 10.1.47.21  web在10.1.47.20
+solea_content_analysis进程起不来
+界面：http://10.1.30.9:15003/solea/index
+
+
+/opt/solea-auto-docker-deploy/auto-deploy/auto-deploy.sh
+记得移回来
+
+不对：
+cp /opt/content-analysis/etc/content_analysis.cron  $LCM_GUARD_ROOT/etc/crond/cron.d/
+
+20200813
+1.SOLEA-2956 【云度】：数据升级兼容程序
+	用shell去跑一下，代码提交
+	
+E:\work\gits\solea\solea-master\04sourcecode\tools\solea-data-migration\src\test\resources
+E:\work\gits\solea\solea-master\04sourcecode\tools\solea-data-migration\src\main\java\src\test\resources\dict_2.0.2_to_2.1.0.xml
+	
+E:\work\gits\solea\solea-master\04sourcecode\tools\solea-data-migration\..\..\test\resources\dict_2.0.2_to_2.1.0.xml
+
+http://10.1.11.6/daily_releases_new/centos7/solea/
+
+2.SOLEA-2958 【南京局】：机器规划，新版本安装		--ok
+一台用来装重点档案
+其余用来装solea
+
+web
+mlp
+trans
+crow
+
+3.SOLEA-3004 solea-media-service 如果做 的多台，是用 iphash 吗
+
+http://10.1.50.18:15003/solea/file/videoConvert?url=ceph://solea_20200810/69bc0a55-d11f-4546-a336-1419c63e125b
+好像应该是：
+http://10.1.50.18:15003/solea/solea-media-service/media/convert?url=ceph://solea_20200810/69bc0a55-d11f-4546-a336-1419c63e125b
+
+10.1.61.2:15003/solea-media-service/media/convert?url=ceph://solea_20200810/69bc0a55-d11f-4546-a336-1419c63e125b
+
+写死了：
+tool_video_convert_url: 'http://10.1.61.3:15003'
+solea / 04sourcecode / deploy / roles / solea_web / templates / web / solea
+service-override.properties.j2
+
+
+/opt/apache-tomcat/webapps/solea/WEB-INF/classes
+
+
+4.确认一下：
+SOLEA-2952 【新疆 zz】支持通过后缀检索
+
+5.出版本问题，没有高亮：
+http://10.1.30.9:15003/solea/fileDetail/index?docId=ce082d05-491d-4c1a-a5c0-fbc3e508ba5e&collectionPrefix=case_solea
+yuyang049@163.com
+
+
+
+6.演示数据准备下：
+Traceback (most recent call last):
+  File "/opt/content-analysis-2.1.0-dev/lib/django/core/handlers/exception.py", line 35, in inner
+    response = get_response(request)
+  File "/opt/content-analysis-2.1.0-dev/lib/django/core/handlers/base.py", line 128, in _get_response
+    response = self.process_exception_by_middleware(e, request)
+  File "/opt/content-analysis-2.1.0-dev/lib/django/core/handlers/base.py", line 126, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/opt/content-analysis-2.1.0-dev/lib/main/predict_resnet.py", line 40, in predict
+    json_result = parse_result(result)
+  File "/opt/content-analysis-2.1.0-dev/lib/main/predict_resnet.py", line 110, in parse_result
+    rois = result['rois']
+TypeError: 'NoneType' object is not subscriptable
+
+
+重新启动：
+/opt/rh/rh-python36/root/usr/bin/python3 /opt/content-analysis/lib/manage.py runserver --noreload 0.0.0.0:41683
+
+
+Using TensorFlow backend.
+/opt/content-analysis-2.1.0-dev/lib/tensorflow/python/framework/dtypes.py:516: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_qint8 = np.dtype([("qint8", np.int8, 1)])
+/opt/content-analysis-2.1.0-dev/lib/tensorflow/python/framework/dtypes.py:517: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+
+expected str, bytes or os.PathLike object, not InMemoryUploadedFile
+
+试试：
+img = load_img(img_file.stream)
+
+A环境问题：
+1.所有图片打不开
+打不开的图片是solr里面的旧数据，前天恢复c环境，清空了ceph，导致图片不能预览
+这个要清理下旧数据
+
+2.译文开关？
+译文检索默认打开的，开关在web配置文件中
+
+3.高级检索项
+填了jira，请崔哥，bo总讨论下：
+SOLEA-3041 【web】考虑下云度首页加上“高级检索”按钮
+
+
+4.img_classifiers_ms_i_s_dv:"red-tap seal"
+
+7.show app问题，分解一下：
+1.SOLEA-3045 【showapp】showapp对于压缩包高亮慢的问题
+SOLEA-3046 【onlyoffice】加载(1MB)csv卡住的问题
+缺少词间距高亮
+SOLEA-3047 【showapp】pdf部分格式txt是乱码
+SOLEA-3048 【onlyoffice】onlyoffice无用组件建议剔除 (如doc左侧的评论等])
+SOLEA-3049 【showapp】showapp附件高亮参数传递
+showapp原文格式展示译文
+
+20200814
+1.SOLEA-3044 【tika】图片分类字段的查询与统计问题
+
+
+每日构造：
+http://10.1.11.6/daily_releases_new/centos7/solea/
+合并一下代码
+http://git.lzy.com/lzy/solea/merge_requests/1765
+强点一下：
+
+更新C环境
+问题：
+TASK [solea_userdb : install userdb] ********************************************************************************************************************************************************************************************************
+fatal: [solea-10-1-61-2]: FAILED! => {"changed": false, "msg": "Source '/opt/solea-deploy-install/solea-db-2.1.1-dev.tar.gz' does not exist"}
+
+
+继续：
+
+ansible-playbook -i environments/prod site.yml --skip-tags "bind,common"  -v --start-at-task "solea_userdb : config userdb" 
+
+
+mkdir -p /opt/solea_tmp/untar
+tar zxvf  solea-release-2.1.0-dev.tar.gz -C /opt/solea_tmp/untar
+
+
+2.SOLEA-2967 【A环境】缺省安装的不能运行二次分析，报告错误
+
+
+3.SOLEA-3004 solea-media-service 如果做 的多台，怎么做，是用iphash吗
+
+
+4.SOLEA-3028 【敏感词】勾选敏感词如收件人邮箱没有高亮
+
+
+http://127.0.0.1:15003/solea-showapp/file/show?url=http://10.1.47.20:15003/fileserver2/api/v1/getFile?url=ceph://solea_20200812/50429b3c-6e20-4fcd-8fd5-f30b9e2f07f0
+
+
+http://127.0.0.1:15003/solea-showapp/file/show?url=http://10.1.47.20:15003/fileserver2/api/v1/getFile?url=ceph://solea_20200604/de958ac6-0b6a-47d9-b921-74d381ff403e&highlight=wangtao
+
+
+20200815
+1.A环境演示图片		--ok
+
+2.铭感词高亮的bug		--ok
+janet@celebes.com
+
+3.SOLEA-2956 【云度】：数据升级兼容程序
+修改一下，分成三个步骤
+
+http://git.lzy.com/lzy/solea/merge_requests/1769
+
+4.演示下：
+SOLEA-3003 【midia-serivce】/opt/videoTemp
+
+SOLEA-3015 solea： 自动的 pst 展开，如果界面不要展开，才不做
+
+SOLEA-2990 【showapp】gz问题汇总
+
+SOLEA-2967 【A 环境】缺省安装的不能运行二次分析，报告错误
+
+    SOLEA-3023
+
+【现场维护】solea现场维护
+
+
+演示：
+SOLEA-2956 【云度】：数据升级兼容程序
+还要修改
+SOLEA-2958 【南京局】：机器规划，新版本安装
+
+SOLEA-3003 【midia-serivce】/opt/videoTemp
+SOLEA-3015 solea： 自动的 pst 展开，如果界面不要展开，才不做
+SOLEA-2990 【showapp】gz问题汇总
+
+
+本周工作：
+SOLEA-2956 【云度】：数据升级兼容程序 								3d
+SOLEA-2958 【南京局】：机器规划，新版本安装 						4h
+SOLEA-3003 【midia-serivce】/opt/videoTemp 							4h
+SOLEA-3023 【现场维护】solea 现场维护 								4h
+SOLEA-2951 【新疆 zz】pst 文件抽出 eml 进行发送 					2h
+SOLEA-2967 【A 环境】缺省安装的不能运行二次分析，报告错误 			2h
+
+SOLEA-3004 solea-media-service 如果做 的多台，是用 iphash 吗 		1h
+SOLEA-3015 solea： 自动的 pst 展开，如果界面不要展开，才不做		2h
+SOLEA-2952 【新疆 zz】支持通过后缀检索 								2h
+
+total:5d 5h
+
+# 确认：
+合肥是否要升级
+默认的关键词是否有限制：
+sensitiveWordCount: 1000000
+
+20200817
+1.评估本周工作		--ok
+
+2.数据迁移的程序，release再调整下
+提交到rb分支？
+
+3.南京sj升级安装		--ok
+samba ：
+服务器： 10.2.40.22
+账号：input_data
+密码：password=123456
+
+
+跟客户申请加内存
+
+
+4.做一下：			--ok
+http://10.1.12.4/%E5%9C%A8git%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%81%9Ahooks%EF%BC%88git-hooks%EF%BC%89?highlight=%28githook%29  
+
+mklink /D .githooks E:\work\gits\git-tempalte\sys-githooks
+
+
+C:\Users\mayn>mklink /D .githooks E:\work\gits\git-tempalte\sys-githooks		--ok
+为 .githooks <<===>> E:\work\gits\git-tempalte\sys-githooks 创建的符号链接
+
+5.维护文档		--ok
+
+6.发票要一下		--ok
+	晚一点给
+
+7.
+SOLEA-3051 【安装文档】安装文档优化汇总-20200814		--ok
+
+SOLEA-3055 【文件详情】压缩文件内的视频无法播放
+
+SOLEA-3054 【文件详情】多级的压缩文件展开后，目录层级显示很乱。		--ok
+
+1.提交下代码，到rb的
+
+2.SOLEA-3004 solea-media-service 如果做 的多台，怎么做，是用iphash吗
+	先安装多台，恢复iphash配置
+	ansible-playbook -i environments/dev site.yml --limit media_service_servers --tags "solea_media_service" -v
+
+重启：
+service incrond restart
+lcm_guard --reload
+sleep 10 
+lcm_guard --kill guard_crond
+lcm_guard --kill solea_media_service
+service nginx restart
+
+
+修改nginx配置：
+/etc/nginx/conf.d/solea.conf
+upstream solea-media-service {
+        ip_hash;
+        server solea-10-1-61-3:15003;
+        server solea-10-1-61-6:15003;
+    }
+
+	
+web配置也该一下：
+
+
+2020-08-18 13:50:09.692 ERROR --- [http-nio-8080-exec-16] c.l.p.api.web.CustomRestTemplate         : GET request for "http://10.1.47.20:15003/solea-media-service/media/convert?url=http://10.1.47.20:15003/solea-fserver2/api/v1/getFile?url%3Dceph://solea_20200817/35258357-2713-45d1-94a2-3decf93a7592&mediaType=video" resulted in 404 (Not Found); invoking error handler
+
+
+确认各级的nginx都有x-forwarded-for
+location /solea-media-service {
+     proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+    proxy_pass http://solea-media-service/solea-media-service;
+    proxy_buffering off;
+    client_max_body_size 4096m;
+}
+
+
+	1.开启_x_forwarded_for
+	proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+	map $http_x_forwarded_for  $clientRealIp {
+		   ""      $remote_addr;
+		   ~^(?P<firstAddr>[0-9\.]+),?.*$  $firstAddr;
+	  }
+
+	2.配置hash $realClientIp
+
+	50.18的nginx配置：
+	/opt/gateway/etc/consul-template-custom/template.d/nginx/location.conf.d
+
+	3.测试看看：
+	http://10.1.50.18:15003/solea/file/videoConvert?url=ceph://solea_20200817/fc36ce4f-81e7-4e56-9643-bd7842edf124&mediaType=video
+
+	http://10.1.47.20:15003/solea-media-service/videoTemp/b0b3bd78-71e7-4d82-ae80-6a39a0439f1d/index.m3u8
+
+
+4.先看看第二步骤是否可以：
+http://10.1.50.18:15003/solea-media-service/videoTemp/index.m3u8
+	
+调用流程：
+					1.  生成 m3u8
+					bs—>50.18(nginx)--》61.2（nginx）---》 tomcat（？如何去掉clientip 这里是一个新的请求） --》 61.2（nginx） --》 n*meidia
+
+					2， ts访问
+
+					bs—>50.18(nginx)--》61.2（nginx） --》 n*meidia
+					 50.18 nginx 
+						要设置x-forword-ip，如果有，不变，如果没有，设置
+					 61,2 nginx 
+						要设置x-forword-ip，如果有，不变，如果没有，设置
+						用iphash
+					   
+						
+
+3.SOLEA-2992 【A环境的演示用例】重新整理一下演示用例
+
+
+4.SOLEA-3055 【文件详情】压缩文件内的视频无法播放
+	让谢杰看看
+
+5.有时间安装下30.234
+
+
+20200819			--ok
+1.SOLEA-3065 【南京sj】根据旧版本全文doc, 生成文件表sql
+format:
+mvn fmt:format
+
+
+2.SOLEA-2992 【A环境的演示用例】重新整理一下演示用例
+
+问题：
+1.进入搜索页，选择"阿拉伯语"，进行检索，查看到"Third section.zip",进入详情页，看到showapp展示效果，点击"文本"，可以看到原文译文对应的翻译效果
+ 压缩包没有按钮可以显示译文		--不要了
+
+2.进入搜索页，选择"加密文件"，进行检索，选择"042-047.pdf"，进入详情页，在"文件预览"右边有个"钥匙"，鼠标悬浮可以看到密码，点击"文本"可以正常看到文件
+没有解出来密码
+
+3.c.输入‘180*585’可查询到以180开头，585结尾的手机号		--ok
+
+4.
+输入CIA地址经纬度：-77.145095,38.952055，以此经纬度框一个区域
+查询出错，没有符号要求的地址			看看地图问题
+ 
+演示用例：
+
+--ok
+
+
+3.SOLEA-3036 【tika】升级到Apache Tika 1.24.1 已经很久没有修改了
+
+
+
+4.演示下上周的jira				--ok
+SOLEA-3044 【tika】图片分类字段的查询与统计问题
+SOLEA-3015 solea： 自动的 pst 展开，如果界面不要展开，才不做
+SOLEA-2956 【云度】：数据升级兼容程序
+SOLEA-3003 【midia-serivce】/opt/videoTemp 这个加一个日期和小时，防止目录过多
+	再修改下，日期目录不带横线
+ /usr/bin/timeout --signal=9 30m bash /opt/solea-media-service/bin/clean_tmp_file.sh
+
+ 
+ 
+
+20200820
+1.SOLEA-2992 【A环境的演示用例】重新整理一下演示用例		--ok
+
+	1.进入搜索页，选择"加密文件"，进行检索，选择"042-047.pdf"，进入详情页，在"文件预览"右边有个"钥匙"，鼠标悬浮可以看到密码，点击"文本"可以正常看到文件
+	没有解出来密码
+
+	2.
+	输入CIA地址经纬度：-77.145095,38.952055，以此经纬度框一个区域
+	查询出错，没有符号要求的地址			看看地图问题
+	
+	3.视频上传一下，紫藤萝.avi
+
+ 
+lzy-yanfa
+lzy20200706fighting!
+
+2.SOLEA-3036 【tika】升级到Apache Tika 1.24.1 已经很久没有修改了
+
+
+
+参考文档：
+http://10.1.11.6/daily_releases_new/centos7/solea/master/202008201335/solea-develop-2.1.1-dev/docs/develop/webhelp/index/content/ch01s02.html#d0e811
+
+
+
+1.修改
+E:\work\gits\solea\solea-master\04sourcecode\solea-tika2\gradle.properties.in
+	tikaVersion=1.24
+
+2.确认仓库中有1.24 tika:
+http://artifact.lzy.com/nexus/#browse/search=keyword%3Dtika-core
+tika-core
+tika-parsers
+	
+	
+3.单元测试，修改下
+ 
+ 
+ 4.确定一下铭感词，ip，密码如何识别出来的？
+
+ 
+4.升级A环境mlp
+准备一下：
+安装包
+
+
+ 
+修改下mlp版本依赖号：
+http://git.lzy.com/lzy/solea/merge_requests/1777
+ 
+
+20200821
+1.mlpA环境升级
+
+
+2.SOLEA-2669 规划部指出的一些solea问题
+
+
+http://10.1.50.18:15003/solea/fileDetail/index/?docId=6928b0bf-c4b2-447f-9983-566b8037f514&highlight=&collectionPrefix=case_solea
+
+
+ 
+ 
+延期：
+SOLEA-3065 【南京sj】根据旧版本全文doc, 生成文件表sql
+SOLEA-2958 【南京局】：机器规划，新版本安装
+	跟进jira，下周可能去装
+
+20200822
+1.演示jira:
+SOLEA-3003 【midia-serivce】/opt/videoTemp 这个加一个日期和小时，防止目录过多		--ok
+SOLEA-3024 【视频转换服务】：转换的同时，将转换命令输出出来		--ok
+SOLEA-3004 solea-media-service 如果做 的多台，怎么做，是用iphash吗
+
+2.确认：
+SOLEA-3036 【tika】升级到Apache Tika 1.24.1 已经很久没有修改了
+SOLEA-3050 【A环境升级MLP】请将A环境的mlp升至2.7.1版本
+SOLEA-2992 【A环境的演示用例】重新整理一下演示用例
+SOLEA-2967 【A环境】缺省安装的不能运行二次分析，报告错误
+
+
+SOLEA-3070 【系统改进】云度A环境增加演示用例
+SOLEA-2199 【gate】gate在检测超长字符串(中间无分隔符，尤其是超长的数字)会特别慢
+1.演示数据 
+\\10.1.11.5\temp\wt王涛\演示数据-20200819.zip   
+\\10.1.11.5\temp\wt王涛\说明.txt
+
+2.mlp升级：
+\\10.1.11.5\temp\wt王涛\A环境-mlp-10.1.60.173.rar
+
+3.tika升级 diff
+\\10.1.11.5\temp\wt王涛\solea-test-data
+放到：
+\\10.1.11.5\share\项目相关\solea\tika-output\raw
+
+
+
+3.演示：
+SOLEA-3015 solea： 自动的 pst 展开，如果界面不要展开，才不做
+JAVA_OPTS="$JAVA_OPTS -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8013"
+
+4.SOLEA-3004 solea-media-service 如果做 的多台，怎么做，是用iphash吗
+看下期中一台down了，会不会分流
+
+
+nginx健康检查
+
+upstream anubis.web.base_backend {
+    server bj-base-1.jyall.me:9000;
+    server bj-base-2.jyall.me:9000;
+    keepalive 512;
+    check interval=1000 rise=2 fall=2 timeout=3000 type=http;
+    check_http_send "HEAD / HTTP/1.1\r\nConnection: keep-alive\r\n\r\n"; 
+    check_http_expect_alive http_2xx http_3xx http_4xx;
+}
+
+
+
+
+location /
+{
+#如果后端的服务器返回502、504、执行超时等错误，自动将请求转发到upstream负载均衡池中的另一台服务器，实现故障转移。
+proxy_next_upstream http_502 http_504 http_404 error timeout invalid_header;
+}
+ 
+ 
+upstream translator.engine {
+    server 172.17.0.2:5000 weight=1;
+    server 172.17.0.3:5000 weight=1;
+    check interval=10000 rise=2 fall=3 timeout=3000 type=http;
+    check_http_send "GET /check HTTP/1.0\r\n\r\n";
+    check_http_expect_alive http_2xx;
+}
+ 
+ 
+
+ 9983-566b8037f514&highlight=&collectionPrefix=case_solea"
+2020/08/22 17:38:05 [error] 95807#0: *345 no live upstreams while connecting to upstream, client: 10.1.61.2, server: localhost, request: "GET /solea-media-service/media/convert?url=http://10.1.61.2:15003/solea-fserver2/api/v1/getFile?url%3Dceph://solea_20200821/6928b0bf-c4b2-447f-9983-566b8037f514&mediaType=video HTTP/1.1", upstream: "http://solea-media-service/solea-media-service/media/convert?url=http://10.1.61.2:15003/solea-fserver2/api/v1/getFile?url%3Dceph://solea_20200821/6928b0bf-c4b2-447f-9983-566b8037f514&mediaType=video", host: "10.1.61.2:15003"
+2020/08/22 17:38:23 [error] 95807#0: enable check peer: 10.1.61.3:15003
+
+ 
+
+检查：
+http://10.1.61.3:15003/solea-media-service/media/_test
+ 
+
+5.周一要带的：
+onlyoffice
+docker-compose
+翻译-docker
+ 
+ 
+20200824
+1.SOLEA-3015 solea： 自动的 pst 展开，如果界面不要展开，才不做   --ok
+演示
+
+2.SOLEA-3065 【南京sj】根据旧版本全文doc, 生成文件表sql
+
+
+3.刻盘，docker-compose
+
+ 
+ 
+本周工作：
+
+有时间做一下，30.234 master安装一下
+SOLEA-2669 规划部指出的一些solea问题													2h
+SOLEA-3024 【视频转换服务】：转换的同时，将转换命令输出出来								2h
+SOLEA-3004 solea-media-service 如果做 的多台，怎么做，是用iphash吗						2h
+SOLEA-2199 【gate】gate在检测超长字符串(中间无分隔符，尤其是超长的数字)会特别慢			4h
+SOLEA-3036 【tika】升级到Apache Tika 1.24.1 已经很久没有修改了							4h
+SOLEA-2992 【A环境的演示用例】重新整理一下演示用例										4h
+SOLEA-3050 【A环境升级MLP】请将A环境的mlp升至2.7.1版本									4h
+
+total: 4d  本周jira比较杂，预留一些时间
+
+ok:
+SOLEA-3051 【安装文档】安装文档优化汇总-20200814										2h
+SOLEA-3054 【文件详情】多级的压缩文件展开后，目录层级显示很乱。							4h
+SOLEA-3061 SOLEA-3023 【现场维护】solea现场维护（W34 20200821）							4h
+
+
+20200826
+1.ceph数据迁移
+
+下载：
+rados put test-object-1 testfile.txt --pool=mytest
+
+查找和定位
+
+rados -p mytest ls
+ceph osd map mytest test-object-1
+
+显示所有的pools：
+
+ceph osd lspools 
+
+上传一个文件
+
+rados put test-object-1 testfile.txt --pool=mytest
+
+显示一个pool里面的文件
+
+# 得到pools的属性
+ceph osd pool get solea_20200824 size
+
+####
+列出所有文件:
+rados ls solea_20200824
+
+1.导出来所有的url:
+downloadUrl="http://10.1.61.11:8983/solr/case_solea_202008260001/select?fl=file_url&q=*%3A*&wt=csv"
+wget "http://10.1.61.11:8983/solr/case_solea_202008260001/select?fl=file_url&q=*%3A*&wt=csv" -O 1.csv
+下载到指定目录：
+
+读取文件到每行：
+# ceph://solea_20200825/b995a372-9703-49bc-b2e2-6ac7c20bb6d6
+for file_url in $file_urls; do
+  rados -p $FILESERVER2_CEPH_META_POOL get $file_url $tmp_config_dir/$meta_object
+done
+
+for循环：
+ceph://solea_20200825/b995a372-9703-49bc-b2e2-6ac7c20bb6d6
+# 分割
+
+
+
+2.刻盘：
+solea 2.1.0 rb
+solr迁移的程序
+docker-compose
+onlyoffice
+
+
+20200827
+1.SOLEA-3059 【南京sj】对solr导出的json做，解析出邮件收发关系的bcp，入到知识图谱中
+
+
+
+3.演示下：
+SOLEA-2967 【A 环境】缺省安装的不能运行二次分析，报告错误
+SOLEA-3003 【midia-serivce】/opt/videoTemp 这个加一个日期和小时，防止目录过多
+SOLEA-3004 solea-media-service 如果做 的多台，怎么做，是用 iphash 吗
+
+
+4.过下jira:
+
+
+20200829
+1.演示用例更新
+	lianxi
+
+2.SOLEA-3065 【南京sj】根据旧版本全文doc, 生成文件表sql
+	1.导出sql
+		select uuid really_new_batch_id, bactch_record old_batch_id, filetype old_category from UP_BATCH_RECORD
+		选择所有，导出csv
+		
+	2.加载sql		--ok
+	3.查找，替换新的batchId		--ok
+	4.测试
+
+
+20200831
+1.过一下本周工作		--ok
+
+
+2.测试一下邮件收发关系程序
+http://10.1.47.106:8983/solr/solea_202003100140/select?q=*:*&rows=8&sort=import_time%20desc
+
+solrUrl="http://10.1.47.106:8983/solr/solea_202003100140_implicit_shard_1_replica_n1/export_data_by_query?&q=*:*&max_doc=false&wt=json&rows=8"
+
+3.下午出差sj
+1.ceph数据重发
+2.邮件收发关系抽取
+3.升级下yum
+
+
+明天工作：
+1.南京sj升级yum
+2.南京sj ceph数据迁移，邮件关系抽取再确认下
+3.SOLEA-3026 【云度】：查询转义bug
+
+4.
+SOLEA-3106 中译接口老是出现变化，我们应该如何应对？
+SOLEA-2868 【solea-tika】solea_tika_check_status.sh检测日志打印时的问题
+SOLEA-3100 lockrun 的文件不能放/tmp 目录，有问题，几天后会自动删除。要放/var/run
+
+
+
+#############
+20200901
+1. SOLEA-3106 中译接口老是出现变化，我们应该如何应对？
+	中译的接口目前是有新老两个版本。
+	如果做nagios检查，需要检查是否能跑通整个流程：登录，上传，查询进度，获取接口接口。
+	如果做自动化测试，现场一般不跑自动化测试。
+
+	建议在
+	1.提醒中译在后面升级时候做好旧接口兼容服务。
+	2.《离场测试中》加上文档翻译测试。
+
+2. SOLEA-2868 【solea-tika】solea_tika_check_status.sh检测日志打印时的问题
+
+3. SOLEA-3100 lockrun 的文件不能放/tmp 目录，有问题，几天后会自动删除。要放/var/run
+
+4.SOLEA-3114 sendFserver对lzyzip做个tmpwatch,防止空目录过多
+
+
+5.南京sj出差
+	1.确认数据可以发起来
+	2.升级yum
+	3.SOLEA-3026 【云度】：查询转义bug
+	4.演示数据，测试功能，同时准备演示
+
+
+6.导出数据：
+email_from_txt
+http://10.1.61.11:8983/solr/case_solea_202008310000_implicit_shard_1_replica_n1/export_data_by_query?&q=*:*&max_doc=false&wt=json&rows=8
+
+http://10.1.61.3:15003/fileserver2/api/v1/getFile?url=ceph://solea_20200831/c036db4e-4b67-4a0b-9f1b-24fe87e7d3e9
+http://10.1.61.3:15003/fileserver2/api/v1/getFile?url=ceph://solea_20200801/65cba5ee-162d-4ced-b20e-f193be78e1a1
+
+
+遍历数组：
+      NUM=$(echo ${temp} |awk -F ',' '{print NF}')
+      for i in $(seq ${NUM});do
+        workdir=$(echo ${temp} |awk -F ',' "{print \$${i}}")
+        [ -d ${workdir} ] && tmpwatch -Mv 240 ${workdir}
+      done
+	  
+cephurl="ext_solea_20200901.a26dbdaf-45c3-4f4f-82a9-df8b77ad5aa1"
+fileId=$(echo ${cephurl} |awk -F '.' "{print \$2}")
+
+# 文件是否存在
+record="/opt/ceph-file/list"
+grep -l ${fileId} ${record}
+if [ $? -eq 0 ]; then
+continue
+	  
+fi
+
+## 本周工作
+SOLEA-3114 sendFserver对lzyzip做个tmpwatch,防止空目录过多								1h
+SOLEA-3026 【云度】：查询转义bug														1h
+SOLEA-2868 【solea-tika】solea_tika_check_status.sh检测日志打印时的问题					2h
+SOLEA-3002 【solea】演示数据下的 S8KGGTORJ_clip3.mp4 ,ffmepg 错误						2h
+SOLEA-3065 【数据迁移】根据旧版本全文doc, 生成文件表sql									2h
+SOLEA-3100 lockrun 的文件不能放/tmp 目录，有问题，几天后会自动删除。要放/var/run		2h
+SOLEA-3105 【文件详情页面】pdf格式文件当选中敏感信息后文件中对应的敏感信息不会高亮显示	2h
+SOLEA-3106 中译接口老是出现变化，我们应该如何应对？										4h
+SOLEA-3063 【showapp】图片跟视频是否可以统一走 showapp 去展示							4h
+SOLEA-3112 【现场维护】solea现场维护(W36 20200831)										4h
+SOLEA-3059 【南京sj】对solr导出的json做，解析出邮件收发关系的bcp，入到知识图谱中		4h
+SOLEA-2958 【南京局】：机器规划，新版本安装												2d
+SOLEA-2959 【云度】：南京局BUG															4h
+total:
+4d 4h
+
+
+TODO:
+A环境演示数据:
+
+演示数据放在\\10.1.11.5\share\项目相关\solea
+ ** 每次安装升级完成后，删除数据，并且全部重发，保证下面的测试也过
+
+ 
+ nanj sj
+ 
+ 
+ 登录账号密码:
+admin/1qaz@WSX
+
+服务器登录：
+root/qazwsx@okm
+
+检查下所有nginx都应该有：
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+	
+http://wiki.lzy.com/shell%E5%A6%82%E4%BD%95%E6%94%AF%E6%8C%81%E6%AF%8F%E4%B8%80%E4%B8%AA%E5%91%BD%E4%BB%A4%E4%B8%8D%E8%83%BD%E9%94%99%E8%AF%AF
+
+
+
+xjp.jpg
+加到演示用例中
+
+http://solea-10-1-65-101:15003/fileserver2/api/v1,http://solea-10-1-65-102:15003/fileserver2/api/v1,http://solea-10-1-65-103:15003/fileserver2/api/v1
+不能有空格

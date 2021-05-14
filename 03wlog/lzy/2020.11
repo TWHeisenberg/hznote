@@ -1,0 +1,1904 @@
+记录：
+
+
+sourcegraph
+
+    地址：http://10.1.13.1:7080/search
+    用户名密码: lzy/123456
+
+
+maven 配置：
+D:\soft\maven\apache-maven-3.3.9\conf\settings.xml
+
+ceph 建新的osd:
+ 1013  2020-05-21 19:34:10 ceph -s
+ 1014  2020-05-21 19:34:17 ceph osd out osd.0
+ 1015  2020-05-21 19:34:28 systemctl stop ceph-osd@0
+ 1016  2020-05-21 19:34:35 ceph osd crush remove osd.0
+ 1017  2020-05-21 19:34:45 ceph auth del osd.0
+ 1018  2020-05-21 19:34:53 ceph osd rm osd.0
+ 1019  2020-05-21 19:34:59 umount /var/lib/ceph/osd/ceph-0
+ 1020  2020-05-21 19:35:04 lsblk
+ 1021  2020-05-21 19:35:10 lvdisplay
+ 1022  2020-05-21 19:35:25 lvremove /dev/ceph-897eaa6d-d2d6-4b94-ba7a-734505cf974a/osd-block-922b9306-b72b-47df-90fe-a58eae21d36f
+ 1023  2020-05-21 19:35:43 vgremove /dev/ceph-897eaa6d-d2d6-4b94-ba7a-734505cf974a
+ 1024  2020-05-21 19:35:50 lsblk
+ 1025  2020-05-21 19:35:58 cd /opt/ceph-cluster
+ 1026  2020-05-21 19:36:07 ceph-deploy osd create --data /dev/sdb ceph-10-1-46-32
+
+46.12是solea的web,showApp和数据库, 
+46.13是solea的后台这些七七八八的
+jgcai(蔡建国) 2019-07-31 11:59:44
+solr在46.29
+arm：10.1.132.78 root/arm654321
+gradlew:f
+gradlew -Pprod bootDistTar test / gradlew -Pprod clean bootDistTar
+推荐书籍：
+http://wiki.lzy.com/%E6%96%B0%E5%91%98%E5%B7%A5%E5%85%A5%E8%81%8C%E5%BF%85%E7%9C%8B
+
+10.1.12.4 share 123456
+10.1.11.5 user 123456
+# solea 1.9 solea-1.9 B环境：
+连接：l
+10.2.30.4 root/123456	高级》隧道：10.1.50.18 gw/123456
+prometheus
+:15018
+
+c环境分配：
+http://wiki.lzy.com/%E7%A0%94%E5%8F%91%E6%B5%8B%E8%AF%95%E7%8E%AF%E5%A2%83%28C%E7%8E%AF%E5%A2%83%EF%BC%89ip%E5%88%86%E9%85%8D?highlight=%2810.1.58.1%29
+
+消费情况：
+/usr/hdp/current/kafka-broker/bin/kafka-consumer-groups.sh  --bootstrap-server 10.1.46.32:6667 --describe --group solea-tika
+
+
+远程调试forkparse:
+-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8012
+
+清除kafka数据：
+清除kafka数据  --ok
+		  kafka 清掉数据
+ZK_HOSTS="10.1.61.5:2181"
+		  /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper ${ZK_HOSTS} --topic  solea_fileserver_web  --alter --config  retention.ms=10 
+/usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper ${ZK_HOSTS} --topic solea_fileserver_web --alter --config cleanup.policy=delete
+		  
+		  查看等到log大小为0
+		  ll /opt/kafka-logs/solea_fileserver_web-*
+		  
+		  kafka还原设置
+		  /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper ${ZK_HOSTS} --topic solea_fileserver  --alter --config  retention.ms=604800000 
+		
+	  清空solr数据	--ok
+		  python /opt/millipede-solr/management/bin/solr_collection.py delete-collection solea_
+
+		  创建collection:
+cd /opt/solea-release-2.0.0-r1/solr
+python /opt/millipede-solr/management/bin/solr_collection.py create-collection --auto-numshard  --replication-factor 1 --route-name implicit --auto-create-replication=2 --schema-file /opt/solea_schema/schema.xml  solea_
+
+ /opt/solea-release-2.0.3-r1/solr/conf/schema.xml  solea_
+ 
+ /usr/hdp/current/kafka-broker/bin/kafka-topics.sh  --zookeeper $ZK_HOSTS  --topic solea_fileserver  --describe
+ 
+听包：
+tcpdump -i any tcp port  15003 -w 1.pcap
+
+http and ip.src==10.1.30.4 and ip.dst==10.1.30.4
+ 
+
+liyulong:
+lovexiafe1314
+ 
+ 
+source /opt/solea-tika-app/bin/solea_tika_profile.sh
+export SOLEA_TIKA_APP_OPTS="$SOLEA_TIKA_APP_OPTS -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8019"
+
+cd /opt/solea-tika-app
+bash /opt/solea-tika-app/bin/solea-tika-app start-tika-api \
+ --app.id=api
+ 
+curl http://10.1.46.32:8018/tika/api/doParse  -F "file=@/opt/solea-tika-external-service/test-data/test_ocr.jpg" -d "config=@{\"translateEnable\":\"true\",\"ocrEnable\":\"true\"}" -X POST
+ 
+ 
+source /opt/solea-tika-app/bin/solea_tika_profile.sh
+export SOLEA_TIKA_APP_OPTS="$SOLEA_TIKA_APP_OPTS -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8019"
+	 
+ bash /opt/solea-tika-app/bin/solea-tika-app run-tika \
+ --app.id=xxx.test --application.tika.file.debug=false \
+ --application.kafka.topic=solea_fileserver \
+ --application.solr.collection=solea_redirect_collection
+ 
+远程调试forkparse:
+-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8021
+
+netstat -nap | grep 1096
+ 
+ solea数据库：
+ 10.1.46.31/solea/123456/ora11g
+ 
+
+
+A环境：
+http://10.1.12.4/ssh%20proxy#preview
+
+查询占用端口进程：
+netstat -nlp | grep :8080 | awk '{print $7}' |awk -F"/" '{ print $1 }'
+
+c mntos:
+ http://10.1.16.1/mntos/
+
+20201009
+1.南京sj出差						--ok
+	1.找客户拿硬盘
+	2.检查系统
+	3.更新tika
+	4.im数据问一下
+
+
+2.SOLEA-3212 【详情】敏感信息的实际个数与标注的个数不符
+
+
+3.SOLEA-3149 【tika】zip解压文件对子文件名编码写死了GB18030，导致一些包含中文名子文件解压异常
+	iso编码是否可以用GBK代替
+
+4. SOLEA-3192 【showapp】邮件附件下载样式异常, 且下载变成预览
+下载接口：
+http://10.1.61.2:15003/solea-showapp/tempfile/download?fileId=/opt/solea-showapp/temp/20201009/4553af60d02749a8a5c0695574369666
+
+  public static final String REQUEST_FILE_TMP_PATH = "tempFilePath";
+  ATTR_TEMPFILEPATH
+ 
+jstack -l tika-pid | grep lzy -C 4
+ 
+
+20201010
+1.SOLEA-3212 【详情】敏感信息的实际个数与标注的个数不符
+好像是铭感词提取有问题？没有提取出来
+
+2.SOLEA-3141 【tika】查一下哪些库是需要发布到maven仓库的
+
+
+进行分词：
+  static List<Term> tokenizer(String content) {
+    List<Term> terms = NlpAnalysis.parse(content);
+    return terms;
+  }
+
+
+
+1.已经发布的有哪些库？
+		http://artifact.lzy.com/nexus/#browse/search=group.raw%3Dcom.lzy.solea.*
+			1.x版本以及以前是maven的默认都会发布：
+				solea-common
+				solea-tika-parseutil
+				solea-tika-parsers
+				solea-tika-parent
+
+			2.x版本是gradle的默认不发布，已发布的有：
+				filemetaparser
+				fileserver-2_openapi
+				
+				solea-document-convert（maven）
+				
+				发布到本地：
+				
+				
+2.gradle怎么发布？
+
+//上传jar包
+filemetaparser:
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+        }
+    }
+}
+
+fileserver-2_openapi:
+publishing {
+   publications {
+     openapi(MavenPublication) {
+	    artifactId = "${project.name}_openapi"
+		artifact 'src/main/resources/swagger/api.yml'
+     }
+  }
+}
+filemetaparser
+fileserver-2_openapi
+通过gradlew publish 发布到remote maven
+
+solea-tika-parsers
+solea-tika-parseutil
+通过gradlew -Pprod publishToMavenLocal发布到本地仓库
+
+
+3.有哪些被依赖的库需要发布？
+如之前发现的问题，2.x项目依赖了一个1.x 的tika-parsers，应该将2.x tika-parsers发布，依赖当前版本的tika-parsers			--ok
+solea-tika-parsers
+solea-tika-parseutil
+publishing {
+   publications {
+      maven(MavenPublication) {
+         groupId "com.lzy.solea.tika"
+         from components.java
+      }
+   }
+} 
+
+1.tika中的内部依赖的默认库发布到本地仓库，通过：gradlew -Pprod publishToMavenLocal，有：
+solea-tika-parsers
+solea-tika-parseutil
+
+2.提供外部依赖的库，通过：gradlew -Pprod publish，有：
+filemetaparser
+fileserver-2_openapi
+
+
+3.SOLEA-3192 【showapp】邮件附件下载样式异常, 且下载变成预览
+	SOLEA-2963 【onlyoffice】文档转换的问题
+		在这里被注释掉了？
+
+
+4.SOLEA-3149 【tika】zip解压文件对子文件名编码写死了GB18030，导致一些包含中文名子文件解压异常
+测试一下跑起来
+
+
+20201102
+1.检查下发送情况
+	页面
+		没有解析完
+	nagios:
+		solea-10-1-65-103 check_os:
+		timewait number is exceeded . The number is 58677 skip check_iptables skip check_temperature skip check_resove_host
+			check_guard:
+			'/usr/bin/timeout --signal=9 5h bash /opt/solea-tika-app/bin/solea_monitor_kafka_topic.sh': 1.0
+		check_solea_tika_app， bad文件
+		check_solea_send_fserver2， bad文件
+			
+	后台日志看看			--ok
+	/opt/solea-send-fserver2/logs
+		grep -rn "NullPointerException" 
+		grep -rn "error"  *.log
+		
+	tmp文件有没有							--ok
+		/opt/solea-send-fserver2/tmp    
+			[root@solea-10-1-65-104 tmp]# find -type f | wc -l
+			0
+
+		/opt/solea-tika-app/tmp
+			[root@solea-10-1-65-103 tmp]# find -type f | wc -l
+			170
+	bad文件
+		14个bad文件，几个解不开其他是加密的：
+		zip-data/jasper.zip 没有解开，本地可以
+		zip-data/transx.zip
+		柯南.zip  空的文件
+		
+	压缩包解压，跟之前对比		--ok
+	14个失败的，没变化
+		
+	
+2.去广州之前联系一下客户，文档什么时候可以拿到		--ok
+
+
+3.预测试方法：
+	SOLEA-3301 【文档翻译】实现一个dispatch程序，对文件做转换，翻译等命令
+		/opt/document-trans/tasks/taskId/时间/：原始文件，状态文件：ctl_状态.json(包含状态，操作，超时时间的信息), 结果文件
+		ctl_processing.json
+		{"taskId":"cd33b7c089da4a7dae29551a6b8a935f", "source":"001.pdf", "dest":"001.docx", "option":"translate", "timeout": 5, "status":"processing"}
+			status: ready/processing/success/fail
+
+	SOLEA-3302 【文档翻译】转换程序具体实现，dispatch根据不同的command调用转换程序
+	
+	
+20201102/13/uuid 做base64？？
+      状态文件： --是否真正运行的时候写
+        包含状态，操作，超时时间的信息),
+      tmp目录：，必须tmp_快速
+      结果文件
+    	翻译跟转换命令是两个操作还是一个？
+    	7种文档，写7个操作还是1个、
+      1. 支持翻译，支持文档，docx,pptx,xlsx
+      1. 支持翻译，支持文档，doc,ppt,xls
+      1. 支持翻译，支持文档，pdf
+      1. 支持转换，支持文档，pdf
+
+    springboot：
+      /opt/document-trans/tasks 配置
+      /opt/document-trans/tasks/时间/taskId/：
+      吧整个目录给dispath
+
+     	如 20201102/13/uuid ,返回这个  20201102/13/uuid 做base64？？
+      文件：
+      原始文件 --不能用原来的名称，用写死的名称
+      meta信息：
+          原始文件名称？
+          命令
+          命令 信息，，如英文翻译成中文，options
+          超时时间
+      controltask：
+          写什么文件？
+		  状态，操作
+
+    SOLEA-3301 【文档翻译】实现一个dispatch程序，对文件做转换，翻译等命令
+      输入：/opt/document-trans/tasks/时间/taskId/：
+    	如 20201102/13/uuid ,返回这个  
+		
+	预测试方法：
+		1.curl调用upload接口，上传文档，生成任务：	
+		 这时确认/opt/solea-document-trans/tasks/20201102/15/taskId目录下面有任务生成，包含文件：
+			原始文件
+			param文件（包含：原始文件名，sourceLanguage， destLanguage等, 操作命令）
+			stats文件（包含:状态）
+		2.curl调用查询接口，返回状态跟controller文件中状态一致
+			
+			dispatch程序转换成功后输出结果文件在task目录（固定文件名），并且更新controller文件
+			curl再次查询状态返回成功
+		3.curl调用下载接口，获取翻译的结果
+			
+			
+			
+			commands:
+				001/001.yml
+				002/002.yml
+				
+E:\work\gits\solea\master\04sourcecode\tools
+solea-document-processor
+	document-process-service  @大柱
+	document-process-dispatcher
+	document-process-model
+	
+ApiOperation注解
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.BlockingQueue;
+
+	
+	
+4.c环境改成50.18：			--ok
+
+docker exec -it millipede_web_1 bash
+
+python /opt/millipede-solr/management/bin/solr_collection.py create-collection \
+ --auto-numshard  --replication-factor 1 --route-name implicit --auto-create-replication=2 \
+ --schema-file /opt/solea/schema.xml  solea_
+	
+curl http://10.1.50.18:15003/solr/solea_redirect_collection/update -d '[{"id":"001","text":"test"}]'
+		--ok
+		
+		
+python /opt/solea-second-analysis/modules/common/mlp_print_core.py http://10.1.61.11:8983/solr solea
+	
+
+20201103
+1.SOLEA-3301 【文档翻译】实现一个dispatch程序，对文件做转换，翻译等命令
+	实现run方法
+	读取yml配置文件
+	读取param方法
+	生成status文件
+	执行shell
+	
+几种操作类型：
+convert_translate
+convert_pdf_translate
+translate
+
+{"status":"", "progress":}
+
+C:\Users\mayn\.m2\repository\org\springframework\boot\spring-boot\1.5.8.RELEASE
+
+
+127.0.0.1:8080/document-process/dispatch/startTask
+&taskDir=E:\work\logbook\202011\data\document-process\20201103\001
+
+service.dispatch.cmdFilePath
+
+soffice --headless --invisible --convert-to docx /opt/solea-document-process/tasks/task-001/001.doc  --outdir /opt/solea-document-process/tasks/task-001/001.docx
+
+cd /opt/solea-document-process
+MY_PROGRAM_HOME="/opt/solea-document-process"
+java -Drootdir=$MY_PROGRAM_HOME -jar lib/document-process-dispatcher-2.1.2-SNAPSHOT.jar
+
+
+1. 后面转换的子程序实现，用shell包装一下，dispatch 去调用
+
+
+2.dispatcher程序读取配置的方式
+
+3.整体程序再完善下
+
+
+ready/processing/success/fail
+
+opration加后缀
+
+shell 读取 文件
+
+20201106
+1.看看大柱代码
+
+
+2.文档翻译】实现一个dispatch程序，对文件做转换，翻译等命令
+officex-translate
+
+	todo:
+	项目使用动态端口，配一下nginx
+
+
+3.SOLEA-3265 【tika-external-service】自动部署安装多台，分解调用
+	跟bo总再过一下， 
+	
+4.整理一下：
+	1.SOLEA-3306 【web】文件上传的目录要做个tmpwatch
+	2.新闻网站，不支持的语种，页面直接报错了,应该提示一下
+		SOLEA-3307 【新闻网站】新闻网站，不支持的语种翻译，页面直接报错了,应该提示一下
+	3.一些英文pdf识别成了中文，文本没有解析出来，好像跟内容是图片有关
+		SOLEA-3308 【tika】一些英文pdf识别成了中文，文本没有解析出来，好像跟内容是图片有关
+	4.小语种优化
+
+	SOLEA-3308 【tika】一些英文pdf识别成了中文，文本没有解析出来，好像跟内容是图片有关
+	SOLEA-3307 【新闻网站】新闻网站，不支持的语种翻译，页面直接报错了,应该提示一下
+	SOLEA-3306 【web】文件上传的目录要做个tmpwatch
+
+20201107
+1. SOLEA-3265 【tika-external-service】自动部署安装多台，分解调用
+跟bo总再过一下
+
+2.文档翻译】实现一个dispatch程序，对文件做转换，翻译等命令
+	 翻译做一下
+
+soffice --headless --invisible --convert-to docx E:\work\logbook\202011\data\document-trans\20201107\17\4e1c4291-1149-4483-99d6-8a158e818176\data --outdir E:\work\logbook\202011\data\document-trans\20201107\17\4e1c4291-1149-4483-99d6-8a158e818176
+	 
+	 #
+/opt/solea-document-process/tmp
+	
+soffice --headless --invisible --convert-to docx /opt/solea-document-process/tmp/data --outdir /opt/solea-document-process/tmp
+	
+cd /opt/solea-document-process
+	
+1.启动大柱的spring boot
+	/usr/java/default/bin/java -jar lib/document-process-service-2.1.2-dev.jar > logs/service.log &
+2.启动dispatch
+	/usr/java/default/bin/java -jar lib/document-process-service-2.1.2-dev.jar > logs/dispatcher.log &
+
+3.curl调一下看看
+ bash test/test.sh
+ 
+ /usr/java/default/bin/java -jar lib/document-process-dispatcher-2.1.2-dev.jar
+
+
+
+翻译报错：
+000949.doc
+is java.util.NoSuchElementException] with root cause
+java.util.NoSuchElementException: null
+        at java.util.LinkedList$ListItr.next(LinkedList.java:890)
+        at com.lzy.solea.translator.dealtext.MergeText.mergeTextsAsList(MergeText.java:24)
+        at com.lzy.solea.translator.dealtext.TransformText.transformToLists(TransformText.java:68)
+        at com.lzy.solea.translator.bean.MultiTranslator.getTranslateLists(MultiTranslator.java:43
+
+		
+	
+	
+## 本周工作
+total: 5d
+SOLEA-3301 【文档翻译】实现一个dispatch程序，对文件做转换，翻译等命令			2d		@预测试方法
+COMMON-6500 【广东】：机器巡检，有一程序BUG需要修复								2d
+SOLEA-3302 【文档翻译】转换程序具体实现，dispatch根据不同的command调用转换程序	1d		@预测试方法
+		
+20201109
+1.文档测试看看发的怎么样
+
+2020-11-08 20:30:19.782  INFO 3411776 --- [pool-1-thread-1] c.lzy.solea.document.bean.ProcessorTask  : start exec: /opt/solea-document-process/cmd/doc/doc_operation.sh /opt/solea-document-process/tasks/20201107/17/6fb6994f-ba45-4327-be3b-aaedf5093cf7
+2020-11-08 21:00:19.783  INFO 3411776 --- [pool-1-thread-1] c.lzy.solea.document.bean.ProcessorTask  : exec result is fail, cost time is: 1800001
+
+20:30:20.801 [main] INFO com.lzy.solea.document.Processer - process started, inputDir=/opt/solea-document-process/tasks/20201107/17/6fb6994f-ba45-4327-be3b-aaedf5093cf7
+20:30:20.813 [main] INFO com.lzy.solea.document.convert.ConverterProcess - start convert file: /opt/solea-document-process/tasks/20201107/17/6fb6994f-ba45-4327-be3b-aaedf5093cf7/data
+
+
+[root@solea-10-1-61-3 tasks]# find -name "result" | wc -l
+873
+
+有个doc卡住：
+	010798.doc
+	
+soffice --headless --invisible --convert-to docx F:\documentConvert\inputDir\3n\3n\010798.doc --outdir F:\documentConvert\
+
+
+2.本周工作		--ok
+
+3.SOLEA-3301 【文档翻译】实现一个dispatch程序，对文件做转换，翻译等命令
+	1.其他office文件
+	2.一些修改
+	3.pdf实现
+	4.010798.doc 卡住的问题
+	
+	队列重新实现，用spring boot的队列
+	jar包分开打
+	打包的结构想好
+	
+	
+20201110
+1.SOLEA-3301 【文档翻译】实现一个dispatch程序，对文件做转换，翻译等命令
+	codereview的问题修改		--ok
+		线程重新实现		--ok
+		抽出来一个common		--ok
+		maven打包多jar		--ok
+	pdf实现
+	进度实现
+	
+	
+3种指令：
+office-translate
+pdf-translate
+pdf-convert-docx
+
+todo:
+管理out日志
+
+etc跟config区别？
+
+
+运行测试：
+service:
+1.启动大柱的spring boot
+	/usr/java/default/bin/java -jar lib/document-process-service-*.jar > logs/service.log &
+2.启动dispatch
+	/usr/java/default/bin/java -jar lib/document-process-dispatcher-*.jar > logs/dispatcher.log &
+
+3.curl调一下看看
+ bash test/test.sh
+ 
+ Caused by: java.lang.NullPointerException: null
+        at com.lzy.solea.document.util.CommandContext.loadCommandFile(CommandContext.java:56)
+
+
+inputDir=$1
+cd /opt/solea-document-process/document-process-modules
+exec $JAVA -jar /opt/solea-document-process/document-process-modules/lib/document-process-modules*.jar --inputDir "$inputDir" #>> logs/convert.log
+		
+
+2.SOLEA-3308 【tika】一些英文pdf识别成了中文，文本没有解析出来，好像跟内容是图片有关
+
+20201111
+1.SOLEA-3301 【文档翻译】实现一个dispatch程序，对文件做转换，翻译等命令
+	pdf实现,测试
+	
+LLi(李龙) 11:23:19
+波总，winserver2016的OVF已上传至：\\10.1.11.5\软件仓库\OVF\OVF_winserver2016
+	
+	打包看看
+	windows测试
+http://share.lzy.com/share//%E8%BD%AF%E4%BB%B6%E4%BB%93%E5%BA%93/vagrant/VirtualBox-5.1.16-113841/
+
+	
+	加载配置文件
+	双语实现
+	不翻译开关
+	进度实现
+	
+	
+document_release depend document_init
+
+
+安装测试：
+service
+java -jar lib/document-process-service-2.1.2-dev.jar > logs/service.log &
+
+dispatch:
+/usr/java/default/bin/java -jar lib/document-process-dispatcher-2.1.2-dev.jar
+	
+	
+postman:
+http://10.1.61.3:8090/document-process/document/upload
+curl -F "file=@$doc_path/$file"  -F "command=convert-translate" -F "fileType=doc" -F "options={}" "$upload_url"
+
+
+exec > >(tee --append $ROOT_DIR/logs/$LOGFILE) 2>&1
+
+cd - >/dev/null 2>&1 这个什么意思？
+
+{"translateEnable": false, "bilingual": false}
+
+
+bash F:\opt\solea-document-processor\document-process-modules\commands\office\office_translate.sh \opt\solea-document-processor-data\tasks\20201111\19\186f342c-ddf2-4d3f-a40d-e76a07a03487
+
+windows下需要通过gitbash去执行
+D:\soft\git\bin\bash.exe
+
+@大柱：
+fileType 再看看，取后缀
+打包结构一起修改下
+脚本再一起修改
+	
+2.@徐吉，数据重新发送，给个patch		--ok
+	ceph 下载一个
+	
+	查看所有pool:
+	rados lspools
+	查看pool对象：
+	rados ls --pool=solea_20201110
+	
+	下载:
+	rados get <object-id> <下载的文件名字> --pool=<pool_name>
+	rados get a6f49d83-0329-4639-bbce-2aaf269fbec3 a6f49d83-0329-4639-bbce-2aaf269fbec3 --pool=solea_20201110
+	
+	
+1.安装soleaSendFserver 2.1.0及以上版本
+	替换jar包
+	启动soleaSendFserver
+2.通过shell批量下载ceph对象
+
+3.将下载的文件，cp到sendFserver的发送目录，观察发送
+
+	可以先发十几个文件测试下
+
+
+20201112
+1.SOLEA-3301 【文档翻译】实现一个dispatch程序，对文件做转换，翻译等命令
+	启动脚本 + 动态端口
+	
+1.安装dispathcer:
+
+展开安装包：
+rm -rf /opt/solea-document-processor-2.1.2-dev-backup
+if [ -d /opt/solea-document-processor-2.1.2-dev ]  ; then mv /opt/solea-document-processor-2.1.2-dev /opt/solea-document-processor-2.1.2-dev-backup ; fi
+
+tar -zxvf solea-document-processor-2.1.2-dev.tar.gz -C /opt
+bash /opt/solea-document-processor-2.1.2-dev/config.sh
+	
+配置incron:
+rm -f /etc/incron.d/document_dispatcher_update_nginx.incron
+cp /opt/solea-document-processor/document-process-dispatcher/etc/incron/document_dispatcher_update_nginx.incron /etc/incron.d/
+	
+配置文件：
+配置 /opt/solea-document-processor/document-process-dispatcher/config/application.yml
+	
+配置nginx：
+rm -f /etc/nginx/location.conf.d/document_dispatcher.locations.conf
+cp /opt/solea-document-processor/document-process-dispatcher/etc/nginx/document_dispatcher.locations.conf /etc/nginx/location.conf.d/
+	
+配置guard:
+rm -f ${LCM_GUARD_ROOT}/etc/guard/conf.d/document_dispatcher.xml
+cp /opt/solea-document-processor/document-process-dispatcher/etc/guard/solea_document_dispatcher.xml  ${LCM_GUARD_ROOT}/etc/guard/conf.d/
+
+lcm_guard --reload
+sleep 10
+lcm_guard --kill fileserver2_server
+
+配置crond:
+cp /opt/solea-document-processor/document-process-dispatcher/etc/cron/*  ${LCM_GUARD_ROOT}/etc/crond/cron.d
+
+lcm_guard --kill guard_crond
+sleep 20
+lcm_guard --reload
+
+测试一下：
+下载：
+10.1.61.3:15003/solea-document-service/document/download?taskId=L29wdC9zb2xlYS1kb2N1bWVudC1wcm9jZXNzb3ItZGF0YS90YXNrcy8yMDIwMTExMi8xOS80YjQwNDE1Zi0zOTkwLTQ3ZDAtOTBhMi0zMmViMmE0MWRiN2M=
+
+	
+	timeout问题
+		convertTimeout 控制整个操作时间和文档转换的时间
+		transTimeout 控制翻译的时间
+		
+		bash /opt/solea-document-processor/document-process-modules/commands/office/office_translate.sh /opt/solea-document-processor-data/tasks/20201111/21/25f6835e-fc0e-425f-b6bb-0cdddf8a5259
+		
+	测试
+	
+	
+停止了
+[root@solea-10-1-61-3 tasks]# find -name "result" | wc -l
+4437
+
+fail: 116761.doc 
+
+2020-11-12 03:55:38.387  INFO 890932 --- [taskExecutor--1] c.lzy.solea.document.task.ProcessorTask  : start exec: bash /opt/solea-document-processor/document-process-modules/commands/office/office_translate.sh /opt/solea-document-processor-data/tasks/20201111/21/9aefa2d8-6650-494e-8fab-2d54c0621b38
+2020-11-12 04:05:38.388  INFO 890932 --- [taskExecutor--1] c.lzy.solea.document.task.ProcessorTask  : exec result is fail, cost time is: 600001
+
+2020-11-12 09:15:20.400 ERROR 890932 --- [taskExecutor--1] c.lzy.solea.document.task.ProcessorTask  : Process fail. 03:55:38.959 [main] INFO com.lzy.solea.document.Processer - process started, inputDir=/opt/solea-document-processor-data/tasks/20201111/21/9aefa2d8-6650-494e-8fab-2d54c0621b38
+	
+bash /opt/solea-document-processor/document-process-modules/commands/office/office_translate.sh /opt/solea-document-processor-data/tasks/20201111/21/25f6835e-fc0e-425f-b6bb-0cdddf8a5259
+	
+	
+1. 昨天的问题修改
+2. 启动脚本，nginx配置
+3. shell format 插件
+
+timeout问题看看
+
+
+
+
+
+04sourcecode/solea-tika2/solea-tika-app/src/main/resources/config/contentAnalysis/classificationMapping: Has a byte-order marker
+
+@大柱
+1.data去掉
+2.下载文件名问题
+3.动态端口和启动脚本，guard,cron
+
+
+dispatch:
+动态端口，启动脚本，guard ,cron这些
+	
+
+20201113
+1.SOLEA-3301 【文档翻译】实现一个dispatch程序，对文件做转换，翻译等命令
+	超时没有更新状态文件
+	项目抽出来
+	windows测试
+
+2020-11-13 11:11:06.082  INFO 614415 --- [taskExecutor--1] c.lzy.solea.document.task.ProcessorTask  : start exec: bash /opt/solea-document-processor/document-process-modules/commands/office/office_translate.sh /opt/solea-document-processor-data/tasks/20201113/11/6aacf381-0c2f-4956-b15e-dfca115040d3, timeout is 600s
+2020-11-13 11:11:11.492  INFO 614415 --- [taskExecutor--1] c.lzy.solea.document.task.ProcessorTask  : exec result is fail, cost time is: 5410
+2020-11-13 11:11:11.493 ERROR 614415 --- [taskExecutor--1] c.lzy.solea.document.task.ProcessorTask  : Process fail.
+
+unctuation":true}]}] with org.springframework.http.converter.StringHttpMessageConverter
+12:36:36.474 [main] DEBUG org.springframework.web.client.RestTemplate - Response 500 INTERNAL_SERVER_ERROR
+
+卡住了？
+重定向问题
+
+问题文件：
+fail: 116761.doc 
+
+2.SOLEA-3266 【sendFserver】发送原文件之前是否可以复制保留一份
+	做一个dispatcher
+	python backup
+
+
+	
+3.pdf问题：
+OSTP-letter-to-the-US-research-community-september-2019-20200406-20200406 (3).pdf
+	
+
+20201114
+1.SOLEA-3266 【sendFserver】发送原文件之前是否可以复制保留一份
+
+2.SOLEA-2203 【solea】外部服务安装是否可以安装多台，分解调用一下
+	延期下周做
+
+3.SOLEA-3308 【tika】一些英文pdf识别成了中文，文本没有解析出来，好像跟内容是图片有关
+	
+
+4.看一下，文档测试
+
+ start exec: bash /opt/solea-document-processor/document-process-modules/commands/office/office_translate.sh /opt/solea-document-processor-data/tasks/20201113/17/932df8dd-48d1-41a0-a96f-40b0cc8fe98a, timeout is 600s
+	
+[root@solea-10-1-61-3 tasks]# find -name "result" | wc -l
+5028
+
+
+
+- mlp 的问题，兰州
+	
+本周目标：
+1.office文件的转换和翻译完成
+2.pdf在windows下可以转换翻译
+3.性能测试,包括一些异常测试
+5.项目打包，readme
+6.codereview
+7.双语的选择
+
+
+管理out日志
+日志的？放到taskid目录
+	xxx.log	
+TODO:
+pdf翻译修改一下，如何去部署				**
+翻译实时进度百分比更新		**
+调用翻译接口支持并发执行	**
+安装文档
+任务队列持久化到数据库
+pdf转换的部署方案
+翻译的优先队列
+取消任务
+翻译的cache,看看guava有实现
+翻译如果超时，返回已经翻译的
+
+文档类型用tika自动识别去做
+队列是否做一个限制，满了怎么办？
+/opt/solea-document-processor
+document-process-dispatcher 名称过长
+comands支持多个
+
+下下周可以去省厅部署测试
+
+超时后杀掉子进程，是否能杀干净，确认一下
+个别转换失败的
+对接其他的翻译接口，要实现一个接口
+调用翻译接口有翻译失败的片段
+
+-------------------
+//TODO
+
+文件格式判断是否可以优化
+
+任务取消和任务优先级
+	取消可以返回已经翻译的
+
+任务过程进度的更新
+
+返回部分翻译结果
+
+支持多个commands配置目录
+
+windows 部署怎么搞，固定端口
+
+service 和 dispatcher 是否需要合并
+
+
+下周做的：
+
+暂时不急的
+取消任务 直接返回已经翻译的
+翻译的优先队列
+文档类型用tika自动识别去做
+队列做一个限制
+
+SOLEA-3308 【tika】一些英文pdf识别成了中文，文本没有解析出来，好像跟内容是图片有关
+SOLEA-3265 【tika-external-service】自动部署安装多台，分解调用
+SOLEA-2203 【solea】外部服务安装是否可以安装多台，分解调用一下
+
+	
+## 本周工作
+total: 4d 4h
+SOLEA-3301 【文档翻译】实现一个dispatch程序，对文件做转换，翻译等命令				3d
+SOLEA-3266 【sendFserver】发送原文件之前是否可以复制保留一份						4h
+SOLEA-2203 【solea】外部服务安装是否可以安装多台，分解调用一下						4h
+SOLEA-3308 【tika】一些英文pdf识别成了中文，文本没有解析出来，好像跟内容是图片有关	4h
+
+
+20201116
+1.SOLEA-3266  【sendFserver】发送原文件之前是否可以复制保留一份
+	重新部署，演示一下		--ok
+	retry也改成lzy-send		--ok
+	造一个指定大小文件：
+	head -c 1G /dev/zero > 1.tmp
+2.SOLEA-3337 【文档翻译】完成pdf翻译，进度更新，并发翻译等，并准备到现场部署测试
+	pdf转换和翻译
+	windows部署方案，在windows可以调用
+	性能翻译继续测试，覆盖6种文件
+	联系马力，有没有主机，没有就两台虚拟机
+
+@大柱：
+	翻译进度更新
+	翻译支持并发
+	
+SOLEA-3337 【文档翻译】完成pdf翻译，进度更新，并发翻译等，并准备到现场部署测试
+预测试方法：
+1.linux下面可部署安装
+2.linux里通过viturbox装一套windows虚拟机，
+window里面也部署一套文档翻译，做pdf转换用
+3.外面的linux可以调到windows服务转换pdf,然后调翻译
+4.可以做到window每次恢复之后都是可用的
+
+下周可以到现场部署。
+	
+lzyzip-backup
+	
+
+scree ls 列出哪些后台跑的
+ctrl + r 进入任务
+ctrl + a 然后d 后台运行
+[detached from 370256.pts-17.lzy-10-1-50-18]
+
+[root@solea-10-1-65-104 tasks]# find -name "result" | wc -l
+16823
+
+	
+ppt报错的：
+Caused by: org.apache.poi.ooxml.POIXMLException: error: The reference to entity "t" must end with the ';' delimiter.
+        at org.apache.poi.ooxml.POIXMLFactory.createDocumentPart(POIXMLFactory.java:66)
+        at org.apache.poi.ooxml.POIXMLDocumentPart.read(POIXMLDocumentPart.java:648)
+        at org.apache.poi.ooxml.POIXMLDocumentPart.read(POIXMLDocumentPart.java:665)
+        at org.apache.poi.ooxml.POIXMLDocument.load(POIXMLDocument.java:180)
+        at org.apache.poi.xslf.usermodel.XMLSlideShow.<init>(XMLSlideShow.java:102)
+        ... 14 common frames omitted
+Caused by: java.lang.reflect.InvocationTargetException: null
+        at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+        at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62)
+        at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+        at java.lang.reflect.Constructor.newInstance(Constructor.java:423)
+        at org.apache.poi.xslf.usermodel.XSLFFactory.createDocumentPart(XSLFFactory.java:59)
+        at org.apache.poi.ooxml.POIXMLFactory.createDocumentPart(POIXMLFactory.java:63)
+        ... 18 common frames omitted
+	
+com.lzy.solea.document.bean.ConvertException: Zip bomb detected! The file would exceed the max. ratio of compressed file size to the size of the expanded data.
+This may indicate that the file is used to inflate memory usage and thus could pose a security risk.
+You can adjust this limit via ZipSecureFile.setMinInflateRatio() if you need to work with files which exceed this limit.
+Uncompressed size: 103334, Raw/compressed size: 628, ratio: 0.006077
+Limits: MIN_INFLATE_RATIO: 0.010000, Entry: ppt/media/image27.wmf
+        at com.lzy.solea.document.convert.impl.PptxConverter.convert(PptxConverter.java:90)
+        at com.lzy.solea.document.convert.impl.PptConverter.convert(PptConverter.java:54)
+        at com.lzy.solea.document.convert.ConverterProcess.process(ConverterProcess.java:93)
+        at com.lzy.solea.document.Processer.domain(Processer.java:85)
+        at com.lzy.solea.document.Processer.main(Processer.java:35)
+	
+3. codereview
+
+4.COMMON-6511 【guard】guard 出版本1.9.1
+
+
+20201117
+1.SOLEA-3337 【文档翻译】完成pdf翻译，进度更新，并发翻译等，并准备到现场部署测试
+	codereview 改一下
+	pdf转换
+	windows部署
+
+"curl -F \"file=@"+ os.path.join(doc_path,file) + "\" -F \"command=office-translate\" -F " + """ "options={"translateEnable": false, "bilingual": false, "convertTimeout": 600}" """+ upload_url
+
+上传：
+curl -F "file=@${file}" -F "command=pdf-convert-docx" -F "options={}" ${url}/upload
+
+解析json:
+text=$("${ROOT_DIR}"/bin/amtool --alertmanager.url=http://127.0.0.1:15020 alert query -o json |
+  "$LCM_GUARD_ROOT"/bin/jackson_jq ".[]?|[.updatedAt,.labels.alertname,.annotations.summary]" |
+  sort -r)
+
+  
+{"convertTimeout": 600}
+  
+convertUrl=10.1.65.104:15003/solea-document-service/document
+sourcePdf=/opt/test/data.pdf
+
+  
+查询：
+curl ${url}/queryTask?taskId=${taskId}
+	
+2.c 环境自动部署失败
+
+TASK [lzy.common : Install NetworkManager] **************************************************************************************************************************************************************************************************
+ok: [solea-10-1-61-2] => {"changed": false, "msg": "", "rc": 0, "results": ["1:NetworkManager-1.18.0-5.el7_7.2.x86_64 providing NetworkManager is already installed"]}
+fatal: [solea-10-1-61-3]: FAILED! => {"changed": false, "msg": "Failure talking to yum: failure: repodata/repomd.xml from epel: [Errno 256] No more mirrors to try.\nhttp://10.1.11.5/share/%e4%ba%a7%e5%93%81%e5%8f%91%e5%b8%83/%e5%ae%89%e8%a3%85%e9%85%8d%e5%a5%97/install_support/common/ceph/ceph-13.2.4/epl/repodata/repomd.xml: [Errno 14] HTTP Error 403 - Forbidden"}
+fatal: [solea-10-1-61-6]: FAILED! => {"changed": false, "msg": "Failure talking to yum: failure: repodata/repomd.xml from epel: [Errno 256] No more mirrors to try.\nhttp://10.1.11.5/share/%e4%ba%a7%e5%93%81%e5%8f%91%e5%b8%83/%e5%ae%89%e8%a3%85%e9%85%8d%e5%a5%97/install_support/common/ceph/ceph-13.2.4/epl/repodata/repomd.xml: [Errno 14] HTTP Error 403 - Forbidden"}
+
+失败
+
+3. 文档测试怎么样
+[root@solea-10-1-65-104 tasks]# find -name "result" | wc -l
+26951 - 16823 = 10128 条
+
+
+# MINGW_JDK_11_HOME=/d/soft/Java/jdk-11.0.8  必须是jdk11
+MINGW_JDK_11_HOME=/d/soft/Java/jdk-11.0.8
+export PATH=$MINGW_JDK_11_HOME/bin:$PATH
+git ls-files -z | \
+  xargs -0 gitignore_file_filter --config .precommit.gitignore | \
+  xargs -n 50 -0 pre-commit run \
+    --config=sys-pre-commit-config.yaml \
+    --files
+
+
+4.COMMON-6511 【guard】guard 出版本1.9.1
+guard出版本
+
+
+20201118
+1.SOLEA-3337 【文档翻译】完成pdf翻译，进度更新，并发翻译等，并准备到现场部署测试
+pdf转换脚本
+windows部署，通过guard
+	
+配置端口映射 申请端口 15031 15031
+snapshot
+
+
+2.SOLEA-3294 【A环境升级】solea升级到2.1.1
+
+
+3.COMMON-6511 【guard】guard 出版本1.9.1
+
+4.帮广州客户查一下邮件来源		--ok
+
+
+20201118
+1.SOLEA-3337 【文档翻译】完成pdf翻译，进度更新，并发翻译等，并准备到现场部署测试
+	windows测试
+	备份安装
+
+安装vitrual box:
+http://share.lzy.com/share/%E8%BD%AF%E4%BB%B6%E4%BB%93%E5%BA%93/vagrant/VirtualBox-6.1.12-139181/VirtualBox-6.1-6.1.12_139181_el7-1.x86_64.rpm
+
+安装vagrant:
+http://share.lzy.com/share/%E8%BD%AF%E4%BB%B6%E4%BB%93%E5%BA%93/vagrant/vagrant_2.2.7/vagrant_2.2.7_x86_64.rpm
+
+[root@lzy-10-1-50-18 ~]# vagrant -v
+Vagrant 2.2.7
+
+
+导入虚拟机:
+
+[root@ca03.lob.bd.com opt]# virtualbox
+WARNING: The vboxdrv kernel module is not loaded. Either there is no module
+         available for the current kernel (3.10.0-1062.12.1.el7.x86_64) or it failed to
+         load. Please recompile the kernel module and install it by
+
+           sudo /sbin/vboxconfig
+
+         You will not be able to start VMs until this problem is fixed.
+Qt FATAL: QXcbConnection: Could not connect to display
+Aborted
+
+Makefile:185: *** Error: unable to find the sources of your current Linux kernel. Specify KERN_DIR=<directory> and run Make again.  Stop.
+Installation successful
+Makefile:185: *** Error: unable to find the sources of your current Linux kernel. Specify KERN_DIR=<directory> and run Make again.  Stop.
+
+
+yum install gcc make kernel-headers kernel-devel
+
+	
+[root@ca03.lob.bd.com tmp]# more /var/log/vbox-install.log
+
+VirtualBox 5.1.16 r113841 installer, built 2017-03-08T15:19:18Z.
+
+Testing system setup...
+Removing previous installation of VirtualBox 5.1.16 r113841 from /opt/VirtualBox
+
+vboxdrv.sh: Stopping VirtualBox services.
+vboxdrv.sh: Building VirtualBox kernel modules.
+Makefile:185: *** Error: unable to find the sources of your current Linux kernel. Specify KERN_DIR=<directory> and run Make again.  Stop.
+This system is not currently set up to build kernel modules (system extensions).
+Running the following commands should set the system up correctly:
+
+  yum install kernel-devel-3.10.0-1062.12.1.el7.x86_64
+(The last command may fail if your system is not fully updated.)
+  yum install kernel-devel
+Makefile:185: *** Error: unable to find the sources of your current Linux kernel. Specify KERN_DIR=<directory> and run Make again.  Stop.
+Makefile:185: *** Error: unable to find the sources of your current Linux kernel. Specify KERN_DIR=<directory> and run Make again.  Stop.
+Makefile:185: *** Error: unable to find the sources of your current Linux kernel. Specify KERN_DIR=<directory> and run Make again.  Stop.
+Makefile:185: *** Error: unable to find the sources of your current Linux kernel. Specify KERN_DIR=<directory> and run Make again.  Stop.
+
+
+报错：
+[root@ca01.lob.bd.com tmp]# sudo /sbin/vboxconfig
+vboxdrv.sh: Stopping VirtualBox services.
+vboxdrv.sh: Starting VirtualBox services.
+vboxdrv.sh: Building VirtualBox kernel modules.
+This system is currently not set up to build kernel modules.
+Please install the Linux kernel "header" files matching the current kernel
+for adding new hardware support to the system.
+The distribution packages containing the headers are probably:
+    kernel-devel kernel-devel-3.10.0-1062.12.1.el7.x86_64
+This system is currently not set up to build kernel modules.
+Please install the Linux kernel "header" files matching the current kernel
+for adding new hardware support to the system.
+The distribution packages containing the headers are probably:
+    kernel-devel kernel-devel-3.10.0-1062.12.1.el7.x86_64
+
+There were problems setting up VirtualBox.  To re-start the set-up process, run
+  /sbin/vboxconfig
+as root.  If your system is using EFI Secure Boot you may need to sign the
+kernel modules (vboxdrv, vboxnetflt, vboxnetadp, vboxpci) before you can load
+them. Please see your Linux system's documentation for more information.
+
+
+yum install kernel-devel-3.10.0-1062.12.1.el7.x86_64
+	
+	
+	
+yum install VirtualBox-6.1-6.1.10_138449_el7-1.x86_64.rpm
+yum install kernel-devel
+	
+
+vcnserver
+ export DISPLAY=:1
+	
+vboxmanage list -l runningvms
+	
+ip:
+192.168.56.88
+	
+todo：
+	1.超时了还在卡住，是否跟exec有关？
+	
+	2. windows下做tmpwatch
+	
+	3.adobe对话框
+
+	
+查看winsser:
+ vboxmanage list -l runningvms
+ 
+vagrant package --base winserver_2016 1  --output winserver_2016.box
+
+[root@ca03.lob.bd.com winserver-2016]# vagrant up
+Bringing machine 'default' up with 'virtualbox' provider...
+
+
+2.SOLEA-3294 【A环境升级】solea升级到2.1.1
+
+3.
+
+
+4.a环境升级，检查验证一下		--ok
+邮件
+
+
+20201120
+
+SOLEA-3337 【文档翻译】完成pdf翻译，进度更新，并发翻译等，并准备到现场部署测试
+测试下虚拟机
+
+mkdir /opt/winserver-2016 && cd /opt/winserver-2016
+
+vagrant box add winserver2016_20201120 /opt/winserver/winserver_2016.box
+查看：
+vagrant box list
+
+vagrant init winserver2016_20201120
+
+# 生成Vagrantfile，进一步配置虚拟机：
+
+
+# 启动
+vagrant up
+
+# 配置端口映射， 配置中增加这一行
+config.vm.network "forwarded_port", guest: 15031, host: 15031
+# 重启下：
+vagrant reload
+
+1.COMMON-6333 【版本依赖关系】如果知道每一项项目的版本依赖，并且检查		--ok
+
+2.出差准备，开发环境搭建		
+
+3.COMMON-6511 【guard】guard 出版本1.9.1		--ok
+
+准备release notes
+
+
+修改rb分支的版本号到正式的版本号
+		http://git.lzy.com/lzy/lcm-guard/merge_requests/238
+
+强制生成一个版本
+
+发布版本,jira里面改成release
+
+打tag
+
+去掉每日构造
+
+对外发邮件
+
+merge 到原分支
+
+http://git.lzy.com/lzy/lcm-guard/merge_requests/239
+
+
+COMMON-6333 【版本依赖关系】如果知道每一项项目的版本依赖，并且检查
+nagios:
+10.1.46.1
+
+
+## 本周工作：
+total: 5d
+SOLEA-3337 【文档翻译】完成pdf翻译，进度更新，并发翻译等，并准备到现场部署测试		3d	@预测试方法
+	SOLEA-2839 文档翻译的问题，测试一下性能
+SOLEA-3340 【南京sj】 客户反馈在页面点击翻译，页面会卡住							3h
+SOLEA-3294 【A环境升级】solea升级到2.1.1											4h
+SOLEA-3341 【现场维护】solea现场维护(W47 20201116))									4h
+COMMON-6511 【guard】guard 出版本1.9.1												2h
+COMMON-6333 【版本依赖关系】如果知道每一项项目的版本依赖，并且检查					2h
+
+SOLEA-2262 email客户端 foxmail和outlook 里面的data的分析，变成email，发送
+填个jira,sendFserver集成
+	SOLEA-3345 【foxmail】sendFserver集成foxmail的解析发送
+
+foxmail导出
+
+20201121
+1.杀掉子进程的问题
+	确认如果adobe弹出对话框，是否可以杀掉，python进程？
+		E:\work\gits\solea\solea2\04sourcecode\solea-document-processor\document-process-modules\commands\pdf
+		
+		python 
+		
+		获取进程：
+			wmic process where caption="java.exe" get processid,caption,commandline /value
+			wmic process  get processid,caption,commandline /value
+		
+		taskkill /im 16560 /f
+	
+	
+	ps -ef | grep taskId 拿到子进程id然后kill
+	windows怎么做的？看看guard
+
+2.文档再优化修改
+
+
+20201123
+1.本周工作		--ok
+
+
+2.省厅发文件的问题
+压缩包/2_89_1567644565_062_00_181112.efo_261.zip
+
+3.关键词没有统计的问题		--ok
+jira做
+
+
+4.文档翻译，导出来一个新的box
+	看看问题			--ok
+	代码再修改		--ok
+
+	
+
+	
+20201124
+1.SOLEA-3354 【文档翻译】文档翻译问题汇总
+删除功能
+翻译进度报错
+窗体
+
+vboxmanage 导入虚拟机
+vboxmange 做snapshot
+vboxmanage 恢复snapshot
+
+
+
+
+报错：==> default: Forwarding ports...
+    default: 22 (guest) => 2222 (host) (adapter 1)
+There was an error while executing `VBoxManage`, a CLI used by Vagrant
+for controlling VirtualBox. The command and stderr is shown below.
+
+Command: ["modifyvm", "a711d6d0-334d-4923-9be4-e3029a1a8737", "--natpf1", "ssh,tcp,127.0.0.1,2222,,22"]
+
+Stderr: VBoxManage: error: A NAT rule of this name already exists
+VBoxManage: error: Details: code NS_ERROR_INVALID_ARG (0x80070057), component NATEngineWrap, interface INATEngine, callee nsISupports
+VBoxManage: error: Context: "AddRedirect(Bstr(strName).raw(), proto, Bstr(strHostIp).raw(), RTStrToUInt16(strHostPort), Bstr(strGuestIp).raw(), RTStrToUInt16(strGuestPort))" at line 1911 of file VBoxManageModifyVM.cpp
+
+[root@ca03.lob.bd.com winserver-2016]# vboxmanage showvminfo winserver-2016_default_1605841057540_16238 --machinereadable  | awk -F '[",]' '/^Forwarding/ { printf ("Rule %s host port %d forwards to guest port %d\n", $2, $5, $7); }'
+Rule 127.0.0.1tcp15031 host port 15031 forwards to guest port 15031
+Rule ssh host port 2222 forwards to guest port 22
+				
+				
+		2. a环境更新，snapshot
+
+		3.删除功能 和 翻译进度报错
+			COMMON-6511 【guard】guard 出版本1.9.1
+
+3. jira过一下
+SOLEA-3322 【自动部署】支持修改翻译语种之间的转换关系
+SOLEA-3270 【修改扩展名】ascx,imd,csv等文本文件被识别成“修改扩展名”
+SOLEA-3308 【tika】一些英文pdf识别成了中文，文本没有解析出来，好像跟内容是图片有关
+SOLEA-3217 【tika】email是否可以扩展发送时间格式
+SOLEA-3265 【tika-external-service】自动部署安装多台，分解调用
+SOLEA-3361 【文档翻译】省厅安装文档翻译
+
+2.SOLEA-3340 【南京sj】 客户反馈在页面点击翻译，页面会卡住		--ok
+问一下什么时候有时间
+
+
+3.看看文档翻译怎么样了		--ok
+
+从凌晨到现在9hour
+[root@ca03.lob.bd.com logs]# grep -rn "cost time is" *.log | wc -l
+393
+
+失败的：
+[root@ca03.lob.bd.com logs]# grep -rn "result is fail" *.log | wc -l
+33
+
+演示一下：
+SOLEA-3266 【sendFserver】发送原文件之前是否可以复制保留一份
+
+COMMON-6333 【版本依赖关系】如果知道每一项项目的版本依赖，并且检查
+	http://10.1.46.1/nagios/
+SOLEA-3337 【文档翻译】完成pdf翻译，进度更新，并发翻译等，并准备到现场部署测试
+	http://10.1.11.6/daily_releases_new/centos7/solea/master/202011240133/solea-release-2.1.2-dev/docs/install/webhelp/index/content/ch05s19.html
+SOLEA-3341 【现场维护】solea现场维护(W47 20201116))
+	维护记录_20201121_王涛.txt
+	
+一起做掉了
+SOLEA-3325 【广州】支持.fox后缀文件的解析入库
+SOLEA-3357 【邮件收发关系】对接知识图谱，bcp中带上权限字段
+
+20201125
+1.南京sj				--ok
+	onlyoffice没有高亮
+	权限问题
+	
+2.下午去省厅出差			--ok
+
+	## 省厅的问题
+
+	可能是 zip 文件有特殊情况，导致的问题--ok
+	原因是一个 zip，第 26 个子文件错位，导致的问题
+	inferate 代码多消费的一个 byte，导致后面有问题，可能是 jdk 有问题
+
+	后来分别用 jdk，zipfile 和 zipinputstream 测试一下了，
+	zipfile 是好的，zipinputstream 是不好的
+
+	可能的解决方法：只能用 zipfile 重新实现一下 zip 了？
+
+3.文档翻译
+	转换的失败率比较高
+			
+	翻译重试和失败机制
+	
+	
+先发起来：
+错误和失败的文件去掉：
+
+select file_name from OFFLINE_TASK where 
+create_time > to_date('2020-11-24 18:00:00', 'YYYY-MM-DD hh24:mi:ss')
+and status = -1
+
+报错的：
+004102.ppt
+036276.pptx
+223331.pptx
+004432.ppt	重试成功了？
+002443.ppt	重试成功
+002440.ppt	重试成功
+006445.ppt	重试成功
+
+048f166a-893a-4adb-8e07-53c70dc98e1b-104774-2252950.xlsx
+0d3fb24f-d7e8-4135-b15b-1b8eb841109d-104774-2253233.xlsx
+0b800d84-e1c8-4bf1-ae53-62695a93052e-104774-2258061.xlsx
+169fc47f-bbae-4438-8ad5-8a67802dc927-104774-2441826.xlsx
+3618a983-99cb-4b0a-9ac1-d7c5540ad97f-104774-2255890.xlsx
+0e77e164-46ae-42c5-a7d0-8dac0ce4bbbe-104774-2252951.xlsx
+002743.xls
+
+11a12a63-45fc-48c9-adef-6e2701dba6cc-104774-2417098.docx	重试成功
+411857.doc
+
+修改软件的艺术：构建易维护代码的9条最佳实践.pdf
+中文第二版-编程珠玑.pdf
+ed9a212b-1d63-4a06-80a8-774cc117b375-104774-2417160.pdf
+ef3b9f0f-a9a3-47e2-8f74-cf1236707231-104774-2258663.pdf
+f96f8aad-8a2b-43c8-baf0-0ab158c8dbd8-104774-2257516.pdf
+f340abcd-7fbc-4e7a-9331-2cbc66e46b92-104774-2255052.pdf
+代码整洁之道（中文版）.pdf
+S5700-LI系列全千兆企业交换机.pdf
+
+
+
+
+
+
+先看看ppt的错误：
+2020-11-25 19:26:01.126 ERROR --- [main] c.l.s.d.convert.impl.PptxConverter       : Excpetion:
+java.io.IOException: Zip bomb detected! The file would exceed the max. ratio of compressed file size to the size of the expanded data.
+This may indicate that the file is used to inflate memory usage and thus could pose a security risk.
+You can adjust this limit via ZipSecureFile.setMinInflateRatio() if you need to work with files which exceed this limit.
+Uncompressed size: 104930, Raw/compressed size: 844, ratio: 0.008043
+Limits: MIN_INFLATE_RATIO: 0.010000, Entry: ppt/media/image2.wmf
+        at org.apache.poi.openxml4j.util.ZipArchiveThresholdInputStream.checkThreshold(ZipArchiveThresholdInputStream.java:130)
+        at org.apache.poi.openxml4j.util.ZipArchiveThresholdInputStream.read(ZipArchiveThresholdInputStream.java:80)
+        at org.apache.poi.util.IOUtils.toByteArray(IOUtils.java:151)
+
+解决：
+    // Adjust this limit via ZipSecureFile.setMinInflateRatio() if you need to work with files which exceed this limit.
+    ZipSecureFile.setMinInflateRatio(-1.0d);
+		
+		
+xls报错：		--okm
+跟上面一样
+
+还差pdf:
+
+
+20201126
+1.文档翻译，看看失败的
+
+总数：
+[root@ca03.lob.bd.com tasks]# find -name status.json | grep subTask -v  | wc -l
+1299
+
+[root@ca03.lob.bd.com tasks]# find -name status.json | grep subTask -v  |xargs grep success| wc -l
+1206
+
+失败的：
+[root@ca03.lob.bd.com tasks]# find -name status.json | grep subTask -v  |xargs grep fail| wc -l
+92
+
+	ppt:
+		004601.ppt
+		002688.ppt
+		006445.ppt
+		004600.ppt
+		
+	pdf：
+		063d43cb-b33a-4532-82f7-3c3b934d5c51-104774-2441858.pdf
+		064fa296-c51a-47e9-9ffe-bc53bc12b66a-104774-2419318.pdf
+		06caff18-7c92-49bc-9c43-f047455b5dad-104774-2252630.pdf
+		06e7ae24-82cd-458a-8b18-9d9dd4cda90b-104774-2256995.pdf
+		126-PowerPoint2007宝典.pdf
+		
+			adob报错：图像数据不充分
+				下载下来看看：L29wdC9zb2xlYS1kb2N1bWVudC1wcm9jZXNzb3ItZGF0YS90YXNrcy8yMDIwMTEyNi8xMC9iNjkwMTBkNS1mY2ViLTQwYWYtYjkxNS1kMmVkN2E3ODRmN2M=
+				
+				192.168.56.88:15031/solea-document-service/document/download?taskId=L29wdC9zb2xlYS1kb2N1bWVudC1wcm9jZXNzb3ItZGF0YS90YXNrcy8yMDIwMTEyNi8xMC9iNjkwMTBkNS1mY2ViLTQwYWYtYjkxNS1kMmVkN2E3ODRmN2M=
+				
+				重启一下winserver虚拟机，好了？？
+				
+		
+	xls:
+		92908c36-aa9f-4236-90f2-80a7803e816d-104774-2257821.xlsx
+		438f4294-30c8-4fb2-a5bc-ae816241458e-104774-2254420.xlsx
+		009703.xls
+		009481.xls
+		009502.xls
+		
+catalina.out-587602-2020-11-25 23:11:58.313  INFO --- [pool-6-thread-1] c.l.s.t.w.t.lzy2.Lzy2FileTranslateUtil   : lzy2 submitDocTrans result is {"code":0,"message":"L29wdC9zb2xlYS1kb2N1bWVudC1wcm9jZXNzb3ItZGF0YS90YXNrcy8yMDIwMTEyNS8yMy8yZDgwZjM4Zi04ODhiLTQxYjMtYTg5NS00NTMxY2MwYjBkN2Y="}
+--
+talina.out-587602-2020-11-25 23:11:58.313  INFO --- [pool-6-thread-1] c.l.s.t.w.t.lzy2.Lzy2FileTranslateUtil   : lzy2 submitDocTrans result is {"code":0,"message":"L29wdC9zb2xlYS1kb2N1bWVudC1wcm9jZXNzb3ItZGF0YS90YXNrcy8yMDIwMTEyNS8yMy8yZDgwZjM4Zi04ODhiLTQxYjMtYTg5NS00NTMxY2MwYjBkN2Y="}
+
+
+
+看看时间：2020-11-25 23:02:48
+
+报错：
+2020-11-25 23:02:48.192  INFO 3470 --- [http-nio-auto-1-exec-6] c.l.s.d.web.DocumentConvertController    : start download File:/opt/solea-document-processor-data/tasks/20201125/23/65205c71-d5d5-4c13-af6c-ff57b733506d/result
+2020-11-25 23:02:48.193  WARN 3470 --- [http-nio-auto-1-exec-6] .w.s.m.s.DefaultHandlerExceptionResolver : Failure while trying to resolve exception [org.springframework.web.HttpMediaTypeNotAcceptableException]
+
+java.lang.IllegalStateException: Cannot call sendError() after the response has been committed
+        at org.apache.catalina.connector.ResponseFacade.sendError(ResponseFacade.java:472) ~[tomcat-embed-core-9.0.19.jar:9.0.19]
+
+		
+2020-11-25 23:02:48.194 ERROR 3470 --- [http-nio-auto-1-exec-6] o.a.c.c.C.[.[.[.[dispatcherServlet]      : Servlet.service() for servlet [dispatcherServlet] in context with path [/solea-document-service] threw exception [Could not find acceptable representation] with root cause
+
+org.springframework.web.HttpMediaTypeNotAcceptableException: Could not find acceptable representation
+        at org.springframework.web.servlet.mvc.method.annotation.AbstractMessageConverterMethodProcessor.writeWithMessageConverters(AbstractMessageConverterMethodProcessor.java:307) ~[spring-webmvc-5.1.7.RELEASE.jar:5.1.7.RELEASE]
+
+		
+好像是queryTask时，status.json还没有生成
+
+--
+catalina.out-588107-    at java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:294)
+catalina.out-588108-    at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+catalina.out-588109-    at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+catalina.out-588110-    at java.lang.Thread.run(Thread.java:748)
+catalina.out:588111:2020-11-25 23:11:58.320 ERROR --- [pool-6-thread-1] c.l.s.t.web.schedule.TranslSchedule      : Translate file task is wrong, fileName : 009703.xls
+catalina.out-588112-com.lzy.solea.web.api.exception.SoleaBusinessException: lzy2 file translator error
+catalina.out-588113-    at com.lzy.solea.transl.web.translator.lzy2.Lzy2FileTranslator.doTranslate(Lzy2FileTranslator.java:91)
+catalina.out-588114-    at com.lzy.solea.transl.web.schedule.TranslSchedule.exexuteTranslate(TranslSchedule.java:170)
+catalina.out-588115-    at com.lzy.solea.transl.web.schedule.TranslSchedule.exexuteTranslate(TranslSchedule.java:197)
+
+
+ wget http://10.1.61.3:15003/solea-tika-external-service/translator/sync/support-language  -O 1.log -q
+curl  http://10.1.61.3:15003/solea-tika-external-service/translator/sync/support-language -X GET -o 1.log -s
+
+
+2.snapshot
+
+snapshot
+				
+				1. 虚拟机自动恢复的
+					建立snapshot:
+						[root@ca03.lob.bd.com ~]# vagrant snapshot save -h
+						Usage: vagrant snapshot save [options] [vm-name] <name>
+						
+						# 创建快照
+						vagrant snapshot save default  winserver2016_20201126_snapshot
+						
+						# 查看快照
+						vagrant snapshot list
+							[root@ca03.lob.bd.com winserver-2016]# vagrant snapshot list
+								==> default:
+								winserver2016_20201126_snapshot
+						
+						# 恢复快照
+						vagrant snapshot restore default winserver2016_20201126_snapshot
+						
+						# 删除快照
+						vagrant snapshot delete default winserver2016_snapshot
+						
+						报错，删除nat rule：
+							Command: ["modifyvm", "a711d6d0-334d-4923-9be4-e3029a1a8737", "--natpf1", "ssh,tcp,127.0.0.1,2222,,22"]
+							Stderr: VBoxManage: error: A NAT rule of this name already exists
+						vboxmanage modifyvm winserver-2016_default_1605841057540_16238 --natpf1 delete "2222" 
+							--不行
+						修改cpp文件
+						cd /root/VirtualBox VMs/winserver-2016_default_1605841057540_16238
+
+						
+		winserver-2016_default_1605841057540_16238
+		
+		重新导出来box:
+		 vboxmanage list -l runningvms
+		vagrant package --base winserver-2016_default_1605841057540_16238  --output winserver_2016.box
+		
+导进去：
+
+vagrant box add winserver2016_20201125 /opt/winserver-2016/winserver_2016.box
+vagrant init winserver2016_20201125
+
+
+# 生成Vagrantfile，进一步配置虚拟机：
+
+guard.xml:
+  xxx_1
+ start：
+	sh  
+ stop：
+	sh
+
+ check:
+	xxx
+
+
+start.sh
+	vm=xxx
+	vboxmanage restore snaphost aaaa
+	vboxmanage xxx
+	vboxmanger 1123234:8080
+
+stop:		
+	vboxmanage stop	
+
+check:
+	vboxmanger 
+	
+
+用vboxmanage 去做：
+vboxmanage list -l runningvms
+
+  VBoxManage snapshot <uuid|vmname>
+  VBoxManage snapshot <uuid|vmname> take <snapshot-name> [--description=description] [--live] [--uniquename Number,Timestamp,Space,Force]
+  VBoxManage snapshot <uuid|vmname> delete <snapshot-name>
+  VBoxManage snapshot <uuid|vmname> restore <snapshot-name>
+  VBoxManage snapshot <uuid|vmname> restorecurrent
+  VBoxManage snapshot <uuid|vmname> edit <snapshot-name | --current> [--description=description] [--name=new-name]
+  VBoxManage snapshot <uuid|vmname> list [--details | --machinereadable]
+  VBoxManage snapshot <uuid|vmname> showvminfo <snapshot-name>
+
+vboxmanage snapshot winserver-2016_default_1605841057540_16238 take winserver2016_snapshot
+[root@ca03.lob.bd.com winserver-2016]# vboxmanage snapshot winserver-2016_default_1605841057540_16238 take winserver2016_snapshot
+0%...10%...20%...30%...40%...50%...60%...70%...80%...90%...100%
+Snapshot taken. UUID: 52e03630-1c18-4a6a-81a6-eefa6fa9d98b
+
+# 查看确认:
+vboxmanage snapshot winserver-2016_default_1605841057540_16238 list
+
+恢复：
+vboxmanage snapshot winserver-2016_default_1605841057540_16238 restore winserver2016_snapshot
+
+# 开启关闭虚拟机：
+
+vboxmanage startvm winserver-2016_default_1605841057540_16238
+
+vboxmanage controlvm winserver-2016_default_1605841057540_16238 poweroff
+
+
+
+重新导出来一个：
+
+vboxmanage export winserver-2016_default_1605841057540_16238 -o win2016.ova
+
+导进虚拟机：
+vboxmanage import /root/Documents/winserver2016.ova --vmname winserver2016
+	好像不行
+vboxmanage import winserver2016.ova
+
+0%...10%...20%...30%...40%...50%...60%...70%...80%...90%...100%
+Successfully imported the appliance.
+
+cd  /root/Documents
+
+快照：
+vboxmanage snapshot winserver2016 take winserver2016_snapshot_clean
+
+# 确认：
+vboxmanage snapshot winserver2016 list
+
+恢复快照：
+vboxmanage snapshot winserver2016 restore winserver2016_snapshot_clean
+
+#开机：
+vboxmanage startvm winserver2016
+
+# 确认可以ping通：
+ping 192.168.56.88
+
+
+关机：
+vboxmanage controlvm winserver2016 poweroff
+
+# 端口转发
+vboxmanage modifyvm "winserver2016" --natpf1 ",tcp,127.0.0.1,15031,,15031"
+
+
+# 启动
+vagrant up
+		
+  # config.vm.network "forwarded_port", guest: 22, host: 2222, id: "ssh", disabled: "true"
+		
+卡在：
+==> default: Waiting for machine to boot. This may take a few minutes...
+    default: SSH address: 127.0.0.1:2222
+    default: SSH username: vagrant
+    default: SSH auth method: private key
+		
+用vboxmanage 去做：  --okm
+
+删除接口
+	翻译失败
+	开始任务时
+
+
+翻译失败数
+
+todo:
+虚拟机模板
+		
+
+3.SOLEA-3357 【邮件收发关系】对接知识图谱，bcp中带上权限字段		--okm
+
+20201127
+1.文档安装文档
+[root@ca02.lob.bd.com logs]# vboxmanage --version
+WARNING: The vboxdrv kernel module is not loaded. Either there is no module
+         available for the current kernel (3.10.0-1062.12.1.el7.x86_64) or it failed to
+         load. Please recompile the kernel module and install it by
+
+           sudo /sbin/vboxconfig
+
+         You will not be able to start VMs until this problem is fixed.
+6.1.10r138449
+
+pdf看看：
+3ed53ed9-c449-45f9-8fcc-c8ac0564c422-104774-2252115.pdf
+
+
+
+2020-11-27 14:35:00
+
+2.编译不过看看		--ok
+
+
+4.开源组件		--ok
+
+
+5.压缩包解压的问题
+	对比下packageParser 跟1.24的tika
+
+	
+6.dataflow???
+
+7.备份目录
+$(expr "${MAX_SAVE_SIZE}" \* 1024 \* 1024)
+
+$(( MAX_SAVE_SIZE * 1024 * 1024 ))
+
+for file in $(find "${BACKUP_DIR}" -type f -print0 | xargs -0 ls -rlt | awk '{print $9}'); do
+$9?
+
+MAX_SAVE_SIZE
+BACKUP_DIR_SIZE 这个不能用大小 
+
+ file in $(find "${BACKUP_DIR}" -type f -print0 
+
+xargs
+
+ls *
+
+find | xargs ls
+
+目录没有删除？？
+
+
+
+jira延期：		--ok
+SOLEA-3340 【南京sj】 客户反馈在页面点击翻译，页面会卡住
+SOLEA-2866【翻译】合肥xxx张校校发现的问题，日语没有进行翻译
+SOLEA-3325 【广州】支持.fox后缀文件的解析入库
+	下周做
+	
+
+
+
+4.
+COMMON-6333 【版本依赖关系】如果知道每一项项目的版本依赖，并且检查
+应用的url拼接的不对，应该优先使用indexUrl，如果indexUrl是相对地址，不包含IP和端口的话，应该使用独立的IP、PORT字段，拼接上indexUrl中的应用名，不要用appCode，appCode跟应用名不是对应的
+	
+	
+
+20201128
+1.看看文档翻译的
+	总数：2411
+	失败：11
+
+本地打不开，onlyoffice可以打开
+2_89_1567644474_062_00_091129.pptx
+008427.xls	可以打开
+
+2020-11-28 10:17:21.153  INFO --- [main] c.l.solea.document.util.LibreofficeUtil  : Exec cmd: soffice --headless --invisible --convert-to xlsx /opt/solea-document-processor-data/tasks/202011
+28/10/60e6a154-0d35-4bbf-adf6-8ad1cecd0219/data --outdir /opt/solea-document-processor-data/tasks/20201128/10/60e6a154-0d35-4bbf-adf6-8ad1cecd0219/tmp, timeout is: 600 s
+2020-11-28 10:17:24.487 ERROR --- [main] c.l.s.d.convert.impl.XlsxConverter       : Excpetion:
+org.apache.poi.ooxml.POIXMLException: error: The entity name must immediately follow the '&' in the entity reference.
+        at org.apache.poi.ooxml.POIXMLFactory.createDocumentPart(POIXMLFactory.java:66)
+        at org.apache.poi.ooxml.POIXMLDocumentPart.read(POIXMLDocumentPart.java:648)
+        at org.apache.poi.ooxml.POIXMLDocumentPart.read(POIXMLDocumentPart.java:665)
+        at org.apache.poi.ooxml.POIXMLDocument.load(POIXMLDocument.java:180)
+
+	
+2.shell修改下，备份数据的
+
+查找最老的数据：
+find -type f -printf '%p\n' | sort
+
+find -type f -printf '%T+%p\n' | sort
+
+
+
+
+3.中午恢复c环境，翻译发起来
+
+
+4.zipFile测试
+
+
+vim /etc/ssh/sshd_config
+
+#AllowAgentForwarding yes
+#AllowTcpForwarding yes
+#GatewayPorts no
+X11Forwarding yes
+#X11DisplayOffset 10
+X11UseLocalhost no
+
+systemctl restart sshd.service
+
+20201130
+1.本周工作				--ok
+SOLEA-3362 【zip解压】省厅升级发现的部分zip压缩包解压失败
+SOLEA-3325 【广州】支持.fox后缀文件的解析入库
+
+2.文档翻译测试看看		--ok
+总数：500个文件
+一共失败：16
+	其中打不开的文件：1
+	超时失败的：	14
+	poi报错的文件：	1（008427 (1).xls）
+	
+	什么时候发完的？
+	优化
+	数字不做翻译
+	
+	check
+	失败的错误信息输出
+	翻译超时返回
+	
+(必须)不存在的任务id也返回就绪状态?10.1.61.3:15003/solea-document-service/document/queryTask?taskId=123456返回{"code":0,"message":{"progress":0,"status":"ready"}}
+
+3.zipFile测试, 单元测试要过，压缩包发起来		--ok
+
+	压缩包/0e0efe77-958f-4943-a3be-b6e89dc9651c-104774-2441910.rar show报错
+
+4.fox文件解析， 找到文件测试下，跟客户确定
+
+5. 文档翻译继续测试
+	1.程序重启后，判断任务是否超时，则直接失败
+	2.删除任务
+	3.错误信息页面显示
+
+6.check_dependency 如果空的发送空		--ok
+	docker
+	
+7.csv 生成bcp		--ok
+
+8.backup shell修改		明天
+
+
+9.
+SOLEA-3354 【文档翻译】文档翻译问题汇总 2d 4h @预测试方法
+	1.加一个guard check 每1小时检查虚拟机是否可以正常转换
+	2.文档超时的，文档损坏打不开的错误信息可以在页面显示
+	3.实现任务删除的接口
+SOLEA-3325 【广州】支持.fox 后缀文件的解析入库 1d @预测试方法
+	1.先在家里造一些foxmail文件，联系广州客户确定是同一种文件,再确认下foxmail的版本
+	2.先上传试试，先看看tika是否有支持的
+	3.如果tika不支持，自己实现解析
+	
+	
+################
+20201201
+1.SOLEA-3362 【zip解压】省厅升级发现的部分zip压缩包解压失败
+	准备下安装包
+	
+
+2.SOLEA-3325 【广州】支持.fox后缀文件的解析入库
+	造一下fox文件
+	
+
+3.SOLEA-3354 【文档翻译】文档翻译问题汇总
+	删除任务
+	失败报错的
+	
+	
+
+本周工作：
+total: 4d 6h
+SOLEA-3354 【文档翻译】文档翻译问题汇总							2d 4h	@预测试方法
+SOLEA-3362 【zip解压】省厅升级发现的部分zip压缩包解压失败		1d	@预测试方法
+SOLEA-3325 【广州】支持.fox后缀文件的解析入库					1d	@预测试方法
+SOLEA-3322 【自动部署】支持修改翻译语种之间的转换关系			2h
+	
+todo:
+翻译报错重试？
+tmpwatch
+端口申请
+1.提供一个脚本去展开压缩包
+
+安装多台虚拟机，可以修改成其它IP，外面加一层nginx配置
+虚拟机模板，自动生成
+
+恢复：  
+ mv /opt/lzy-dockers/solea-c/init.sh /opt/lzy-dockers/solea-c/init.sh.bak
+  mv /vagrant/auto-deploy/auto-deploy.sh /vagrant/auto-deploy/auto-deploy.sh.bak
+
+## 本周工作：
+total: 5d
+SOLEA-3354 【文档翻译】文档翻译问题汇总										2d	@预测试方法
+	snapshot自动恢复
+	删除任务的功能
+	翻译接口重试，和失败多少算任务失败
+SOLEA-3362 【zip解压】省厅升级发现的部分zip压缩包解压失败					1d
+SOLEA-3325 【广州】支持.fox后缀文件的解析入库								4h
+SOLEA-3357 【邮件收发关系】对接知识图谱，bcp中带上权限字段					4h 
+@ 预测试方法：
+	上传一个foxmail文件，sendFserver解开发送
+	跟pst一个效果
+SOLEA-3356 【现场维护】solea现场维护(W48 20201123))							4h
+SOLEA-3340 【南京sj】 客户反馈在页面点击翻译，页面会卡住					4h
+
+
+todo:
+
+curl: (7) Failed connect to 127.0.0.1:15003; Connection refused
+[root@solea-10-1-61-3 test-data]# service nginx status
+● nginx.service - SYSV: Nginx is an HTTP(S) server, HTTP(S) reverse proxy and IMAP/POP3 proxy server
+   Loaded: loaded (/etc/rc.d/init.d/nginx; bad; vendor preset: disabled)
+   Active: failed (Result: exit-code) since Mon 2020-11-23 13:47:25 CST; 4s ago
+     Docs: man:systemd-sysv-generator(8)
+  Process: 263161 ExecStop=/etc/rc.d/init.d/nginx stop (code=exited, status=0/SUCCESS)
+  Process: 488225 ExecStart=/etc/rc.d/init.d/nginx start (code=exited, status=1/FAILURE)
+ Main PID: 247835 (code=exited, status=0/SUCCESS)
+
+Nov 23 13:47:25 solea-10-1-61-3 systemd[1]: Starting SYSV: Nginx is an HTTP(S) server, HTTP(S) reverse proxy and IMAP/POP3 proxy server...
+Nov 23 13:47:25 solea-10-1-61-3 nginx[488225]: Starting nginx: nginx: [emerg] host not found in upstream "solea-media-service" in /etc/nginx/location.conf.d/so...on.conf:12
+Nov 23 13:47:25 solea-10-1-61-3 nginx[488225]: [FAILED]
+
+TODO:
+
+月度培训，zip解压的
+
+idea的format插件更新到1.7
+
+高级系统架构设计师
+
+A环境演示数据:
+
+演示数据放在\\10.1.11.5\share\项目相关\solea
+ ** 每次安装升级完成后，删除数据，并且全部重发，保证下面的测试也过
+
+ nanj sj
+ 
+ 
+ 登录账号密码:
+admin/1qaz@WSX
+
+服务器登录：
+root/qazwsx@okm
+
+检查下所有nginx都应该有：
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+http://wiki.lzy.com/shell%E5%A6%82%E4%BD%95%E6%94%AF%E6%8C%81%E6%AF%8F%E4%B8%80%E4%B8%AA%E5%91%BD%E4%BB%A4%E4%B8%8D%E8%83%BD%E9%94%99%E8%AF%AF
+
+
+南京sj 再建一个collection 测试下
+
+文档写一下，force-clean
+
+
+1.工程文档修改：
+	1. 机房楼层12改成6
+	2. 服务器密码修改：lzy@qazokm
+	
+	
+c环境solr切一下50.18

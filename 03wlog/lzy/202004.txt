@@ -1,0 +1,3013 @@
+2020.04.11
+1.å¼€å‘ç¯å¢ƒæ­å»º
+
+ Plugin [id: 'org.sonarqube', version: '2.6.2'] was not found in any of the following sources:
+     [exec]
+     [exec] - Gradle Core Plugins (plugin is not in 'org.gradle' namespace)
+	 
+	 
+	 C:\Users\YOGA910(4)\.m2\repository\org\springframework\boot\org\springframework\boot\gradle\plugin\2.1.5\RELEASE
+	 
+	 
+	 Plugin [id: 'org.springframework.boot', version: '2.1.5.RELEASE'] was not found in any of the following sources:
+	 org.springframework.boot:org.springframework.boot.gradle.plugin:2.1.5.RELEASE
+	 
+	 
+	 C:\Users\YOGA910(4)\.m2\repository\org\springframework\boot\spring-boot-gradle-plugin\2.1.5.RELEASE
+	 org\springframework\boot\org\springframework\boot\gradle\plugin\2.1.5.\RELEASE
+	 
+
+
+2.offline_solea æ”¹æˆæŒ‰ç…§50000000å»º
+
+
+cd /opt/fileserver-2/ceph-manager
+bash /opt/fileserver-2/ceph-manager/bin/create_pool_array.sh offline_solea_ /opt/fileserver-2/ceph-manager/etc/offline_solea_pool_config.conf
+
+æ‹¿ä¸‹æ¥çœ‹çœ‹
+rados -p ceph.meta.pool get offline_solea_pool_config.conf offline_solea_pool_config.conf
+
+cat offline_solea_pool_config.conf
+
+
+
+
+2020.04.13
+1.solea-send-fserver2å¤„ç†tmpæ–‡ä»¶
+		tmpwatch
+		solea-gz-20200331
+		
+		æµ‹è¯•ï¼Œå…ˆå§web solea-send-fserver2çš„é…ç½®æ”¹æˆ"solea_redirect_collection"
+		TODO:
+		æ¢å¤
+		"offline_solea_redirect_collection"		--ok
+		
+		tmpwatch 	åš1d		--ok
+2.imæ•°æ®é¢„å¤„ç†
+	èŠå¤©.xlsx
+	spark ç‰ˆæœ¬2.4.4, python2.7
+
+
+	é—®é¢˜ï¼š
+		å¤´åƒï¼Œé™„ä»¶å¦‚ä½•å»å–ï¼š
+	http:///user_6781400_1332579179868.JPG
+	
+
+	
+	todo:
+	æ‰¾å®¶é‡Œè¦ä¸€ä¸‹æ­å·çš„imæ•°æ®
+	millipede-client-python==2.0.0
+	è·Ÿå®¶é‡Œçš„imæ•°æ®å¯¹æ¯”ä¸‹
+
+
+
+3.ç¡®è®¤ä¸‹ä¸Šå‘¨è¯¥çš„gzé¢„å¤„ç†é—®é¢˜
+		æ²¡æœ‰æ–‡ä»¶çš„å‹ç¼©åŒ…
+		å¤šçº§å‹ç¼©åŒ…
+		æŸ¥ä¸€ä¸‹æœ‰æ²¡æœ‰æŠ¥é”™äº†
+		
+		æŸ¥ä¸‹æ—¥å¿—æœ‰æ²¡æœ‰æŠ¥é”™
+		
+		
+4.ç¦»çº¿æ•°æ®æ”¹æˆä¸‰å¤‡ä»½	--æç ¸äº†
+
+cd /opt/fileserver-2/ceph-manager
+bash /opt/fileserver-2/ceph-manager/bin/create_pool_array.sh offline_solea_ /opt/fileserver-2/ceph-manager/etc/offline_solea_pool_config.conf
+
+æ‹¿ä¸‹æ¥çœ‹çœ‹
+rados -p ceph.meta.pool get offline_solea_pool_config.conf offline_solea_pool_config.conf
+
+cat offline_solea_pool_config.conf
+
+é‡æ–°å»ºoffline_pool_
+
+
+ceph://offline_solea_20200413/c339765b-8ba0-474c-bfeb-f305d472467f
+
+ssh 95.50.185.41
+åˆ é™¤å…¨æ–‡
+python /opt/millipede-solr/management/bin/solr_collection.py delete-collection solea_
+
+python /opt/millipede-solr/management/bin/solr_collection.py delete-collection offline_solea_
+æ¸…ç©ºkafka:
+ æ¸…æ¥škafkaæ•°æ®
+ ZK_HOSTS="95.50.185.68:2181,95.50.185.69:2181,95.50.185.70:2181"
+ /usr/hdp/current/kafka-broker/bin/kafka-topics.sh  --zookeeper ${ZK_HOSTS} --topic solea_fileserver_web --alter --config retention.ms=10
+ 
+ æŸ¥çœ‹ç­‰åˆ°logå¤§å°ä¸º0
+ ll /opt/kafka-logs/solea_fileserver_web-*
+ 
+ è¿˜åŸè®¾ç½®ï¼š
+ /usr/hdp/current/kafka-broker/bin/kafka-topics.sh  --zookeeper ${ZK_HOSTS} --topic solea_fileserver_web --alter --config retention.ms=604800000
+ 
+
+é‡æ–°å»ºcollection:
+
+cd /opt/solea-release-2.0.4-dev/solr
+python /opt/millipede-solr/management/bin/solr_collection.py create-collection \
+ --auto-numshard  --replication-factor 1 --route-name implicit --auto-create-replication=2 \
+ --schema-file /opt/solea-release-2.0.4-dev/solr/conf/schema.xml  solea_
+ 
+ python /opt/millipede-solr/management/bin/solr_collection.py create-collection \
+ --auto-numshard  --replication-factor 1 --route-name implicit --auto-create-replication=2 \
+ --schema-file /opt/solea-release-2.0.4-dev/solr/conf/schema.xml  offline_solea_
+é‡å‘ç¦»çº¿æ•°æ®
+
+5.æœç´¢ç»“æœé¡µå·¦ä¸Šè§’ç»Ÿè®¡å€¼æ¢è¡Œäº†	--ç»™è”¡å»ºå›½äº†
+
+
+6.buffer çš„backupæ”¹æˆ10å¤©		--ok
+
+
+7.å¸®å­™æƒæµ‹è¯•ä¸‹æ–‡æ¡£ç¿»è¯‘åŠŸèƒ½
+	å¤±è´¥äº†ï¼ŒæŠ¥é”™æ—¥å¿—ï¼š
+		show-appä¸‹é¢
+		æ²¡æœ‰æŠ¥é”™æ—¥å¿—		--å…ˆä¸çœ‹äº†
+		
+		è¿™ä¸ªé”™äº†ï¼Ÿ
+		document.service.url=http://tika20.solea.bd.com:15003/lzyoffice
+		
+		
+		docker ps
+		docker exec -it cb089bda6f43
+8.å­—æ®µçš„é—®é¢˜ä¿®æ”¹ä¸€ä¸‹ï¼š
+	
+	
+	
+	
+	
+	
+	
+	
+	
+2020.04.14
+1.æ£€æŸ¥ä¸€ä¸‹
+	è§tips
+
+check_docker
+On Host
+trans08.solea.bd.com
+
+tika12
+check_solea_tika_app
+	ç”Ÿæˆä¸€ä¸ªbadæ–‡ä»¶ï¼Œé‡Œé¢æ²¡æœ‰ä»»ä½•æŠ¥é”™ä¿¡æ¯
+		å¯èƒ½æ˜¯åˆ‡æ¢æ—¥å¿—çš„æ—¶å€™ç¨‹åºæ­»æ‰
+		
+æ–‡æ¡£ç¿»è¯‘çš„é—®é¢˜ï¼š
+http://95.50.185.24:15003/solea/lzyoffice/welcome/
+åº”è¯¥æ˜¯é…é”™äº†
+	
+	
+ç”³è¯·è´¦å·ï¼š
+åº”ç”¨åç§°ï¼šäº‘åº¦
+åº”ç”¨è‹±æ–‡åç§°ï¼šsolea
+åº”ç”¨å›¾æ ‡ï¼šè§é™„ä»¶
+åº”ç”¨å°å›¾æ ‡ï¼šè§é™„ä»¶
+åº”ç”¨url:http://95.50.185.24:15003/solea/index
+åº”ç”¨ç‰ˆæœ¬å·ï¼š2.0.4
+æ‰€å±åˆ†ç±»ï¼šç»¼åˆæŸ¥è¯¢
+æ‰“å¼€æ¨¡å¼ï¼šå½“å‰é¡µé¢
+åº”ç”¨æè¿°ï¼šå…¨æ–‡æ£€ç´¢
+	
+	
+	
+2.buffer sendFserver2çš„tmpæ–‡ä»¶		--ok
+
+3.gzé¢„å¤„ç†å­—æ®µç¡®è®¤ï¼š				--ok
+	XX_SIDE_TWO_TUNNEL_ID_mt_i_s
+	
+4.imé¢„å¤„ç†
+
+im 
+	éœ€è¦è°ƒæ¥å£æ˜¾ç¤ºç”¨æˆ·æ˜µç§°æˆ–è€…å¤‡æ³¨
+	å•ç‹¬åº”ç”¨ï¼Ÿ
+		å…ˆæŠŠsparkè·‘é€š
+		
+		1.å®‰è£…spark
+		tar -zxvf spark-2.4.4-bin-hadoop2.7.tgz -C /opt
+		2.ç¯å¢ƒå˜é‡
+		vim ~/.bashrc
+		
+		3.é…ç½®
+		spark-env.sh.template
+		export SPARK_MASTER_HOST=localhost
+		export SPARK_MASTER_PORT=7066
+		export SPARK_LOCAL_IP=127.0.0.1
+		export SPARK_WORKER_INSTANCES=1
+		export SPARK_WORKER_MEMORY=10g
+		
+		
+		4.å¯åŠ¨
+		spark-shell --master=local
+		
+		
+		5.æ‰‹åŠ¨æ‰§è¡Œä»»åŠ¡
+		æ–‡ä»¶æ”¾è¿›å»ï¼š
+		cp -r /opt/tmp/test_data/* /opt/solea-user-input/
+		bash /opt/solea-tools/preprocess/interface/hangzhou/run.sh
+		
+å¥½å‹id	ç”¨æˆ·id	å›å¤æ—¶é—´	å‘é€æ—¶é—´	æ¶ˆæ¯ç±»å‹ï¼Ÿ	å†…å®¹	èŠå¤©é™„ä»¶ï¼ˆå›¾ç‰‡ï¼ŒéŸ³é¢‘ï¼Œè§†é¢‘ã€‚å¤šä¸ªä»¥è‹±æ–‡é€—å·åˆ†éš”ï¼‰
+		
+	
+è·Ÿå®¢æˆ·æŸ¥çœ‹äº†imæ•°æ®ï¼š
+	ç¡®è®¤ä¸€ä¸‹å­—æ®µï¼šsendid,reciveid,content...
+	é™„ä»¶æ€ä¹ˆå–ï¼Œä¿å­˜é™„ä»¶çš„è·¯å¾„ï¼Œæ–‡ä»¶å¤¹ä¸­å»å–
+	
+	
+vmstat 300
+	
+æ‹¿åˆ°å®¢æˆ·ç»™çš„imæ•°æ®ï¼š
+1.ç»™çš„æ–‡ä»¶èƒ½å¦æ˜¯csvï¼Œå¯ä»¥ç”¨è®°äº‹æœ¬æ‰“å¼€,ä¸åŒ…å«å¤´
+
+2.å¯¼å‡ºæ¥çš„é™„ä»¶èƒ½å¦å¸¦æœ‰ç›®å½•ç»“æ„
+
+3.éƒ½æ²¡æœ‰å†…å®¹ï¼Œåªæœ‰å›¾ç‰‡éŸ³é¢‘
+	èƒ½å¦å¯¼å‡ºæ¥ä¸€äº›å¸¦æœ‰å†…å®¹è·Ÿé™„ä»¶çš„
+	
+4.ä¸€åŠçš„éŸ³é¢‘éƒ½æ˜¯1kçš„ï¼Œæ²¡æœ‰ç”¨ï¼Œå…¶ä½™ä¸€èˆ¬éŸ³é¢‘å¾ˆå¤šæ’­æ”¾éƒ½æ˜¯æ‚éŸ³
+
+
+ä¸Šåˆå®¢æˆ·æ²Ÿé€šç»“æœï¼š
+	æ–°çš„ç•Œé¢æƒ³æ³•ï¼š
+	   æ¡ˆä»¶ç®¡ç†å˜æˆç®¡ç†ç•Œé¢ï¼Œä¸åŒ…å«æŸ¥è¯¢
+	   æŸ¥è¯¢å…¨åœ¨ä¸»ç•Œé¢ä¸Š
+			åŒ…å« ç¦»çº¿æ•°æ®  ï¼Œæ¡ˆä»¶æ•°æ®ï¼ˆå¯ä»¥é€‰æ‹©caseidï¼Œå’Œæ‰¹æ¬¡ï¼‰ ï¼Œä¸ªäººæ•°æ®ï¼ˆå¯ä»¥é€‰æ‹©æ‰¹æ¬¡ï¼‰
+			æ˜¯å¦è¦åˆ†2ä¸ªcollection
+		æŸ¥è¯¢æ¡ä»¶çš„æ³¨å†Œ
+		imæ•°æ® 
+			å¤‡æ³¨ï¼Œæä¾›listï¼Œå¯ä»¥æŸ¥è¯¢
+			13832453249ï¼ˆxxxï¼‰
+		æŸ¥è¯¢å®¡æ‰¹ï¼š
+			ç”¨841çš„å®¡æ‰¹æµç¨‹
+		é€šè”åˆ†æçš„åšæ³•
+
+2020.04.15
+1.æ£€æŸ¥ä¸€ä¸‹
+
+
+2.è·Ÿå®¢æˆ·èŠä¸‹å·¥ä½œ
+	åˆ»ç›˜
+
+2020.04.15
+1.é¡µé¢åŸå‹é—®é¢˜
+	è¿˜å·®ä¸€ä¸ªç™»é™†é¡µé¢
+	ç®¡ç†é¡µé¢å†ç»™ä¸€ä¸ªå…·ä½“è·³è½¬é¡µé¢çš„æ•ˆæœï¼Œé€»è¾‘åŸºæœ¬æ²¡é—®é¢˜
+	
+2.imæ•°æ®ï¼Œæœ¬å‘¨å¯ä»¥æŸ¥è¯¢
+	ç°æœ‰æ•°æ®å¯ä»¥å¼€å‘ï¼Œä½†æ˜¯æœ‰å‡ ä¸ªé—®é¢˜
+		1.å¯¼å‡ºçš„å›¾ç‰‡éŸ³é¢‘æ˜¯å¦å¯ä»¥å¸¦ç›®å½•ç»“æ„
+		2.å¯¼å‡ºç»“æ„è¦æ˜¯ä¸€ä¸ªcsv,æ²¡æœ‰å¤´çš„
+		3.å¤§éƒ¨åˆ†éŸ³é¢‘æ²¡æœ‰å†…å®¹ï¼Œæ•°æ®é—®é¢˜
+	å¸Œæœ›å¯ä»¥å¯¼å‡ºéƒ¨åˆ†å¸¦æœ‰å†…å®¹çš„imæ•°æ®
+3.éŸ³é¢‘æ¥å£
+	åªæœ‰ä¸€ä¸ªæ­£å¼ç¯å¢ƒï¼Œéœ€è¦è”ç³»å¯¹æ¥äººæ¢æ¬£ï¼Œå‘ç»™ä»–ä¸€æ®µè¯­éŸ³å¸®å¿™æµ‹è¯•ä¸‹
+
+4.åœ¨çº¿æ•°æ®é‡å˜å°ï¼Œæ˜¯å¦éœ€è¦ç¡®è®¤
+solea_20200414         6.4 TiB 
+solea_20200415         182 GiB
+
+	åŸå‹ 
+	æ•°æ®é‡å˜å°
+	imæ•°æ®é—®é¢˜ 
+		1.æ²¡æœ‰å†…å®¹
+		2.æ˜¯å¦å¯ä»¥å¯¼å‡ºcsvï¼Œæ²¡æœ‰å¤´
+		3.å¯¼å‡ºçš„é™„ä»¶æ˜¯å¦å¯ä»¥å¸¦ç›®å½•
+		4.å¤§éƒ¨åˆ†éŸ³é¢‘æ²¡æœ‰å†…å®¹
+	è´¦å·é—®é¢˜
+	å€’æ’è¡¨
+	
+	
+	ä¸Šä¼ ï¼š
+		ç›´æ¥æ–‡ä»¶ä¸Šä¼ 
+				åˆ°offiline solea 
+				  datasourc 
+		æ¡ˆä»¶æ‰¹æ¬¡ä¸Šä¼ 
+				åˆ°caseâ€”â€”solea 
+					datasource
+					case_id
+					btach_id
+		ä¸ªäººä¸Šä¼ 
+			  åˆ°caseâ€”â€”solea 
+					datasource
+					btach_id
+		imï¼Œç½‘ç«™ï¼š
+				åˆ°offiline solea 
+
+2.imé¢„å¤„ç†
+
+cp -r /opt/tmp/gzim-test-data/* /opt/solea-user-input/
+bash /opt/solea-tools/preprocess/interface/guangzhou/run.sh
+
+output:
+/opt/solea_server_bcup/bcpdirs/im
+/opt/im_output
+
+
+æ­£å¼çš„æ•°æ®ï¼š
+gzim-data
+
+cp -r /opt/tmp/gzim-data/* /opt/solea-user-input/
+
+bash /opt/solea-tools/preprocess/interface/guangzhou/run.sh
+
+
+
+XX-FileContentType:application/x-hangzhou-im
+XX-BatchId:20200415142454
+
+[{"from": "3133130", "record_time": "", "to": "8811947", "send_time": "", "media_type": "", "message": "", "media_url": ""}, {"from": "3133130", "record_time": "", "to": "8811947", "send_time": "", "media_type": "", "message": "", "media_url": ""}, {"from": "3133130", "record_time": "", "to": "8811947", "send_time": "", "media_type": "", "message": "", "media_url": ""}]
+
+
+åº”ç”¨åç§° æ¥åŒºåˆ«èŠå¤©ç±»å‹ï¼Ÿ
+
+batchId æ˜¯å¦è¦é…ç½®ï¼Ÿ
+é™„ä»¶æ²¡æœ‰ä¸Šä¼ ï¼Ÿ
+å¼€å§‹æ—¶é—´
+ç»“æŸæ—¶é—´
+èŠå¤©ç±»å‹
+
+
+æ—¥æœŸæ²¡æœ‰ï¼Ÿ
+hz:
+1520135246754
+
+1371647052.0
+
+gz:
+2015/1/5 22:14
+éœ€è¦å¤„ç†æˆæ—¶é—´æˆ³
+1370661420
+
+
+
+2020.04.16
+1.æ£€æŸ¥ä¸€ä¸‹
+	check_os tika22
+__________________________ test_program_crash[local] ___________________________
+host = <testinfra.host.Host object at 0x7fab438abed0>
+def test_program_crash(host):\n # abrt\n crash_output = host.check_output("find /var/spool/abrt -type f
+Performance Data:	wc -l")\n crash_num = int(crash_output)\n> assert crash_num == 0, "must no file in /var/spool/abrt"\nE AssertionError: must no file in /var/spool/abrt\nE assert 1 == 0 check-env/test_crash.py:15: AssertionError\n1 failed, 9 passed in 1.06 seconds
+
+solea_content_analysis
+	é‡å¯è¿‡ï¼Ÿ
+2020-04-15 11:00:29
+
+trans:
+check_docker
+	WARNING: translator_translate-lib_14 restarts is 3: WARNING: translator_translate-lib_15 restarts is 4: WARNING: translator_translate-lib_11 restarts is 4: CRITICAL: translator_translate-lib_9 restarts is 5: CRITICAL: translator_translate-lib_5 restarts is 5: WARNING: translator_translate-lib_7 restarts is 4: WARNING: translator_translate-lib_1 restarts is 4: WARNING: translator_translate-lib_2 restarts is 4: WARNING: translator_translate-lib_13 restarts is 4: WARNING: translator_translate-lib_16 restarts is 4: WARNING: translator_translate-lib_4 restarts is 4: WARNING: translator_translate-lib_19 restarts is 3: CRITICAL: translator_translate-lib_6 restarts is 5: WARNING: translator_translate-lib_10 restarts is 4: WARNING: translator_translate-lib_17 restarts is 4: CRITICAL: translator_translate-lib_3 restarts is 5: WARNING: translator_translate-lib_18 restarts is 4: WARNING: translator_translate-lib_8 restarts is 4: WARNING: translator_translate-lib_20 restarts is 4: WARNING: translator_translate-lib_12 rest
+
+2.ç»™å®¢æˆ·
+	im
+		im_8811947_3133130_20200416114627.gzim
+		å›¾ç‰‡éŸ³é¢‘æ–‡ä»¶ä¿å­˜åœ¨ç¦»çº¿æ•°æ®è¿˜æ˜¯å“ªé‡Œ
+		æ˜¯å¦å¯ä»¥ï¼Ÿ
+		å¯¼å‡ºæ•°æ®æˆ‘ä»¬å¤„ç†
+	åœ¨çº¿æ•°æ®
+		æ•°æ®é‡è¿˜æ˜¯å°
+		solea_20200415         505 GiB  5162508
+	éŸ³é¢‘æ¥å£
+	å…¶ä»–æ¥å£
+		äººè„¸æ¯”å¯¹æ¥å£å¯¹æ¥
+		äººåƒæ£€æµ‹æ¥å£å¯¹æ¥
+		GISåœ°å›¾å¯¹æ¥
+		è§†é¢‘æ¥å£å¯¹æ¥
+		
+1.imæ•°æ®	
+	å¯ä»¥ç”±åæ‰€æ¨ç»™æˆ‘ä»¬å¤„ç†ï¼Œå…¨é‡çš„ï¼Œä½†åªæœ‰talkboxè·Ÿvoxerä¸¤ç§
+	é¡µé¢æŸ¥çœ‹æ˜¯å¦å¯ä»¥
+2.å…¶ä»–æ¥å£ï¼Œå¦‚æœæœ‰ç›¸å…³æ–‡æ¡£æˆ–ææ–™çš„è¯å¯ä»¥å…ˆç»™æˆ‘ä»¬ï¼š
+		äººè„¸æ¯”å¯¹æ¥å£å¯¹æ¥
+		äººåƒæ£€æµ‹æ¥å£å¯¹æ¥
+				æ¥å£æ–‡æ¡£
+		GISåœ°å›¾å¯¹æ¥
+			æ˜¯å¦æœ‰å¿…è¦åš
+		è§†é¢‘æ¥å£å¯¹æ¥
+			ä¸‹å‘¨ä¼šè¿‡æ¥éƒ¨ç½²
+3.åœ¨çº¿æ•°æ®è¿˜æ˜¯å¾ˆå°ï¼Œæ˜¨å¤©ä¸€å¤©500ä¸‡å·¦å³
+	å†æŸ¥ä¸€ä¸‹
+
+
+3.éŸ³é¢‘æ¥å£
+	è¾“å…¥è¾“å‡ºï¼Ÿ
+	éŸ³é¢‘ï¼š
+	13913959896 æ¢æ¬£
+		å·²å‘ç»™å¯¹æ–¹äº†
+	è·Ÿé²æ¸…è¯´ä¸€ä¸‹éœ€æ±‚
+	
+	ç»™çš„ä¸å¯¹ï¼Ÿ
+	20200415185245_1.wav
+	
+	æ–‡ä»¶åå­—ä¸å¯¹ï¼Ÿ
+	$(filetime)_$(SID)_$(CONTENTTYPE)_$(SEQ).$(FileType)
+	æ–‡ä»¶ä½“ä¸å¯¹ï¼Ÿ
+
+
+4.åœ¨çº¿æ•°æ®çš„ä¸€äº›éœ€è¦åŠ åˆ°textçš„å­—æ®µ
+
+
+å¥½åƒfromæé”™äº†		--ok
+                if direction == "to":
+                    msg_dict["from"] = relation_ids[0].encode('utf-8')
+                    msg_dict["to"] = relation_ids[1].encode('utf-8')
+
+
+æ˜¯å¦ç”±10æ‰€æ¨ç»™æˆ‘ä»¬
+å…¨é‡ï¼ŒzipåŒ…ï¼ŒzipåŒ…ä¸­æœ‰bcpè·Ÿéç»“æ„åŒ–æ–‡ä»¶
+
+ç»™ä¸€ä¸ªftpæœåŠ¡å™¨
+ip:95.50.185.17
+ç›®å½•ï¼š/opt/solea/im-data-input
+è´¦å·å¯†ç ï¼šsolea_preprocess_bcup/123456
+
+
+æ˜¯å¦å¯ä»¥ç”¨format_bcpåš
+
+imå¯¹è¯ï¼Ÿ
+ im_8811947_3133130_20200415173841.gzim
+
+    è‹±è¯­ ä¿®æ”¹æ‰©å±•å 
+
+æ–‡ä»¶æº¯æº
+
+
+
+2020.04.17
+1.æ£€æŸ¥ä¸€ä¸‹
+mntos	--ok
+ceph	--ok
+ç•Œé¢
+
+
+2.imå¯¹æ¥
+        if len(split_result) > 92:
+            msg_text = split_result[4]
+            msg_type = split_result[6]
+            # id1 å°±æ˜¯å‘é€è€… 17
+            id1 = split_result[16]
+            id2 = split_result[20]
+            # è½¬æˆæ—¶é—´æˆ³
+            send_time = data_to_stamp(split_result[87])
+            # å›å¤æ—¶é—´ï¼Œæ²¡ç”¨åˆ°
+            record_time = data_to_stamp(split_result[88])
+
+            sourcefile_path = split_result[92]
+
+
+cp -r /opt/tmp/im-data/* /opt/solea-user-input/
+
+bash /opt/solea-tools/preprocess/interface/guangzhou/run.sh
+
+/opt/solea/im-data-input
+
+3.éŸ³é¢‘æ¥å£æµ‹è¯•
+
+
+
+4.åˆ»ç›˜ï¼š
+	å·¥ä½œæ—¥å¿—
+	ä»£ç 
+
+
+ip:95.50.185.17
+ç›®å½•ï¼š/opt/solea/im-data-input
+è´¦å·å¯†ç ï¼šsolea_preprocess_bcup/123456
+
+é—®é¢˜ï¼š
+
+imæ¥å£ï¼Ÿæ‹¿åˆ°å¤‡æ³¨ä¿¡æ¯çš„
+
+
+
+2020.04.18
+1.buffer01 ftpæŠ¥é”™ï¼šOOPS: 500
+-rwxrwxrwx. 1 root root  5675 Apr 17 23:47 cil
+-rwxrwxrwx. 1 root root 14787 Apr 17 23:47 hll
+-rwxrwxrwx. 1 root root     2 Apr 17 23:47 lang_ext
+
+buffer02:
+-rw-------. 1 root root  5675 Aug  9  2019 cil
+-rw-------. 1 root root 14787 Aug  9  2019 hll
+-rw-------. 1 root root     2 Aug  9  2019 lang_ext
+
+
+2.imé¢„å¤„ç†
+cp -r /opt/tmp/im-data/*.zip /opt/solea-user-input/
+
+bash /opt/solea-tools/preprocess/interface/guangzhou/run.sh
+
+
+nohup bash /opt/solea-tools/preprocess/interface/guangzhou/run.sh & > run.log
+æµ‹è¯•è§£å‹è„šæœ¬ï¼š
+/opt/solea-tools/preprocess/interface/guangzhou/unzip_im_data.py
+
+3.åˆ»ç›˜	
+	ä»£ç 
+	æ—¥å¿—
+
+
+
+TODO:
+imï¼Œæ˜¯å¦é¼ æ ‡æ”¾åœ¨å¤´åƒä¸Šæ‚¬æµ®ç”¨æˆ·ä¿¡æ¯ï¼Œæ‰‹æœºå·/å¤‡æ³¨ç­‰ä¿¡æ¯
+
+2.éŸ³é¢‘æ–‡ä»¶ï¼š
+20200411150153_44c5227c-7bc2-11ea-b8cd-0242ac120015_11_170003.MEDIA
+
+3.im ftpè¿‡æ¥ï¼Œå¼€å§‹å¤„ç†
+	/opt/solea/im-data-input
+
+2020.04.15
+
+
+éŸ³é¢‘æ—¶é—´é•¿åº¦æœ‰é—®é¢˜ï¼Ÿ
+9064396_9066407
+ç»Ÿä¸€æ˜¾ç¤ºï¼š74ï¼š33ï¼š55
+
+imæ˜¯å¦å¯ä»¥æ¢æˆæ˜µç§°
+
+imå…³è”çš„éç»“æ„åŒ–æ–‡ä»¶ä¿å­˜åœ¨å“ªä¸ªcollection
+	
+
+
+imä¸€æ¡è®°å½•ä¸­å†…å®¹æ˜¯ç©ºçš„åªæœ‰é™„ä»¶ï¼Œé¡µé¢ä¼šç”Ÿæˆä¸¤æ¡è®°å½•ï¼Œä¸€ä¸ªç©ºçš„æ¶ˆæ¯æ¡†è·Ÿé™„ä»¶
+
+1.ç¦»çº¿æ•°æ®ä¸Šä¼ æ˜¯ç”¨8xxæ¥å£è¿˜æ˜¯æˆ‘ä»¬çš„æ¥å£
+
+2.841å­—æ®µå“ªäº›éœ€è¦æ”¾åˆ°texté‡Œé¢
+
+
+æ–‡æ¡£ç¿»è¯‘æœ‰ä¸€ä¸ªpdfå¤±è´¥ï¼Œshowappæ—¥å¿—æ²¡æœ‰æŠ¥é”™ï¼Ÿ
+PPT PARADE eng 4 July 2017.pdf
+
+sendfserverä¸­ä¸ç”Ÿæˆbatch_id
+
+hzim åç¼€ä¿®æ”¹ä¸€ä¸‹
+
+showapp é…ç½®:
+/opt/solea-show-app/etc/application-prod.properties
+ä¸åº”è¯¥å†è¿™é‡Œï¼Œå†configç›®å½•ä¸‹
+
+gzé¢„å¤„ç†ï¼š
+æŠ¥é”™ï¼š
+2020-04-13 18:10:35 ERROR FileExtractMain:325 - file not exist
+java.io.FileNotFoundException: /opt/solea-send-fileserver2-gz/tmp/440000-440000-1586772566-SX2_18_DATA_PMT-38275/SX2/446dbe1ce99733f6618afe1760d71e3d/_1808551310525_.jpg (No such file or directory)
+
+æ˜¯å¦æ­£å¸¸
+
+/opt/solea-send-fileserver2-gz/tmp
+æœ‰è¿‡å¤šçš„ç©ºç›®å½•ï¼Œæ˜¯å¦éœ€è¦åˆ é™¤ï¼Ÿ
+
+showapp æ—¥å¿—æœ‰æŠ¥é”™ï¼š	
+2020-04-13 16:32:45.402 ERROR 58189 --- [http-nio-auto-1-exec-1] c.l.s.p.converter.ExcelToHtmlConverter   :
+
+java.lang.NullPointerException: null
+        at com.lzy.solea.poi.converter.AbstractExcelXUtils.getColor(AbstractExcelXUtils.java:107)
+
+check_guard
+buffer05
+NAGIOS:{'/usr/bin/timeout --signal=9 2h /opt/solea-send-fserver2/bin/clean_work_dir.sh': 0.25, '/usr/bin/timeout --signal=9 1h bash /opt/solea-tools/preprocess/bin/clean_backup_file.sh': 0.25}
+
+
+auto delete pool
+2020-04-12 03:01:02,323 - ERROR:get delete pool fail
+Traceback (most recent call last):
+  File "/opt/fileserver-2-boot-2.0.4-SNAPSHOT/ceph-manager/lib/pool_utils/delete_pool.py", line 97, in _get_delete_pool
+    - datetime.timedelta(days=max_day)
+OverflowError: date value out of range
+
+delete pool
+
+
+
+
+
+é¡µé¢æ–‡æ¡£ç¿»è¯‘æŠ¥é”™
+	æäº¤ä»»åŠ¡ï¼Œç¿»è¯‘å¤±è´¥
+solea:
+http://95.50.185.24:15003/solea/loginForThirdParty?tgt=superadmin
+
+é—®é¢˜ï¼š
+
+å‡ºå·®å¼€å‘ç¯å¢ƒæ­å»ºè¦åœ¨å¹²å‡€ç¦»çº¿çš„æœºå™¨ç¼–è¯‘è¿‡
+
+
+ç°åœºæ¶‰åŠåˆ°æ•°æ®çš„é—®é¢˜ä¸€å®šè¦æ…é‡ï¼Œé¿å…åˆ é™¤å®¢æˆ·æ•°æ®
+
+fileserver2 ä¸åº”è¯¥æä¾›ä¸€æ¬¡æ€§åˆ é™¤poolçš„è¿™ç§è„šæœ¬
+	åˆ é™¤æ˜¯å¦å¯ä»¥å…ˆmv ï¼Œä¸¤å¤©åå†çœŸæ­£æ¸…æ¥š
+
+
+TODO:
+
+
+1.rnså‡çº§
+
+2.imé™„ä»¶å‘é€åˆ°ç¦»çº¿æ•°æ®ä¸­è¿˜æ˜¯åœ¨çº¿æ•°æ®ï¼Ÿ
+
+3.ç»™boæ€»å‘ä¸€ä¸‹git
+
+2020.04.20
+æ£€æŸ¥
+mntos
+ç•Œé¢
+ceph
+1.imé¢„å¤„ç†
+
+	è§£å‹å¸¦ç›®å½•			--ok
+	/opt/solea/1/bcps
+	/opt/solea/1/medias
+	
+	python è°ƒç”¨shellçš„findæŸ¥æ‰¾
+		find */945185975515709254.jpg
+		find /opt/solea/1/ -name "945185975515709254.jpg"
+		import commands
+		print(commands.getoutput('find /opt/solea/1/ -name 945185975515709254.jpg'))
+		
+	è§£å‹å®Œæˆåˆ é™¤zipæ–‡ä»¶		--ok
+	
+è·‘ä¸€ä¸‹ï¼š
+cp -r /opt/tmp/im-data/* /opt/solea-user-input/
+bash /opt/solea-tools/preprocess/interface/guangzhou/run.sh
+
+
+
+2.éŸ³é¢‘æ¥å£
+
+
+3.buffer01 ftpé—®é¢˜
+é“¾æ¥ä¸ä¸Šï¼Œæ¸…æ¥šç¼“å­˜
+ssh-keygen -R buffer01 
+ strace -o output.log -T -tt -e trace=all -p 68874
+
+
+
+4.å‡ ä¸ªæ¥å£å‚¬ä¸€ä¸‹ï¼š
+éŸ³é¢‘æ¥å£
+
+500
+ç©ºçš„jsonæ•°ç»„
+
+	
+è§†é¢‘æ¥å£
+	è¿™ä¸¤å¤©åœ¨éƒ¨ç½²ï¼Œå®Œæˆä¼šè·Ÿæˆ‘å¯¹æ¥
+	18435163433 æ¸¸æ´‹
+	
+imæ ¹æ®idæŸ¥è¯¢æ¥å£
+	å®¢æˆ·æ‰¾ä¸€ä¸‹ï¼Œå‘ç»™æˆ‘ï¼Œæ˜å¤©æ²¡æœ‰æ‹¿åˆ°å†å‚¬ä¸€ä¸‹
+	
+æ–°é—»ç½‘ç«™
+	å®¢æˆ·é‚£è¾¹è¿˜åœ¨è€ƒè™‘ï¼Œæ€ä¹ˆæ¥å…¥
+
+
+2020.04.21
+1.im
+find /opt/solea/im-data-input/ | xargs -i cp {} /opt/solea-user-input/
+
+find $user_input_dir/ | xargs -i mv {} $input_path
+
+[root@buffer02.solea.bd.com solea-user-input]# find -type f | wc -l
+96522
+
+[root@buffer02.solea.bd.com bcps]# find -type f | wc -l
+81584
+
+[root@buffer02.solea.bd.com medias]# find -type d | wc -l
+81584
+
+[root@buffer02.solea.bd.com medias]# find -type f | wc -l
+5949924
+
+
+
+æµ‹è¯•ä¸€ä¸‹ï¼š
+cp /opt/tmp/im-data/*.zip /opt/tmp/im-test/
+python /opt/solea-tools/preprocess/interface/guangzhou/unzip_im_data.py --input-path /opt/solea/im-data-unzip
+
+
+find /opt/solea/im-data-input/* | xargs -i cp {} /opt/solea/im-data-unzip
+1.è§£å‹ï¼Œ
+bcpä¹Ÿè¦å¸¦æœ‰ç›®å½•
+é™„ä»¶
+
+2.bcpé‡Œé¢çš„æ–‡ä»¶åç§°åŠ ä¸Šç›®å½•		--ok
+
+
+cp /opt/tmp/im-data/*.zip /opt/solea/test_input/
+bash /opt/solea-tools/preprocess/interface/guangzhou-test/run.sh
+
+
+ceph://offline_solea_20200413/c841e93c-60fb-4639-80dd-52697c5eca76
+3.å‘é€å›¾ç‰‡ï¼Œè®°å½•url
+
+
+
+2.åˆ»ç›˜		--ok
+
+
+
+3.nagios? ftpé—®é¢˜
+guard_crond èµ·ä¸æ¥ï¼Ÿ		--ok
+
+
+
+
+
+
+
+
+
+
+
+[root@buffer02.solea.bd.com medias]# find -type f | wc -l
+5949924
+
+4.æ¥å£
+
+
+
+ç”µè¯ï¼š
+1.ftpèµ·ä¸æ¥ï¼ŒæŠ¥é”™503
+
+2.imè¿˜åœ¨è·‘
+
+3.éŸ³é¢‘æ¥å£
+
+å®¢æˆ·ï¼š
+1.imåŸå‹æ˜¯å¦çœ‹è¿‡
+
+2.imæ¥å£
+
+3.è§†é¢‘æ¥å£
+
+4.æ–°é—»ç½‘ç«™
+
+
+todo:
+ä¸‹ç­ä¹‹å‰è·‘èµ·æ¥im
+
+
+2020.04.22
+1.æ£€æŸ¥	
+	mntos
+		buffer01:check_guard
+			NAGIOS:{'bash /opt/solea-tools/preprocess/interface/guangzhou/run.sh': 1.0}
+	ceph
+	solr
+	ç•Œé¢
+
+
+2.im
+	spark æ˜¯å¦å¤„ç†å®Œæˆ
+		ç”Ÿæˆå¤šå°‘æ¡ï¼Ÿ
+	unzipæ˜¯å¦å¤„ç†å®Œ
+	
+		
+		python /opt/solea-tools/preprocess/interface/guangzhou/unzip_im_data.py --input-path /opt/solea/im-data-unzip/zips
+		  File "/opt/solea-tools/preprocess/interface/guangzhou/unzip_im_data.py", line 45, in unzip_im_data
+    zf = zipfile.ZipFile(input_file, 'r')
+  File "/usr/local/lib/python2.7/zipfile.py", line 770, in __init__
+    self._RealGetContents()
+  File "/usr/local/lib/python2.7/zipfile.py", line 813, in _RealGetContents
+    raise BadZipfile, "File is not a zip file"
+	
+	1	: ä¸å¯é¢„æ–™çš„å‹ç¼©æ–‡ä»¶æœ«ç«¯	C:\Users\YOGA910(4)\Desktop\unzipfail\440000-440000-1578274073-DATA_IM-94695.zip
+	
+nohup python /opt/solea-tools/preprocess/interface/guangzhou/unzip_im_data.py --input-path /opt/solea/im-data-unzip/bcps > 1.log &
+
+[root@buffer02.solea.bd.com bcps]# find -type f | wc -l
+96522
+
+[root@buffer02.solea.bd.com medias]# find -type f | wc -l
+6989786
+
+
+
+BadZipfile: File is not a zip file		--ok
+	æ–°çš„å†è·‘èµ·æ¥
+/opt/solea/im-data-unzip
+# æ£€æŸ¥ä¸€ä¸‹é…ç½®ï¼š
+cat /opt/solea-tools/preprocess/interface/guangzhou/config
+cd /opt/solea-tools/preprocess/interface/guangzhou/logs
+nohup bash /opt/solea-tools/preprocess/interface/guangzhou/run.sh > run_20200422.log &
+
+
+3.æ¥å£
+	éŸ³é¢‘
+	è§†é¢‘æ¥å£					--ok
+		18435163433 æ¸¸æ´‹
+		è¿™å‘¨é‚£è¾¹gpuç¡¬ä»¶å‡ºäº†ç‚¹é—®é¢˜ï¼Œåˆ°å‘¨æœ«æ‰èƒ½éƒ¨ç½²å®Œæˆ
+		å¯ä»¥å…ˆçœ‹ä¸€ä¸‹å¦‚ä½•å»è°ƒç”¨
+		å…ˆçœ‹çœ‹æ–‡æ¡£ ï¼Ÿ
+	imæ¥å£
+		imç§æœ‰å·ç åº“
+                curl -H "Content-Type:application/json" -X POST --data '{"jsonArg":{"clues":["18951656666"]},"generalArgument":{"loginName":"è”¡å»ºå›½","userId":1409}}' http://95.100.23.135:40999/GarnerLibManage/rest/transClue
+
+curl -H "Content-Type:application/json" -X POST --data '{"jsonArg":{"clues":["18951656666"]},"generalArgument":{"loginName":"è”¡å»ºå›½","userId":1409}}' http://95.50.23.151:40999/GarnerLibManage/rest/transClue
+				
+		
+                curl -H "Content-Type:application/json" -X POST --data '{"jsonArg":{},"generalArgument":{"loginName":"è”¡å»ºå›½","userId":1409}}' http://95.50.23.151:40999/CaseManageService/rest/CaseManageService/getCaseTreeExternal
+
+	æ–°é—»ç½‘ç«™
+		è¿˜åœ¨è§„åˆ’ï¼Œæ˜¯å¦å¯ä»¥å…ˆæ‰‹åŠ¨å¯¼å…¥ä¸€äº›æµ‹è¯•æ•°æ®ï¼Œæµ‹è¯•
+
+4.ç¡®å®šä¸€ä¸‹
+	1.imåŠé€šè®¯å½•
+		å¯ä»¥æŠ½å–å“ªäº›ä¿¡æ¯ï¼Ÿ
+	
+	
+	2.éŸ³é¢‘æ¥å£
+			æ–‡ä»¶åç§°ï¼š
+				$(filetime)_$(SID)_$(CONTENTTYPE)_$(SEQ).$(FileType)
+				20200411150153_44c5227c-7bc2-11ea-b8cd-0242ac120015_11_170003.MEDIA
+				$(filetime)_sessionID_ç±»å‹ï¼ˆéŸ³é¢‘ï¼š11ï¼‰_åºå·.MEDIA
+
+
+			è¾“å…¥æ–‡ä»¶ä¸ºmediaæ–‡ä»¶
+			ç”±ä¸‰éƒ¨åˆ†ç»„æˆï¼šåª’ä½“æ ¼å¼å¤´ + å‚è€ƒä¿¡æ¯ï¼ˆjsonï¼‰ + çœŸæ­£çš„åª’ä½“å†…å®¹
+				åª’ä½“æ ¼å¼å¤´ï¼š
+					å›ºå®š16å­—èŠ‚
+					FMT: + æ–‡ä»¶ç±»å‹ï¼ˆ"3"	0x32	wav	wavæ–‡ä»¶å®¹å™¨å°è£…çš„åª’ä½“å†…å®¹) + å½•éŸ³å¼€å§‹ç§’æ•° + å½•éŸ³å¼€å§‹æ¯«ç§’æ•° + ä¿ç•™å†…å®¹ï¼ˆ0ï¼‰ + å‚è€ƒä¿¡æ¯é•¿åº¦
+				åª’ä½“å‚è€ƒä¿¡æ¯ï¼š
+					æ²¡æœ‰æ˜¯å¦å¯ä»¥ä¸å¡«æˆ–è€…å¡«ä¸€ä¸ªç©ºçš„jsonï¼Œå¯¹åº”çš„16å­—èŠ‚é•¿åº¦å¡«500
+				åª’ä½“å†…å®¹ï¼š
+					éŸ³é¢‘å†…å®¹
+					
+			è¾“å‡º
+			D:\lzy\gz\projectinfo\å·¥ä½œæ—¥å¿—\wangtao\data\è½¬æ–‡æœ¬ç»“æœæ ·ä¾‹
+
+			é—®é¢˜ï¼š
+			4.4.1.1.1 éŸ³é¢‘æ–‡ä»¶åç§°æ˜¯ï¼š$(filetime)_$(SID)_$(CONTENTTYPE).$(FileType)
+			4.2.2 éç»“æ„åç§°æ˜¯ï¼š      $(filetime)_$(SID)_$(CONTENTTYPE)_$(SEQ).$(FileType)
+			
+			SID?
+
+			
+			ç¬¬14å­—èŠ‚ä¸ºä¿ç•™å†…å®¹ï¼Œå¡«ä»€ä¹ˆï¼Ÿ0
+			jsonæ²¡æœ‰çš„è¯ï¼Œæ˜¯å¦å¯ä»¥å¡«ç©ºçš„jsonæ•°ç»„
+			å¯ä»¥ï¼Œé•¿åº¦å¡«500
+			
+			ç¬¬6~9å­—èŠ‚è¡¨ç¤ºå½•éŸ³çš„å¼€å§‹æ—¶é—´ï¼ˆè‡ª1970å¹´1æœˆ1æ—¥å¼€å§‹çš„ç§’æ•°ï¼‰ï¼Œç¬¬10~13å­—èŠ‚è¡¨ç¤ºæ¯«ç§’æ•°ï¼›ï¼ˆBEï¼ŒBig-Endianå­—èŠ‚åºä¼ è¾“ï¼Œé«˜ä½åœ¨ä½å­—èŠ‚ï¼‰
+				BEï¼ŒBig-Endianå­—èŠ‚åºä¼ è¾“ï¼Œé«˜ä½åœ¨ä½å­—èŠ‚ï¼Ÿï¼Ÿï¼Ÿ
+				
+			$(filetime)_$(SID)_$(CONTENTTYPE).$(FileType)
+
+
+2020.04.23
+1.æ£€æŸ¥
+	mntos
+	ceph
+
+	ç•Œé¢
+
+2.imé€šè®¯å½•å¤„ç†
+
+		1.2.1 åˆå¹¶ä¸ªäººä¿¡æ¯ï¼Œæ ¹æ®ç”¨æˆ·å”¯ä¸€æ ‡è¯†ï¼Œåˆå¹¶ä¸ªäººçš„ä¿¡æ¯
+			ç”¨æˆ·å”¯ä¸€æ ‡è¯†ï¼š 8811947 (ä¸»key) sparkå–åšä¸€ä¸‹
+			æ ¹æ®å¥½å‹å”¯ä¸€æ ‡è¯†åšåˆ†ç»„
+			é‚®ç®±	119
+			å›½å®¶åç§°	120
+			ç”¨æˆ·æ˜µç§°	51
+			ç”¨æˆ·å¯†ç 	48
+			ç»ˆç«¯æ“ä½œç³»ç»Ÿ	67
+			ç»ˆç«¯è®¾å¤‡åç§°	70
+			ç»ˆç«¯æ‰‹æœºå·	64
+			ç»ˆç«¯IMEI	62
+				ç»ˆç«¯IDFA ï¼ˆæ¥æºä¸ç»ˆç«¯IMEIå­—æ®µï¼Œå¦‚æœä¸º77DFAB70-8380-4B7D-B40D-D05D45AE1904 åˆ™ä¸ºIDFAï¼Œå¦åˆ™ä¸ºIMEIï¼‰
+			 å¥½å‹åˆ—è¡¨  3133130, 3133131, 3133132
+			ç»´åº¦	72
+			ç»åº¦	73
+
+		è¾“å‡º:
+		ç”Ÿæˆåˆå¹¶åçš„ä¼šè¯è®°å½•
+		ç”Ÿæˆä¸€ä¸ªBCPæ–‡ä»¶ï¼Œç”¨äºå…¥ORACLE
+		BCPæ–‡ä»¶çš„æ ¼å¼ï¼š
+		ç”¨æˆ·å”¯ä¸€IDï¼Œé‚®ç®±ï¼Œå›½å®¶åç§°ï¼Œç”¨æˆ·æ˜µç§°ï¼Œç”¨æˆ·å¯†ç ï¼Œç»ˆç«¯æ“ä½œç³»ç»Ÿï¼Œç»ˆç«¯è®¾å¤‡åç§°ï¼Œç»ˆç«¯æ‰‹æœºå·ï¼Œç»ˆç«¯IMEI, ç»ˆç«¯IDFAï¼Œå¥½å‹åˆ—è¡¨
+
+é¢„å‘é€é™„ä»¶
+medias_dir=/opt/solea/im-data-unzip/medias
+MODULE_DIR=/opt/solea-tools/preprocess/interface/guangzhou
+fileserver_url="http://tika01.solea.bd.com:15003/fileserver2/api/v1,http://tika02.solea.bd.com:15003/fileserver2/api/v1"
+$SPARK_HOME/bin/spark-submit \
+    --master local[15] \
+    --executor-memory 10G \
+    --py-files $MODULE_DIR/lib/solea-improcessor.egg \
+    $MODULE_DIR/pre_sendresource.py \
+    --input-path "$medias_dir" \
+    --fileserver-url $fileserver_url > /opt/solea-tools/preprocess/interface/guangzhou/logs/pre_sendresource.log
+
+cmd="find /opt/solea/im-data-unzip/medias -type f"
+result = commands.getoutput(cmd)
+
+Stage 0 contains a task of very large size (45140 KB). The maximum recommended task size is 100 KB
+
+
+
+å…ˆè·‘èµ·æ¥im:
+
+MODULE_DIR=/opt/solea-tools/preprocess/interface/guangzhou
+bcp_dir=/opt/solea/test_input/bcps
+fileserver_url="http://tika01.solea.bd.com:15003/fileserver2/api/v1"
+relations_msg_max=5000
+encoding=UTF-8
+output_dir=/opt/solea/output
+sendfileserver_dir=/opt/solea/output
+output_file_head="XX-batch_id:666"
+media_resource_dir=/opt/solea/test_input/medias
+
+$SPARK_HOME/bin/spark-submit \
+    --master local[30] \
+    --py-files $MODULE_DIR/lib/solea-improcessor.egg \
+    $MODULE_DIR/solea-improcessor.py \
+    --input-path "$bcp_dir/*/*.bcp" \
+    --fileserver-url $fileserver_url \
+    --relations-msg-max $relations_msg_max \
+    --encoding $encoding \
+    --output-dir $output_dir \
+    --sendfileserver-dir $sendfileserver_dir \
+    --output-file-head $output_file_head \
+    --mediaresource-dir $media_resource_dir
+
+å»ºceph:
+ext_solea
+bash /opt/fileserver-2/ceph-manager/bin/create_pool_array.sh ext_solea ext_solea_pool_config.conf
+
+å»ºcollection
+ext_solea
+
+
+offline_solea_202004131157
+
+cd /opt/solea-release-2.0.4-dev/solr
+python /opt/millipede-solr/management/bin/solr_collection.py create-collection \
+ --auto-numshard  --replication-factor 1 --route-name implicit --auto-create-replication=2 \
+ --schema-file /opt/solea-release-2.0.4-dev/solr/conf/schema.xml  offline_solea_
+ 
+case_solea
+
+3.éŸ³é¢‘æ¥å£æµ‹è¯•
+
+
+4.æµ‹è¯•ä¸‹è½½æ¥å£
+é…ç½®ï¼š
+http://95.50.23.151:11010/weedfs/WeedRestService/downloadFile_ByBytes
+
+http://95.50.185.62:15003/thirdparty/_test
+
+æµ‹è¯•ä¸‹è½½æ¥å£ï¼š
+95.50.185.62:15003/thirdparty/download?cephUrl=ceph://offline_solea_20200413/885d7cc0-76a1-4614-a24a-68d27265600e&fileName=614383321-176202049-8080-55325-weixin-15230969784885052-13711.jpg
+
+http://95.50.185.17:4040/
+
+
+
+2020.04.24
+1.æ£€æŸ¥ä¸€ä¸‹
+check_os
+	must no file in /var/spool/abrt
+å›¾ç‰‡åˆ†ç±»æœåŠ¡ï¼Œæ…¢ï¼Ÿæ­»æ‰ï¼Ÿ
+
+/root/anaconda3/bin/python3 /opt/content-analysis/lib/manage.py runserver --noreload 0.0.0.0:8018
+
+curl http://content-analysis-server.solea_analysis.service.consul:15003/content-analysis/summary -F "content=æµ‹è¯•æ¥å£æ˜¯å¦æ­£å¸¸,æµ‹è¯•æ¥å£æ˜¯å¦æ­£å¸¸ã€‚"
+
+
+/opt/content-analysis/lib/main
+predict_resnet.pyc
+
+find im-data/bcps/ | xargs -i cp {} test_input/bcps/
+
+cat part-00* > all_base_info.bcp
+
+2.imé€šè®¯å½•æµ‹è¯•å¹¶ä¸”è·‘èµ·æ¥
+
+imåœ¨å†™æ–‡ä»¶é˜¶æ®µ
+1/3
+[root@buffer02.solea.bd.com im-data]# find -type f | wc -l
+7176350
+
+
+cmd_baseinfoï¼š
+
+cd /opt/solea-tools/preprocess/interface/guangzhou/logs
+MODULE_DIR=/opt/solea-tools/preprocess/interface/guangzhou
+bcp_dir=/opt/solea/im-data/bcps
+relations_msg_max=5000
+encoding=UTF-8
+bs_output_dir=/opt/solea/output/baseinfo
+
+nohup $SPARK_HOME/bin/spark-submit \
+    --master local[30] \
+    --py-files $MODULE_DIR/lib/solea-improcessor.egg \
+    $MODULE_DIR/cmd_baseinfo.py \
+    --input-path "$bcp_dir/*/*.bcp" \
+    --relations-msg-max $relations_msg_max \
+    --encoding $encoding \
+    --output-dir $bs_output_dir > baseinfo_20200428.log &
+
+more 20001-440000-DATA_IM-1577053415-14166.bcp | awk -F '\t' '{print $64}'
+
+cmd_phone_book:
+
+MODULE_DIR=/opt/solea-tools/preprocess/interface/guangzhou
+bcp_dir=/opt/solea/im-data/bcps
+relations_msg_max=5000
+encoding=UTF-8
+pb_output_dir=/opt/solea/output/phone_book
+
+nohup $SPARK_HOME/bin/spark-submit \
+    --master local[15] \
+    --py-files $MODULE_DIR/lib/solea-improcessor.egg \
+    $MODULE_DIR/cmd_phone_book.py \
+    --input-path "$bcp_dir/*/*.bcp" \
+    --relations-msg-max $relations_msg_max \
+    --encoding $encoding \
+    --output-dir $pb_output_dir > phone_book_20200424.log
+	
+
+
+ File "/opt/spark-2.4.4-bin-hadoop2.7/python/lib/pyspark.zip/pyspark/shuffle.py", line 274, in mergeCombiners
+    d[k] = comb(d[k], v) if k in d else v
+  File "/opt/spark-2.4.4-bin-hadoop2.7/python/lib/pyspark.zip/pyspark/util.py", line 99, in wrapper
+  File "/opt/solea-tools/preprocess/interface/guangzhou/lib/solea-improcessor.egg/solea/im_processor/cmd_baseinfo.py", line 225, in mergeCombiners
+AttributeError: 'list' object has no attribute 'add'
+
+	
+
+3.ä¸‹è½½æ¥å£æµ‹è¯•
+
+2020.04.25
+1.æ£€æŸ¥é€šè®¯å½•
+è¾“å‡ºå¸¦æœ‰ç›®å½•
+[root@buffer02.solea.bd.com solea]# cp -r im-data-unzip/medias/440000-440000-1577060331-DATA_IM-15034 test_input/medias/
+[root@buffer02.solea.bd.com solea]# cp -r im-data-unzip/bcps/440000-440000-1577060331-DATA_IM-15034 test_input/bcps/
+
+
+
+cd /opt/solea-tools/preprocess/interface/guangzhou/logs
+MODULE_DIR=/opt/solea-tools/preprocess/interface/guangzhou
+bcp_dir=/opt/solea/test/bcps
+relations_msg_max=5000
+encoding=UTF-8
+bs_output_dir=/opt/solea/output/baseinfo
+
+$SPARK_HOME/bin/spark-submit \
+    --master local[2] \
+    --py-files $MODULE_DIR/lib/solea-improcessor \
+    $MODULE_DIR/cmd_baseinfo.py \
+    --input-path "$bcp_dir/*/*.bcp" \
+    --relations-msg-max $relations_msg_max \
+    --encoding $encoding \
+    --output-dir $bs_output_dir
+
+2.æ£€æŸ¥nagios
+
+
+3.æµ‹è¯•ä¸‹è½½æ¥å£
+
+
+2020.04.26
+1.æ£€æŸ¥
+
+nagios	--ok
+ceph
+solr
+ç•Œé¢
+
+2.im çœ‹çœ‹
+cp im-data-input/440000-440000-1577060331-DATA_IM-15034.zip test_input
+python /opt/solea-tools/preprocess/interface/guangzhou/unzip_im_data.py --input-path /opt/solea/1
+
+	1.æ˜ å°„
+è·‘ä¸€ä¸‹im
+
+bcp_dir=/opt/solea/test_input/bcps
+media_resource_dir=/opt/solea/test_input/medias
+output_dir=/opt/solea/output
+sendfileserver_dir=/opt/solea/output
+
+cd /opt/solea-tools/preprocess/interface/guangzhou/logs
+MODULE_DIR=/opt/solea-tools/preprocess/interface/guangzhou
+fileserver_url="http://tika01.solea.bd.com:15003/fileserver2/api/v1,http://tika02.solea.bd.com:15003/fileserver2/api/v1,http://tika03.solea.bd.com:15003/fileserver2/api/v1,http://tika04.solea.bd.com:15003/fileserver2/api/v1,http://tika05.solea.bd.com:15003/fileserver2/api/v1,http://tika06.solea.bd.com:15003/fileserver2/api/v1,http://tika07.solea.bd.com:15003/fileserver2/api/v1,http://tika08.solea.bd.com:15003/fileserver2/api/v1,http://tika09.solea.bd.com:15003/fileserver2/api/v1,http://tika10.solea.bd.com:15003/fileserver2/api/v1"
+relations_msg_max=5000
+encoding=UTF-8
+sendfileserver_dir=/opt/solea-server-bcup/bcpdirs/im-data
+output_dir=/opt/solea-server-bcup/bcpdirs/im-data
+output_file_head="XX-FileContentType:application/x-hangzhou-im"
+bcp_dir=/opt/solea/im-data-unzip/bcps
+media_resource_dir=/opt/solea/im-data-unzip/medias
+
+
+nohup $SPARK_HOME/bin/spark-submit \
+    --master local[20] \
+    --py-files $MODULE_DIR/lib/solea-improcessor.egg \
+    $MODULE_DIR/solea-improcessor.py \
+    --input-path "$bcp_dir/*/*.bcp" \
+    --fileserver-url $fileserver_url \
+    --relations-msg-max $relations_msg_max \
+    --encoding $encoding \
+    --output-dir $output_dir \
+    --sendfileserver-dir $sendfileserver_dir \
+    --output-file-head $output_file_head \
+    --mediaresource-dir $media_resource_dir > run_20200428_2.log &
+	
+export SPARK_DRIVER.MEMORY=2G
+XX-FileContentType:application/x-hangzhou-im
+
+é¢„å‘é€:
+export SPARK_DRIVER_MEMORY=1g
+export SPARK_EXCUTOR_MEMORY=1g
+export SPARK_JAVA_OPTS="-xms1G -Xmx 1G"
+
+
+
+medias_dir=/opt/solea/test_input/medias
+
+medias_dir=/opt/solea/im-data-unzip/medias
+MODULE_DIR=/opt/solea-tools/preprocess/interface/guangzhou
+fileserver_url="http://tika01.solea.bd.com:15003/fileserver2/api/v1,http://tika02.solea.bd.com:15003/fileserver2/api/v1,http://tika03.solea.bd.com:15003/fileserver2/api/v1,http://tika04.solea.bd.com:15003/fileserver2/api/v1,http://tika05.solea.bd.com:15003/fileserver2/api/v1,http://tika06.solea.bd.com:15003/fileserver2/api/v1,http://tika07.solea.bd.com:15003/fileserver2/api/v1,http://tika08.solea.bd.com:15003/fileserver2/api/v1,http://tika09.solea.bd.com:15003/fileserver2/api/v1,http://tika10.solea.bd.com:15003/fileserver2/api/v1"
+output_dir=/opt/solea-tools/preprocess/interface/guangzhou/conf/newurl-part
+
+nohup $SPARK_HOME/bin/spark-submit \
+    --master local[20] \
+    --py-files $MODULE_DIR/lib/solea-improcessor.egg \
+    $MODULE_DIR/pre_sendresource.py \
+    --input-path "$medias_dir" \
+    --fileserver-url $fileserver_url \
+    --output-dir $output_dir > /opt/solea-tools/preprocess/interface/guangzhou/logs/presendresource.log &
+
+
+
+[root@buffer02.solea.bd.com conf]# wc -l fileurl_map
+6893129 fileurl_map
+
+
+
+	2.å»ç©º		--ok
+
+
+æ¸…é™¤im:
+<delete><query>content_type:application/x-hangzhou-im</query></delete>
+
+
+ext_solea_20200423      12 TiB 49537249      0 99074498                  0       0        0 1537066375 5.6 TiB 50201854 6.2 TiB    299 GiB     372 GiB
+
+
+3.ä¸‹è½½æ¥å£
+
+
+2020.04.27
+1.æ£€æŸ¥			--ok
+
+2.imæ£€æŸ¥
+å¤±è´¥äº†ï¼Ÿ
+20/04/26 21:07:18 INFO Executor: Told to re-register on heartbeat
+20/04/26 21:07:18 INFO BlockManager: BlockManager BlockManagerId(driver, localhost.localdomain, 33205, None) re-registering with master
+20/04/26 21:07:18 INFO BlockManagerMaster: Registering BlockManager BlockManagerId(driver, localhost.localdomain, 33205, None)
+20/04/26 21:07:18 INFO BlockManagerMaster: Registered BlockManager BlockManagerId(driver, localhost.localdomain, 33205, None)
+20/04/26 21:07:18 INFO BlockManager: Reporting 6 blocks to the master.
+20/04/26 21:07:18 INFO BlockManagerInfo: Updated broadcast_3_piece0 in memory on localhost.localdomain:33205 (current size: 6.4 KB, original size: 6.4 KB, free: 2004.6 MB)
+20/04/26 21:07:18 INFO BlockManagerInfo: Updated broadcast_0_piece0 in memory on localhost.localdomain:33205 (current size: 22.9 KB, original size: 22.9 KB, free: 2004.6 MB)
+20/04/26 21:07:18 INFO BlockManagerInfo: Updated broadcast_2_piece0 in memory on localhost.localdomain:33205 (current size: 5.4 KB, original size: 5.4 KB, free: 2004.6 MB)
+20/04/26 21:07:30 INFO MapOutputTrackerMasterEndpoint: MapOutputTrackerMasterEndpoint stopped!
+20/04/26 21:07:33 ERROR Executor: Exception in task 17.0 in stage 3.0 (TID 193059)
+org.apache.spark.SparkException: Python worker exited unexpectedly (crashed)
+        at org.apache.spark.api.python.BasePythonRunner$ReaderIterator$$anonfun$3.applyOrElse(PythonRunner.scala:490)
+        at org.apache.spark.api.python.BasePythonRunner$ReaderIterator$$anonfun$3.applyOrElse(PythonRunner.scala:479)
+        at scala.runtime.AbstractPartialFunction.apply(AbstractPartialFunction.scala:36)
+        at org.apache.spark.api.python.PythonRunner$$anon$1.read(PythonRunner.scala:597)
+        at org.apache.spark.api.python.PythonRunner$$anon$1.read(PythonRunner.scala:575)
+        at org.apache.spark.api.python.BasePythonRunner$ReaderIterator.hasNext(PythonRunner.scala:410)
+        at org.apache.spark.InterruptibleIterator.hasNext(InterruptibleIterator.scala:37)
+        at scala.collection.Iterator$class.foreach(Iterator.scala:891)
+
+
+3.éŸ³é¢‘æ–‡ä»¶media
+20200415185245_1.wav
+
+åˆ›å»ºæ—¶é—´ï¼š
+2020â€å¹´â€4â€æœˆâ€22â€æ—¥ï¼Œâ€â€18:26:00
+1587982117
+1587579960
+
+>>> t = datetime.datetime(2020, 04, 22, 18, 26, 00)
+>>> print(t - datetime.datetime(1970, 1, 1)).total_seconds()
+1587579960.0
+
+æ–‡ä»¶åå­—
+20200411150153_44c5227c-7bc2-11ea-b8cd-0242ac120015_11_170003.MEDIA
+
+
+å¤´ï¼š
+464D543A33496B915E00000000025506
+464D543A33D352A65E00000000020200
+
+
+
+4.rnsæŒ‚æ‰		--ok
+èµ·æ¥äº†
+
+
+5.ä¸‹è½½æ¥å£
+http://95.50.23.151:11010/weedfs/WeedRestService/downloadFile_ByBytes
+
+http://95.50.185.62:15003/thirdparty/_test
+
+æµ‹è¯•ä¸‹è½½æ¥å£ï¼š
+95.50.185.62:15003/thirdparty/download?cephUrl=ceph://offline_solea_20200413/885d7cc0-76a1-4614-a24a-68d27265600e&fileName=614383321-176202049-8080-55325-weixin-15230969784885052-13711.jpg
+
+		--ok
+
+6.ç§æœ‰å·ç åº“æ¥å£ï¼š
+wiremock:
+curl -H "Content-Type:application/json" -X POST --data '{"jsonArg":{"clues":["17775206552"]},"generalArgument":{"loginName":"è”¡å»ºå›½","userId":1409}}' http://95.50.23.151:40999/GarnerLibManage/rest/transClue
+
+curl -H "Content-Type:application/json" -X POST --data '{"jsonArg":{"clues":["17775206553"]},"generalArgument":{"loginName":"è”¡å»ºå›½","userId":1409}}' http://95.50.23.151:40999/GarnerLibManage/rest/transClue
+
+95.50.23.151:40999
+
+curl -H "Content-Type:application/json" -X POST --data '{"jsonArg":{"clues":["17775206553"]},"generalArgument":{"loginName":"è”¡å»ºå›½","userId":1409}}' http://127.0.0.1:9999/GarnerLibManage/rest/transClue
+
+wiremock:
+java -jar wiremock-standalone-2.4.1.jar --port 9999 --verbose --proxy-all=http://95.50.23.151:40999 -record-mappings
+
+im-wiremock.zip
+
+7.ç”Ÿtika,fileserver2	--ok
+
+8.åˆ é™¤
+
+ceph:
+ceph osd pool delete offline_solea_20200427 offline_solea_20200427 --yes-i-really-really-mean-it
+ceph osd pool delete ext_solea20200423 ext_solea20200423 --yes-i-really-really-mean-it
+æ¸…é™¤ceph,collection:
+offline_solea
+
+é‡æ–°å»ºç«‹ï¼š
+bash /opt/fileserver-2/ceph-manager/bin/create_pool_array.sh offline_solea_ offline_solea_pool_config.conf
+
+
+2020.04.28
+1.æ£€æŸ¥
+
+mntos:
+check_tika_app:
+	æœ‰badæ–‡ä»¶
+
+	é—®é¢˜ï¼Œå…ˆè®°ä¸‹æ¥
+	HEALTH_WARN 1024 pgs not deep-scrubbed in time
+	é—®é¢˜ï¼Œå…ˆè®°ä¸‹æ¥
+
+2.imç»“æœ
+280w
+
+åˆ—æ•°ä¸å¯¹ï¼Ÿ
+108
+120
+113
+ï¼Ÿ
+æ‰¾åæ‰€ç¡®å®šä¸€ä¸‹
+
+[root@buffer02.solea.bd.com im-data-input]# du -sh
+615G
+
+
+3.ç”Ÿæˆmediaæ–‡ä»¶
+
+
+$(filetime)_$(SID)_$(CONTENTTYPE)_$(SEQ).$(FileType)
+
+æ–‡ä»¶åå­—
+20200411150153_44c5227c-7bc2-11ea-b8cd-0242ac120015_11_170003.MEDIA
+ç”Ÿæˆçš„
+20200428175155_3ec1cb45-aa09-481f-9e26-bb95b92ff2d1_11_170003.MEDIA
+æ–‡ä»¶ç”Ÿæˆæ—¶é—´_uuid_11_åºå·.MEDIA
+YYYYmmddHHMMSS
+
+AD52DA5E
+
+â€­2907888222â€¬
+
+æ–‡ä»¶ç”Ÿæˆæ—¶é—´_uuid_11_170003.MEDIA
+
+å¤´ï¼š
+464D543A33 496B915E 00000000025506
+
+464D543A33 D352A65E 00000000020200
+464D543A33 AD52DA5E 00000000020200
+
+5E916B49
+
+
+â€­	1586588489â€¬
+
+496B915E
+
+â€2020â€å¹´â€4â€æœˆâ€27â€æ—¥ï¼Œâ€â€11:34:43
+2020-04-27 11:34:43
+	date -d"2020-04-27 11:34:43" +"%s"
+		1587958483
+		1587958483
+	â€­5EA652D3â€¬:
+		â€­1587958483â€¬
+		
+	D352A65E
+1587958483 >> 5EA652D3 >> D352A65E
+
+[root@web.solea.bd.com tmp]# date -d"@1587958483"
+Mon Apr 27 11:34:43 CST 2020
+[root@web.solea.bd.com tmp]# date -d"@1587958483â€¬"
+date: invalid date â€˜@1587958483â€¬â€™
+
+
+ç”Ÿæˆæ–‡ä»¶ï¼š
+20200428185653_e812a252-f9c1-455a-925d-0f6f9aa6be0f_11_170003.MEDIA		--ok
+
+å…ˆç»™å¯¹æ–¹ï¼Œç­‰å¾…è¿”å›ç»“æœ
+
+
+4.ä¸‹è½½æ¥å£		--ok
+
+å¬åŒ…
+tcpdump tcp -i bond0 -s 0 dst port 95.50.23.151:11010 -w /opt/tmp/thirdparty.cap
+tcpdump host tika02 and 95.50.23.151 -w thirdparty.cap
+
+
+curl http://95.50.185.62:15003/thirdparty/download?fileName=vcredist.bmp&cephUrl=ceph://offline_solea_20200413/6584e2d5-57c2-4cbb-b3f7-991b5293e60a&importTime=20200428
+
+
+
+5.
+http://content-analysis-server.solea_analysis.service.consul:15003/content-analysis/summary
+
+
+
+6.mp3è½¬ä¸ºwav ffmpeg
+
+
+
+todo:
+1.çœ‹çœ‹è§†é¢‘æ¥å£çš„æ–‡æ¡£
+
+
+uç›˜å¯†ç ï¼š
+pass#20200331$LZY
+
+
+é—®é¢˜ï¼š
+1.æ–‡æ¡£æ²¡æœ‰è¯´æ¸…æ¥šï¼š
+bash /opt/fileserver-2/ceph-manager/bin/create_pool_array.sh ext_solea_ ext_solea_pool_config.conf
+	ä¸¤ä¸ªé—®é¢˜ï¼š
+		1.æ–‡æ¡£æ²¡æœ‰è¯´æ¸…æ¥š
+		2.poolå»ºé”™ï¼šext_solea20200423ï¼Œå‘é€çš„æ—¶å€™fileserver2æŠ¥é”™ï¼š
+			java.lang.NullPointerException: null
+			at com.lzy.solea.fileserver2.service.RadosStorage.findLastWritePool(RadosStorage.java:134)
+			at com.lzy.solea.fileserver2.web.rest.UploadFileApiDelegateImpl.uploadFile(UploadFileApiDelegateImpl.java:82)
+			at com.lzy.solea.fileserver2.web.api.UploadFileApi.uploadFile(UploadFileApi.java:44)
+
+
+2. solea-send-fserver
+param collection ä¼˜å…ˆçº§
+
+
+1.imé€šè®¯å½•				--ok
+
+åŸæ¥çš„å…ˆè·‘èµ·æ¥
+bash /opt/solea-tools/preprocess/interface/guangzhou/run.sh > 20200423.log
+
+
+2.transçš„dockeræ€»æ˜¯é‡å¯å¯¼è‡´nagioså‘Šè­¦
+	ä¼˜åŒ–ï¼Ÿ
+
+
+#############
+2020.04.29
+1.æ£€æŸ¥					--ok
+è§tips.txt
+
+mntos		--ok
+ceph		--ok
+solea_20200428         301 GiB  4240069      0  8480138                  0       0        0   50760548 172 GiB  4262005 172 GiB     45 GiB      99 GiB
+
+solr		--ok
+
+ç•Œé¢		--ok
+
+consul		--ok
+
+check_os å‘Šè­¦ä¸´æ—¶æ–‡ä»¶è¿‡å¤š
+tika18:
+[root@tika18.solea.bd.com tmp]# find -type f | wc -l
+10890
+
+tika19:
+[root@tika19.solea.bd.com tmp]# find -type f | wc -l
+5895
+
+tika23:
+[root@tika23.solea.bd.com tmp]# find -type f | wc -l
+12033
+
+
+2.ffmpeg MP3è½¬wav		--ok
+mp3 è½¬ä¸ºwav:
+ffmpeg -i input.mp3 -f wav output.wav
+	å¤§å°è½¬åŒ–æ¯”ï¼š
+		1.97MBçš„MP3è½¬21MBwav
+	MP3æ—¶é—´ï¼š
+		10åˆ†é’Ÿ
+
+ffmpeg:
+-f é‡‡ç”¨æŒ‡å®šæ ¼å¼format
+-i è¾“å…¥æ–‡ä»¶
+-y è¦†ç›–è¾“å‡ºæ–‡ä»¶
+-ab bitrate è®¾ç½®éŸ³é¢‘ç ç‡
+-ar freq è®¾ç½®éŸ³é¢‘é‡‡æ ·ç‡
+-an ä¸ä½¿èƒ½éŸ³é¢‘è®°å½•
+-acodec codec ä½¿ç”¨codecç¼–ç 
+
+-debug æ‰“å°ç‰¹å®šè°ƒè¯•ä¿¡æ¯
+
+
+wav è½¬ä¸ºMP3:
+ffmpeg -i input.wav -f mp3 -acodec libmp3lame -y output.mp3
+
+
+3.éŸ³é¢‘å¯¹æ¥é—®ä¸€ä¸‹
+
+
+
+4.ä¸‹åˆimæ•°æ®å‘solr
+é‡æ–°è·‘çš„imæœ‰å¤šå°‘æ¡ï¼Ÿ
+[root@buffer02.solea.bd.com im-data]# find -type f | wc -l
+1280412
+
+solr:
+1280223
+
+1.å»ºæ–°çš„offline_solea pool
+
+rados -p ceph.meta.pool ls
+rados -p ceph.meta.pool get offline_solea_pool_config.conf offline_solea_pool_config.conf
+
+
+2.å»ºæ–°çš„offline_solea collection
+
+python /opt/millipede-solr/management/bin/solr_collection.py auto-create-collection --prefixes offline_solea --force
+python /opt/millipede-solr/management/bin/solr_collection.py create-collection
+
+3.æ£€æŸ¥å‘é€å…¥æ–°çš„poolè·Ÿcollection
+
+
+
+export SPARK_DRIVER_MEMORY=4g
+export SPARK_EXCUTOR_MEMORY=2g
+export SPARK_JAVA_OPTS="-xms1G -Xmx 2G"
+
+medias_dir=/opt/solea/test_input/medias
+
+
+cd /opt/solea-tools/preprocess/interface/guangzhou/logs
+medias_dir=/opt/solea/im-data-unzip/medias
+MODULE_DIR=/opt/solea-tools/preprocess/interface/guangzhou
+fileserver_url="http://tika01.solea.bd.com:15003/fileserver2/api/v1,http://tika02.solea.bd.com:15003/fileserver2/api/v1,http://tika03.solea.bd.com:15003/fileserver2/api/v1,http://tika04.solea.bd.com:15003/fileserver2/api/v1,http://tika05.solea.bd.com:15003/fileserver2/api/v1,http://tika06.solea.bd.com:15003/fileserver2/api/v1,http://tika07.solea.bd.com:15003/fileserver2/api/v1,http://tika08.solea.bd.com:15003/fileserver2/api/v1,http://tika09.solea.bd.com:15003/fileserver2/api/v1,http://tika10.solea.bd.com:15003/fileserver2/api/v1"
+output_dir=/opt/solea-tools/preprocess/interface/guangzhou/conf/newurl-part
+
+nohup $SPARK_HOME/bin/spark-submit \
+    --master local[15] \
+    --py-files $MODULE_DIR/lib/solea-improcessor.egg \
+    $MODULE_DIR/pre_sendresource.py \
+    --input-path "$medias_dir" \
+    --fileserver-url $fileserver_url \
+    --output-dir $output_dir > /opt/solea-tools/preprocess/interface/guangzhou/logs/presendresource.log &
+
+å‘é€æŠ¥é”™ï¼š
+ERROR:root:send file
+
+vim /opt/solea/im-data-unzip/medias/440000-440000-1577102687-DATA_IM-19838/945185975570951758.jpg
+
+
+
+
+5æ–‡æ¡£æ•´ç†ä¸€ä¸‹
+
+	éŸ³é¢‘æ¥å£
+		ç”Ÿæˆmediaæ–‡ä»¶çš„ä»£ç ï¼šD:\lzy\gz\projectinfo\å·¥ä½œæ—¥å¿—\wangtao\data\Demo
+		æ¥å£æ–‡æ¡£ï¼šD:\lzy\gz\projectinfo\é¡¹ç›®ä¿¡æ¯\æ¥å£æ–‡æ¡£\è¯­éŸ³è½¬æ–‡æœ¬æ•°æ®æ¥å£æ ‡å‡†202004ï¼ˆä¿®è®¢ï¼‰
+		å¯¹æ–¹æä¾›çš„è¾“å…¥è¾“å‡ºæ ·ä¾‹ï¼šD:\lzy\gz\projectinfo\å·¥ä½œæ—¥å¿—\wangtao\data\è½¬æ–‡æœ¬ç»“æœæ ·ä¾‹
+		åç»­å·¥ä½œï¼š
+			ç›®å‰å·²ç»ç”Ÿæˆmediaæ–‡ä»¶ç»™å¯¹æ¥äººï¼ˆå®‹è·¯/18951656234ï¼‰ï¼Œè¿˜æ²¡æœ‰å›å¤ç»™å‡ºè¾“å‡ºçš„ç»“æœ
+			éœ€è¦è·Ÿå¯¹æ–¹è”ç³»ä¸€ä¸‹ç”Ÿæˆæ–‡ä»¶å¤¹æ˜¯å¦æœ‰é—®é¢˜ï¼Œæ²¡æœ‰é—®é¢˜æ‹¿åˆ°è¾“å‡ºçš„ç»“æœ
+	imç»´æŠ¤
+		sparkç¨‹åºï¼šbuffer02:/opt/solea-tools/preprocess/interface/guangzhou/
+		å·²ç»æ¨é€è¿‡æ¥çš„imæ•°æ®ï¼ˆå…¨é‡ï¼‰ï¼š/opt/solea/im-data-input
+		åŸºäºå…¨é‡imçš„å‹ç¼©åŒ…å·²ç»åšäº†è§£å‹å¤„ç†ï¼š/opt/solea/im-data-unzipï¼ˆç›®å½•ä¸‹åˆ†ä¸ºbcpsè·Ÿmediasï¼Œå°†æ‰€æœ‰çš„bcpè·Ÿé™„ä»¶åˆ†å¼€ï¼‰
+		é€šè®¯å½•ç¨‹åºï¼š
+			baseinfo:	
+				è¾“å…¥æ˜¯bcpæ–‡ä»¶æ‰€åœ¨ç›®å½•ï¼š/opt/solea/im-data-unzip/bcps
+				è¾“å‡ºï¼šå‘é€è€…çš„ä¿¡æ¯ï¼šuserid, contry_name, email, nick_name ç­‰ç­‰
+			phone_book:
+				è¾“å…¥æ˜¯bcpæ–‡ä»¶æ‰€åœ¨ç›®å½•ï¼š/opt/solea/im-data-unzip/bcps
+				è¾“å‡ºï¼š ä¸¤ä¸ªäººé€šä¿¡è®°å½•ï¼šuser01 user01_nick_name user02 user02_nick_name
+		imå…·ä½“æµç¨‹è§buffer02:/opt/solea-tools/preprocess/interface/guangzhou/readme.txt
+		é¡¹ç›®ä»£ç ï¼šD:\lzy\gz\project\solea\solea-master\04sourcecode\tools\preprocess\interface\guangzhou
+	æ–°é—»ç½‘ç«™
+	ä»£ç æäº¤
+		ä»£ç†ï¼Œé…ç½®å¯ä»¥é—®è”¡å»ºå›½
+	å‡ºå·®çš„è¡¨æ ¼
+	åˆ»ç›˜
+	tipså®Œå–„ä¸€ä¸‹
+
+
+
+æœ¬å‘¨å·¥ä½œ:
+1.imè¦æå®š
+	æ¥å£
+	æ ¹æ®idæŸ¥è¯¢å¤‡æ³¨çš„æ¥å£
+	wiremock
+
+2.æ–°é—»ç½‘ç«™
+	è·Ÿå®¢æˆ·æ²Ÿé€šï¼Œå¤–ç½‘å¦‚ä½•ä¼ åˆ°å†…ç½‘ï¼Œå¹¶ä¸”è¦å‡†å¤‡å¥½
+	ç„¶åé¢„å¤„ç†ï¼ˆä¸ä¸€å®šæœ¬å‘¨ï¼‰
+
+3.å…¶ä»–æ¥å£
+éŸ³é¢‘æ¥å£
+è§†é¢‘æ¥å£
+
+
+
+
+é—®é¢˜ï¼š
+
+é‚®ä»¶æ”¶å‘å…³ç³»åŠ ä¸Šæ‰¹æ¬¡å·ï¼Œæ‰“å¼€é‚®ä»¶æ”¶å‘å…³ç³»åŠŸèƒ½
+
+showappå±•ç¤ºå‹ç¼©åŒ…
+ç‚¹å‡»æ”¶èµ·ç›®å½•ï¼Œæ²¡æœ‰ååº”
+
+
+image001.emz
+ade.lusia@asean.org/image001.emz
+emzæ–‡ä»¶è¢«è¯†åˆ«æˆå‹ç¼©æ–‡ä»¶ï¼Ÿ
+
+
+
+[root@web.solea.bd.com tmp]# date -d"@1587958483"
+Mon Apr 27 11:34:43 CST 2020
+[root@web.solea.bd.com tmp]# date -d"@1587958483â€¬"
+date: invalid date â€˜@1587958483â€¬â€™
+
+ä¸ºä»€ä¹ˆæ— æ•ˆï¼Ÿ
+
+ceph å‘Šè­¦ï¼š
+1024 pgs not deep-scrubbed in time
+
+
+æ­å·im:
+/opt/solea-tools/preprocess/interface/guangzhou/run.sh: line 49: /usr/bin/mv: Argument list too long
+2020.04.02
+1.·ÖÎöÏÂÊı¾İ£º
+[root@buffer01 841_data_input]# find -type f | wc -l
+285950
+1.9T
+
+
+ÁùÀàÊı¾İ£º
+DATA_EMAIL
+DATA_IM
+DATA_FTP
+DATA_DMT
+DATA_PMT
+DATA_WAPMMS
+ÓÊ¼ş ¼´Ê±Í¨ĞÅ ftpÏÂÔØ ÎÄµµÔª Í¼Æ¬Ôª  ²ÊĞÅ
+
+unzip 
+JZ_ZIP_INDEX.xml
+XXX.mms
+XXX.bcp
+
+filenameÖ»ÓĞÒ»¸ö
+
+nohup find -type f | xargs -n1 unzip -d /opt/841-data-unzip-20200403/ >> unzip841-2.log
+
+
+2.²âÊÔ¶Ô½Ó³ÌĞò
+process_num=1
+bash /opt/solea-send-fileserver2-gz/bin/send_fileserver_gen_guard_conf.sh 1 > /opt/solea-send-fileserver2-gz/etc/send_fileserver2_gz.xml
+
+cp /opt/solea-send-fileserver2-gz/etc/send_fileserver2_gz.xml /root/lcm.guard-1.7.9/etc/guard/conf.d/
+
+cp /opt/solea-send-fileserver2-gz/etc/cron/solea_gz_clean_tmp_file.cron /root/lcm.guard-1.7.9/etc/crond/cron.d/
+
+
+2020-04-02 14:39:24,507 ERROR ret:1,error:which: no java in (/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin)
+Could not find any executable java binary. Please install java in your PATH or set JAVA_HOME
+
+yum install java
+
+Ã»ÓĞ¶ÁÈ¡metaĞÅÏ¢£¿
+vim /opt/solea-send-fileserver2-gz/config/config-override.properties
+
+# ÊÇ·ñÒª´¦Àí°üº¬Í·ĞÅÏ¢µÄÎÄ¼ş
+meta.process.switch=false
+¸ÄÎªfalse
+
+
+cp 440000-440000-1585656540-DATA_EMAIL-84337.zip 440000-440000-1585656543-DATA_EMAIL-88272.zip 440000-440000-1585656543-DATA_FTP-99922.zip /opt/solea-gz-custom/input
+
+
+--ok
+3.°²×°Í¼Æ¬·ÖÀà·şÎñ
+
+pip install tensorflow_gpu-1.14.0-cp34-cp34m-manylinux1_x86_64.whl --no-index --find-links=/opt/content-analysis-dependency --ignore-installed
+
+ssh 95.50.185.71
+cd /opt/tmp
+scp -r content-analysis root@95.50.185.72:/opt/tmp/		
+scp -r content-analysis root@95.50.185.73:/opt/tmp/
+scp -r content-analysis root@95.50.185.74:/opt/tmp/
+scp -r content-analysis root@95.50.185.75:/opt/tmp/
+scp -r content-analysis root@95.50.185.76:/opt/tmp/
+scp -r content-analysis root@95.50.185.77:/opt/tmp/
+scp -r content-analysis root@95.50.185.78:/opt/tmp/
+scp -r content-analysis root@95.50.185.79:/opt/tmp/
+scp -r content-analysis root@95.50.185.80:/opt/tmp/
+scp -r content-analysis root@95.50.185.81:/opt/tmp/
+scp -r content-analysis root@95.50.185.82:/opt/tmp/
+
+
+vim hosts
+[content-analysis]
+95.50.185.72
+95.50.185.73
+95.50.185.74
+95.50.185.75
+95.50.185.76
+95.50.185.77
+95.50.185.78
+95.50.185.79
+95.50.185.80
+95.50.185.81
+95.50.185.82
+
+ansible -i hosts all -m ping  --ok
+
+ansible -i hosts all -a "mkdir -p /opt/tmp/"
+ansible -i hosts all -a "mkdir -p /opt/content-analysis-dependency"
+ansible -i hosts all -a "mkdir -p /opt/content-analysis-data"
+
+cd /opt/tmp/content-analysis
+
+ansible -i hosts all -a "tar -xvf /opt/tmp/content-analysis/content-analysis-dependency.tar -C /opt/content-analysis-dependency"
+
+ansible -i hosts all -a "tar -xvf /opt/tmp/content-analysis/content-analysis-models.tar -C /opt/content-analysis-data"
+
+ansible -i hosts all -a "yum install bzip2 -y"
+
+ansible -i hosts all -a "yum install unzip -y"
+
+ansible -i hosts all -a "yum install gcc-c++ -y"
+
+ansible -i hosts all -a "yum install libXext -y"
+
+ansible -i hosts all -a "yum install libSM -y"
+
+ansible -i hosts all -a "yum install incron -y"
+
+ansible -i hosts all -a "yum install tengine -y"
+
+
+ansible -i hosts all -a "conda uninstall numpy -y"
+
+
+
+ansible -i hosts all -a "unzip /opt/content-analysis-dependency/setuptools-43.0.0.zip -d /opt/content-analysis-dependency/"
+
+
+
+ansible -i hosts all -a "/root/anaconda3/bin/python /opt/content-analysis-dependency/setuptools-43.0.0/setup.py install"
+
+ansible -i hosts all -a "tar -zxvf /opt/content-analysis-dependency/pip-19.3.1.tar.gz -C /opt/content-analysis-dependency/"
+
+python /opt/content-analysis-dependency/pip-19.3.1/setup.py install
+
+
+ansible -i hosts all -a "cd /opt/content-analysis-dependency/pip-19.3.1 && /root/anaconda3/bin/python setup.py install"
+
+ansible -i hosts all -a "/root/anaconda3/bin/python -m pip --version"
+
+²»¶Ô
+ansible -i hosts all -a "/root/anaconda3/bin/python -m pip uninstall pip -y"
+
+ansible -i hosts all -a "cd /opt/content-analysis-dependency/pip-19.3.1 && /root/anaconda3/bin/python setup.py install"
+
+
+Éı¼¶pip
+ansible -i hosts all -a "/root/anaconda3/bin/python -m pip install /opt/content-analysis-dependency/pip-19.3.1.tar.gz --no-index --find-links=/opt/content-analysis-dependency --ignore-installed"
+
+
+
+ansible -i hosts all -a "/root/anaconda3/bin/python -m pip install /opt/content-analysis-dependency/tensorflow_gpu-1.14.0-cp34-cp34m-manylinux1_x86_64.whl --no-index --find-links=/opt/content-analysis-dependency --ignore-installed"
+
+
+# pip install Keras-2.3.1-py2.py3-none-any.whl --no-index --find-links=/opt/content-analysis-dependency --ignore-installed
+
+ansible -i hosts all -a "/root/anaconda3/bin/python -m pip install /opt/content-analysis-dependency/Keras-2.3.1-py2.py3-none-any.whl --no-index --find-links=/opt/content-analysis-dependency --ignore-installed"  --ok
+
+
+ansible -i hosts all -a "/root/anaconda3/bin/python -m pip install /opt/content-analysis-dependency/mask_rcnn_12rics-0.2.3-py3-none-any.whl  --no-index --find-links=/opt/content-analysis-dependency --ignore-installed"
+
+
+ansible -i hosts all -a "/root/anaconda3/bin/python -m pip install /opt/content-analysis-dependency/Django-2.0-py3-none-any.whl  --no-index --find-links=/opt/content-analysis-dependency --ignore-installed"   --ok
+
+
+
+
+ansible -i hosts all -a "/root/anaconda3/bin/python -m pip install /opt/content-analysis-dependency/sumy-0.8.0-py2.py3-none-any.whl  --no-index --find-links=/opt/content-analysis-dependency --ignore-installed"  --ok
+
+
+
+ansible -i hosts all -a "/root/anaconda3/bin/python -m pip install /opt/content-analysis-dependency/jieba-0.42.1.tar.gz  --no-index --find-links=/opt/content-analysis-dependency --ignore-installed"  --ok
+
+ansible -i hosts all -a "/root/anaconda3/bin/python -m pip install /opt/content-analysis-dependency/opencv_python-4.1.1.26-cp34-cp34m-manylinux1_x86_64.whl   --no-index --find-links=/opt/content-analysis-dependency --ignore-installed"  --ok
+
+
+
+
+ansible -i hosts all -a "tar xvf /opt/tmp/content-analysis/content-analysis-2.0.4-dev.tar.gz  -C /opt"
+
+
+ansible -i hosts all -a "bash /opt/content-analysis-2.0.4-dev/config.sh"
+
+ansible -i hosts all -a "cp /opt/content-analysis/etc/incron/content_analysis_update_nginx.incron /etc/incron.d/"
+
+ansible -i hosts all -a "cp /opt/content-analysis/etc/cron/content_analysis.cron  $LCM_GUARD_ROOT/etc/crond/cron.d/"
+
+ansible -i hosts all -a "cp /opt/content-analysis/etc/nginx/content_analysis.locations.conf /etc/nginx/location.conf.d/"
+
+
+ansible -i hosts all -a "cp /opt/content-analysis/etc/guard/content_analysis_server.xml ${LCM_GUARD_ROOT}/etc/guard/conf.d/"
+
+
+
+consul ¸ÄÎªno
+
+ansible  -i hosts all -m copy -a "src=/opt/content-analysis/bin/content_analysis.sh dest=/opt/content-analysis/bin"
+
+bashrc ĞŞ¸Ä»ØÀ´
+ansible  -i hosts all -m copy -a "src=~/.bashrc dest=~/.bashrc"
+
+Ìæ»»ÏÂÄ£ĞÍ£º
+
+ansible -i hosts all -a "mv /opt/content-analysis-data/mask_rcnn_solea_dl_cfg.h5 /opt/content-analysis-data/mask_rcnn_solea_dl_cfg.h5.old"
+
+
+ansible -i hosts all -a "mv /opt/content-analysis-data/mask_rcnn_solea_dl_cfg_487.h5 /opt/content-analysis-data/mask_rcnn_solea_dl_cfg.h5"
+
+ansible -i hosts all -a "lcm_guard --reload"
+
+ansible -i hosts all -a "sleep 10"
+
+ansible -i hosts all -a "lcm_guard --killall"
+
+ansible -i hosts all -a "curl http://127.0.0.1:15003/content-analysis/img_predict -F 'img=@/opt/content-analysis/data/seal.jpg'"
+
+ansible -i hosts all -a "curl http://127.0.0.1:15003/content-analysis/summary -F 'content=²âÊÔ½Ó¿ÚÊÇ·ñÕı³£,²âÊÔ½Ó¿ÚÊÇ·ñÕı³£¡£'"
+
+
+ansible -i hosts all -a "curl http://127.0.0.1:15003/content-analysis/classify -F 'content=²âÊÔ½Ó¿ÚÊÇ·ñÕı³£,²âÊÔ½Ó¿ÚÊÇ·ñÕı³£¡£'"
+
+ansible -i hosts all -a "lcm_guard --list"
+
+--ok
+
+
+
+
+
+
+cp ºóÌ¨ÔËĞĞ£º
+ctrl+z ¹ÒÆğ½ø³Ì
+
+bg ÈÃ¹ÒÆğµÄ½ø³Ì¼ÌĞøÔËĞĞ
+
+jobs ²é¿´½ø³Ì
+
+bg %n ½«±àºÅÎªnµÄÈÎÎñ×ªºóÌ¨ÔËĞĞ
+
+fg %n ½«±àºÅÎªnµÄÈÎÎñ×ªÇ°Ì¨ÔËĞĞ
+
+
+
+
+
+
+
+
+
+Ã»ÓĞ°²×°incron?
+[root@tika11 content-analysis]# cp /opt/content-analysis/etc/incron/content_analysis_update_nginx.incron /etc/incron.d/
+cp: cannot create regular file ¡®/etc/incron.d/¡¯: Not a directory
+
+yum install incron -y
+
+ÎÄµµĞŞ¸Ä£º
+cp /opt/content-analysis/etc/content_analysis.cron  $LCM_GUARD_ROOT/etc/crond/cron.d/
+
+cp /opt/content-analysis/etc/cron/content_analysis.cron  $LCM_GUARD_ROOT/etc/crond/cron.d/
+
+
+Ã»ÓĞconsule±¨´í£º
+ÏÈ¸ÄÎªno
+vim content_analysis.sh
+
+
+4.kafka°²×°¼¸¸ö½Úµã£¿
+ÏÈ°²×°3¸ö£¬ºóÃæÔÙÀ©Õ¹
+32Ì¨tika»úÆ÷£¬Æ½¾ùÃ¿Ì¨10¸ö½ø³Ì
+
+ĞèÒª960¸öpartition
+
+
+Ã÷Ìì£º
+1.°²×°simba  ²»×ö
+2.°²×°solea
+
+3.Êı¾İ¶Ô½Ó
+
+4.Í³¼ÆÊı¾İ£º
+	841_data_bak
+
+2020.04.03
+1.°²×°»ù´¡·şÎñ¿ÉÒÔÏû·ÑÊı¾İ
+tika
+fileserver2
+sendFserver
+Ô¤´¦Àí
+
+
+ansible-playbook -i environments/prod  site.yml --limit dns_servers  --tags "bind,common" -v		--ok
+
+ansible-playbook -i environments/prod  site.yml  --tags "sshd_config" -v		--ok
+
+ansible -i environments/prod all -m ping		--ok
+		
+
+ansible-playbook -i environments/prod site.yml --tags "common" -v
+
+
+
+
+
+[simba_tools_servers]
+# simba-tools£¬Í³¼ÆÖĞĞÄ£¬ËùÓĞ»úÆ÷¶¼Òª×°
+tika[01:32].solea.bd.com
+buffer[01:07].solea.bd.com
+web.solea.bd.com
+
+[fileserver2_servers]
+# fileserver2 £¬Ìá¹©ÉÏ´«ºÍÏÂÔØÎÄ¼ş£¬²¢ÇÒ·Åkafka
+# Ò»°ãºÍceph°²×°ÔÚÒ»Æğ
+# install_fileserver2_ceph_manager°²×°Ò»Ì¨¼´¿É£¬°²×°ÔÚcephÖ÷¿Ø»ú
+tika01.solea.bd.com install_fileserver2_ceph_manager=1
+tika[02:10].solea.bd.com
+
+[external_service_servers]
+tika[11:20].solea.bd.com
+
+
+[solea_tika_servers]
+# ·ÖÎöÎÄ¼şµÄ·şÎñÆ÷
+# ¿ÉÒÔ°²×°Ò»Ì¨£¬¿ÉÒÔ¶àÌ¨
+# install_kafka_monitor ÊÇ·ñ°²×°kakfa¼à¿Ø£¬°²×°Ò»Ì¨¼´¿É£¬²»Òª°²×°¶àÌ¨
+#      Õâ¸ö»úÆ÷±ØĞëÒªÓĞÖ»°²×°ÔÚÒ»Ì¨ÓĞkafka¿Í»§¶ËµÄ»úÆ÷ÉÏ,°²×°ºÃprometheus(²Î¿¼9.5. prometheus¼à¿Ø°²×°ºÍÊ¹ÓÃ)
+# tika_process_num ±íÊ¾Æô¶¯¶àÉÙ¸ötika½ø³Ì£¬Ò»°ãÒª¿´cpuÇé¿ö
+# install_tika_decypt ±íÊ¾Æô¶¯¶àÉÙ¸ö½âÃÜµÄ½ø³Ì£¬ÔİÊ±Ã¿Ì¨tika°²×°Ò»¸ö
+tika[01:08].solea.bd.com tika_process_num=10
+tika09.solea.bd.com install_kafka_monitor=1 tika_process_num=10
+tika[10:32].solea.bd.com tika_process_num=10
+
+
+
+tika[01:32].solea.bd.com
+
+
+yum_centos_url: http://10.1.12.4/cobbler/ks_mirror/centos-6.8-x86_64
+yum_lzy_private_url: http://10.1.12.4/centos/$releasever/$basearch/
+
+baseurl=http://95.50.185.39/centos7.7/
+
+
+fileserver2_servers:
+http://tika01.solea.bd.com:15003/fileserver2/api/v1,http://tika02.solea.bd.com:15003/fileserver2/api/v1,http://tika03.solea.bd.com:15003/fileserver2/api/v1,http://tika04.solea.bd.com:15003/fileserver2/api/v1,http://tika05.solea.bd.com:15003/fileserver2/api/v1,http://tika06.solea.bd.com:15003/fileserver2/api/v1,http://tika07.solea.bd.com:15003/fileserver2/api/v1,http://tika08.solea.bd.com:15003/fileserver2/api/v1,http://tika09.solea.bd.com:15003/fileserver2/api/v1,http://tika10.solea.bd.com:15003/fileserver2/api/v1
+
+solr_servers:
+http://95.50.185.41:15003/solr,http://95.50.185.42:15003/solr,http://95.50.185.43:15003/solr,http://95.50.185.44:15003/solr,http://95.50.185.45:15003/solr,http://95.50.185.46:15003/solr,http://95.50.185.47:15003/solr,http://95.50.185.48:15003/solr,http://95.50.185.49:15003/solr,http://95.50.185.450:15003/solr,http://95.50.185.51:15003/solr,http://95.50.185.52:15003/solr,http://95.50.185.53:15003/solr,http://95.50.185.54:15003/solr,http://95.50.185.55:15003/solr,http://95.50.185.56:15003/solr,http://95.50.185.57:15003/solr,http://95.50.185.58:15003/solr,http://95.50.185.59:15003/solr,http://95.50.185.60:15003/solr
+
+
+°²×°fileserver2:		--ok
+cd /opt/solea-deploy
+ansible-playbook -i environments/prod site.yml --tags "fileserver2" -v
+
+°²×°Íâ²¿·şÎñ£º		--ok
+ansible-playbook -i environments/prod site.yml --tags "solea_external_service" -v
+
+°²×°tika:		--ok
+
+ansible-playbook -i environments/prod site.yml --tags "solea_tika" -v
+
+°²×°sendFserver:		--ok
+ansible-playbook -i environments/prod site.yml --tags "solea_send_fserver2" -v
+
+
+°²×°solea_tools£º		--ok
+ansible-playbook -i environments/prod site.yml --tags "solea_tools" -v
+
+
+"solea_data_bcp_uploader" Ã»ÓĞÆğÀ´
+/opt/python-common/ftp-upload
+
+python bin/ftp_upload.py --inputdir /opt/solea_data_bcup/bcpdirs --groupname dbn --ftp-server-config-file /opt/solea-tika-app/etc/stat/solea_data_upload_server.config --logconfig /opt/solea-tika-app/etc/stat/ftpuploader.conf
+
+ansible -i environments/prod/hosts all  -a "yum install lzy-python-common -y"
+
+
+
+2020-04-03 14:24:07,283 INFO server_config {'ftp_server': {'web.solea.bd.com': {'username': 'solea_data_bcup', 'compress': False, 'rsakey': None, 'targetdir': 'b4-05-5d-1b-00-a6', 'ftpworkdir': 'bcpdirs', 'timeout': 60, 'address': 'web.solea.bd.com', 'weigh': 1, 'password': '123456'}}}
+
+webÌí¼ÓftpÓÃ»§£º
+useradd solea_data_bcup --home-dir /opt/solea_data_bcup
+
+usermod  --home /opt/solea_data_bcup  --move-home solea_data_bcup
+grep solea_data_bcup /etc/passwd
+passwd solea_data_bcup
+
+
+2.Êı¾İ×ö±¸·İ
+ĞŞ¸Äftp config:
+vim /opt/solea-tools/preprocess/buffer/etc/ftp-upload/ftp_input_server.config
+
+interface_targetdir="/opt/solea-gz-custom/input"
+interface_ftp_workdir="/opt/841_data_input"
+
+--inputdir=/opt/solea_input_bcup/bcpdirs
+
+
+²é¿´ÈÕÖ¾£º
+tail -n 1000 /opt/solea-tools/preprocess/logs/ftp_input_upload_dispatch.log
+
+IOError: [Errno 2] No such file or directory: '/opt/simba-send-to-stat-data/_plugin_stat_20200403_092655_34997188_754a_11ea_838a_80615f046547.bcp'
+
+ mkdir /opt/simba-send-to-stat-data
+
+"solea_input_upload_backup_group"
+Ã»ÓĞÆğÀ´£º
+/opt/solea-tools/preprocess
+
+python /opt/python-common/py-data-backup/bin/data_backup.py -i /opt/solea-tools/preprocess/tmp/dispatch/backup_group -o /opt/solea-tools/preprocess/buffer/backup --with-orig-dir True --with-date-dir True -l  /opt/python-common/py-data-backup/etc/python.log.conf.in
+
+ÓĞÎÊÌâ£º
+/opt/python-common/py-data-backup/etc/python.log.conf.in
+
+ĞŞ¸ÄÎª£º
+/opt/solea-tools/preprocess/logs/data-backup.log
+
+        guard_crond                                     True    start   pid=[109309]
+        solea_input_upload_backup_group                 True    start   pid=[3161]
+        solea_input_upload_dispatch                     True    start   pid=[108991]
+        solea_input_upload_interface_group              True    start   pid=[110474]
+        solea_send_fileserver2_gz_001                   True    start   pid=[10677]
+
+ÕâÀïÖ»ĞèÒªdispatch¸úbackup
+È¥µôsolea_input_upload_interface_group
+
+
+ No such file or directory: '/opt/python-common-1.3.2/py-data-backup/@ROOT_DIR@/logs/data-backup.log'
+
+/opt/python-common/py-data-backup/etc/python.log.conf.in
+
+/opt/solea-tools/preprocess/logs/data-backup.log
+
+
+½¨Á¢topic:		--ok
+ZK_HOSTS="95.50.185.68:2181,195.50.185.69:2181,95.50.185.70:2181"
+partitions_num=960
+
+½¨Á¢collection:		--ok
+
+
+
+
+
+×¢²áconsul:
+2020-04-03 14:40:18.664  INFO 476127 --- [main] c.l.s.t.app.batch.KafkaCephItemReader    : no kafka data
+2020-04-03 14:40:18.794  INFO 476127 --- [catalogWatchTaskScheduler-1] o.apache.http.impl.execchain.RetryExec   : I/O exception (java.net.SocketException) caught when processing request to {}->http://10.1.50.18:8500: Network is unreachable (connect failed)
+2020-04-03 14:40:18.794  INFO 476127 --- [catalogWatchTaskScheduler-1] o.apache.http.impl.execchain.RetryExec   : Retrying request to {}->http://10.1.50.18:8500
+2020-04-03 14:40:19.799 ERROR 476127 --- [catalogWatchTaskScheduler-1] o.s.c.c.discovery.ConsulDiscoveryClient  : Error watching Consul CatalogServices
+
+com.ecwid.consul.transport.TransportException: java.net.SocketException: Network is unreachable (connect failed)
+        at com.ecwid.consul.transport.AbstractHttpTransport.executeRequest(AbstractHttpTransport.java:77) ~[consul-api-1.4.1.jar!/:na]
+        at com.ecwid.consul.transport.AbstractHttpTransport.makeGetRequest(AbstractHttpTransport.java:34) ~[consul-api-1.4.1.jar!/:na]
+        at com.ecwid.consul.v1.ConsulRawClient.makeGetRequest(ConsulRawClient.java:128) ~[consul-api-1.4.1.jar!/:na]
+        at com.ecwid.consul.v1.catalog.CatalogConsulClient.getCatalogServices(CatalogConsulClient.java:120) ~[consul-api-1.4.1.jar!/:na]
+        at com.ecwid.consul.v1.ConsulClient.getCatalogServices(ConsulClient.java:372) ~[consul-api-1.4.1.jar!/:na]
+        at org.springframework.cloud.consul.discovery.ConsulCatalogWatch.catalogServicesWatch(ConsulCatalogWatch.java:129) ~[spring-cloud-consul-discovery-2.1.1.RELEASE.jar!/:2.1.1.RELEASE]
+
+
+consul×¢²áÏÈ¹Ø±Õ£º
+ssh tika01
+ansible  -i hosts all -m copy -a "src=/opt/tmp/application-override.yml dest=/opt/solea-tika-app/config"
+
+ÖØÆô£º
+ansible -i hosts all -a "lcm_guard --reload"
+
+ansible -i hosts all -a "sleep 10"
+
+ansible -i hosts all -a "lcm_guard --killall"
+
+ansible -i hosts all -a "lcm_guard --list"
+
+
+ansible -i hosts all -a "yum install lzy-python-common -y"
+
+ansible -i hosts all -a "mkdir -p /opt/solea_data_bcup/bcpdirs"
+
+
+ansible -i environments/prod  all -a "lcm_guard --list"
+
+±¸·İÎÄ¼şÄ¿Â¼£º
+/opt/solea-tools/preprocess/buffer/backup
+
+2020-04-03 11:17:47,798 INFO upload to server : <127.0.0.1> filename :/opt/solea-tools/preprocess/tmp/dispatch/interface_group/1.txt
+2020-04-03 11:17:47,800 ERROR 553 Could not create file.
+Traceback (most recent call last):
+
+Ã»ÓĞÈ¨ÏŞ£¿
+chown solea_preprocess_bcup tmp
+
+
+²»¶Ô£º
+2020-04-03 11:58:02,714 INFO tryinging create hard_link /opt/solea_input_bcup/bcpdirs/5.txt -> /opt/solea-gz-custom/input/_tmp/5.txt size:19
+2020-04-03 11:58:02,715 INFO tryinging create hard_link /opt/solea-gz-custom/input/_tmp/5.txt -> /opt/solea-gz-custom/input/interface_group/5.txt size:19
+2020-04-03 11:58:02,715 INFO tryinging create hard_link /opt/solea-gz-custom/input/_tmp/5.txt -> /opt/solea-gz-custom/input/backup_group/5.txt size:19
+
+
+²é¿´ÈÕÖ¾£º
+tail -n 1000 /opt/solea-tools/preprocess/logs/ftp_input_upload_dispatch.log
+
+dispatch:
+ÊäÈë
+/opt/841_data_input
+/opt/solea_input_bcup/bcpdirs
+Êä³ö£º
+/opt/solea-tools/preprocess/tmp/dispatch/backup_group
+/opt/solea-tools/preprocess/tmp/dispatch/interface_group
+
+backup:
+ÊäÈë£º
+/opt/solea-tools/preprocess/tmp/dispatch/backup_group
+/opt/solea-tools/preprocess/tmp/dispatch/interface_group
+
+interface:
+ÊäÈë£º
+/opt/solea-tools/preprocess/tmp/dispatch/interface_group
+
+Êä³ö£º
+/opt/solea-gz-custom/
+/opt/solea-tools/preprocess/buffer/etc/ftp-upload/ftp_input_server.config
+
+
+chown solea_preprocess_bcup /opt/solea-gz-custom/input
+
+
+cp $LCM_GUARD_ROOT/etc/guard/conf.d/solea_input_upload.xml  /opt/solea-tools/preprocess/buffer/etc/guard/solea_input_upload.xml 
+
+
+°²×°±¸·İ³ÌĞò£º
+ansible  -i hosts all -m copy -a "src=/opt/tmp/solea-tools dest=/opt/solea-tools"
+ansible -i hosts all -a "lcm_guard --list"
+
+
+
+ansible -i hosts all -a "yum install lzy-python-common"
+
+
+
+ansible -i hosts all -a "mv /opt/solea-tools-2.0.4-dev/solea-tools/ /opt/solea-tools-2.0.4-dev"
+
+ansible -i hosts all -a "cd /opt/solea-tools-2.0.4-dev && bash config.sh"
+
+ansible -i hosts all -a "cp /opt/solea-tools/preprocess/buffer/etc/cron/solea_buffer_clean.cron  $LCM_GUARD_ROOT/etc/crond/cron.d/"
+
+
+
+ansible -i hosts all -a "cp /opt/solea-tools/preprocess/buffer/etc/cron/solea_preprocess_check_buffer.cron  $LCM_GUARD_ROOT/etc/crond/cron.d/"
+
+ansible -i hosts all -a "cp /opt/solea-tools/preprocess/buffer/etc/guard/solea_input_upload.xml $LCM_GUARD_ROOT/etc/guard/conf.d/"
+
+
+ansible -i hosts all -a "yum install vsftpd -y"
+
+
+ansible -i hosts all -a "useradd solea_preprocess_bcup --home-dir /opt/solea_preprocess_bcup"
+
+
+ansible -i hosts all -a "usermod  --home /opt/solea_preprocess_bcup  --move-home solea_preprocess_bcup"
+
+
+ansible -i hosts all -a "passwd solea_preprocess_bcup"  --²»ĞĞ£¬ÒªÊÖ¶¯
+
+
+
+ansible -i hosts all -a "su - solea_preprocess_bcup && mkdir bcpdirs && exit" 
+
+
+ansible -i hosts all -a "service vsftpd restart" 
+
+
+ansible -i hosts all -a "chkconfig vsftpd  on" 
+
+ansible -i hosts all -a "mkdir -p /opt/solea_input_bcup/bcpdirs" 
+
+
+
+all:
+
+ansible -i hosts all -a "chown solea_preprocess_bcup /opt/solea-tools/preprocess/tmp/dispatch/interface_group" 
+
+
+ansible -i hosts all -a "mkdir -p /opt/solea-gz-custom/input" 
+
+
+ansible -i hosts all -a "mkdir -p /opt/simba-send-to-stat-data" 
+
+
+ansible -i hosts all -a "chown solea_preprocess_bcup /opt/solea-gz-custom/input" 
+
+
+
+
+ssh buffer01
+scp  /opt/python-common/py-data-backup/etc/python.log.conf.in root@95.50.185.17:/opt/python-common/py-data-backup/etc/python.log.conf.in
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+±¨´í£º
+ File "/tmp/pip-install-E5egSB/ftp-upload/files/lobster/ftp_manager.py", line 217, in upload_one_file
+OSError: [Errno 2] No such file or directory
+2020-04-03 18:30:51,195 WARNING upload failed: /opt/solea-tools/preprocess/tmp/dispatch/interface_group/440000-440000-1585638555-DATA_PMT-14721.zip
+
+
+ansible -i hosts all -a "cd /opt/solea-gz-custom/input && find -type f | wc -l"
+
+
+°²×°gzÔ¤´¦Àí£º
+ansible -i hosts all -a "mv /opt/solea-send-fileserver2-gz-boot-2.0.4-SNAPSHOT.tar /opt/tmp/"
+
+
+ansible -i hosts all -a "cd /opt/tmp && tar -xvf solea-send-fileserver2-gz-boot-2.0.4-SNAPSHOT.tar -C /opt/solea-send-fileserver2-gz-boot-2.0.4-SNAPSHOT"
+
+
+
+ansible -i hosts all -a "bash /opt/solea-send-fileserver2-gz-boot-2.0.4-SNAPSHOT/config.sh"
+
+
+cd /opt/tmp
+tar -xvf solea-send-fileserver2-gz-boot-2.0.4-SNAPSHOT.tar -C /opt
+cd /opt/solea-send-fileserver2-gz-boot-2.0.4-SNAPSHOT
+bash config.sh
+
+
+ansible -i hosts all -a "mkdir -p /opt/solea-gz-custom/output"
+
+ansible -i hosts all -a "bash /opt/solea-send-fileserver2-gz/bin/send_fileserver_gen_guard_conf.sh 6 > /opt/solea-send-fileserver2-gz/etc/send_fileserver2_gz.xml"
+
+
+
+ansible -i hosts all -a "rm -f /root/lcm.guard-1.7.9/etc/guard/conf.d/send_fileserver2_gz.xml"
+
+
+ansible -i hosts all -a "cp /opt/solea-send-fileserver2-gz/etc/send_fileserver2_gz.xml /root/lcm.guard-1.7.9/etc/guard/conf.d"
+
+
+
+bash /opt/solea-send-fileserver2-gz/bin/send_fileserver_gen_guard_conf.sh 6 > /opt/solea-send-fileserver2-gz/etc/send_fileserver2_gz.xml
+cp /opt/solea-send-fileserver2-gz/etc/send_fileserver2_gz.xml /root/lcm.guard-1.7.9/etc/guard/conf.d
+cp /opt/solea-send-fileserver2-gz/etc/cron/solea_gz_clean_tmp_file.cron /root/lcm.guard-1.7.9/etc/crond/cron.d/
+
+
+3.Êı¾İ·ÖÎöÏÂ
+	841_data_bak
+
+[root@buffer01 841_data_input]# du -sh
+2.9T 
+
+find -type f | xargs -n1 unzip -d /opt/841-data-unzip/
+
+
+
+2020.04.07
+
+°²×°°ü£º
+D:\lzy\soft\install\gz\install
+
+1.
+  ¼ì²éÏµÍ³
+	[root@buffer01.solea.bd.com backup]# du -hs *
+3.7T    20200403
+1.3T    20200404
+1.1T    20200405
+1.1T    20200406
+181G    20200407
+		Ò»Ì¨ *7 =56T£¿
+	solea_20200403 12 TiB 64552351      0 129104702                  0       0        0 1688524907 5.9 TiB 64614210 5.9 TiB    165 GiB     257 GiB
+			12T£¿ 
+	buffer03.solea.bd.com
+3.8T    20200403
+1.3T    20200404
+95.50.185.161.1T        20200405
+1.1T    20200406
+187G    20200407
+		solea_send_fserver2 ÓĞĞÔÄÜÎÊÌâ --ok
+		Æğ¶àÏß³Ì£¿
+
+
+
+"batch_id":"20200403" £¿£¿£¿
+Ô¤´¦Àí¹ıÀ´²»¶Ô£¿
+{"copy_to_text":false,"value":"20200403","key":"batch_id"}
+
+lzyzip_config.jsonÖĞÒ²Ã»ÓĞÅäbatch_id
+
+
+·¢ËÍÓĞbadÎÄ¼ş:
+solea_send_fserver2.log.5:337381:org.springframework.web.client.ResourceAccessException: I/O error on POST request for "http://tika10.solea.bd.com:15003/fileserver2/api/v1/uploadFile": Connection reset; nested exception is java.net.SocketException: Connection reset
+
+
+	¼ì²éÎÊÌâ£º
+
+		1.solea_send_fserver2 ÓĞĞÔÄÜÎÊÌâ
+			À´²»¼°·¢ËÍ
+
+		2."batch_id":"20200403"
+			Ã»ÓĞÅäbatch_id
+
+		3.
+		ceph²»ÊÇ°´ÕÕÌì½¨µÄ		--ok
+			filesever2:
+   			# %Y%m%d ±íÊ¾°´Ìì½¨Á¢ %Y%m ±íÊ¾°´ÔÂ½¨Á¢ %Y ±íÊ¾°´Äê½¨Á¢
+   			ceph_pool_mode: "%Y%m%d"
+
+ansible  -i hosts all -m copy -a "src=/opt/tmp/solea_pool_config.conf dest=/opt/fileserver-2/ceph-manager/etc/solea_pool_config.conf"
+	
+
+/opt/fileserver-2/ceph-manager/etc/solea_pool_config.conf
+
+cd /opt/solea-deploy
+
+
+ansible -i environments/prod  all -a "lcm_guard  --kill-forever-all"
+sleep 10
+ansible -i environments/prod  all -a "lcm_guard --reload"
+sleep 10
+ansible -i environments/prod  all -a "lcm_guard --killall"
+ansible -i environments/prod  all -a "lcm_guard --list"
+
+Ã»ÓĞÉúĞ§£¿
+
+rados -p ceph.meta.pool get solea_pool_config.conf solea_pool_config.conf
+
+cat solea_pool_config.conf
+
+bash -x /opt/fileserver-2/ceph-manager/bin/auto_create_pool.sh
+
+Ã»ÓĞÉúĞ§£¿£¿ĞèÒªÖØĞÂputÒ»ÏÂ
+cd /opt/fileserver-2/ceph-manager
+bash /opt/fileserver-2/ceph-manager/bin/create_pool_array.sh solea_ /opt/fileserver-2/ceph-manager/etc/solea_pool_config.conf
+
+bash /opt/fileserver-2/ceph-manager/bin/auto_create_pool.sh
+
+ansible -i hosts  fileserver2 -a "bash /opt/fileserver-2/ceph-manager/bin/create_pool_array.sh solea_ /opt/fileserver-2/ceph-manager/etc/solea_pool_config.conf"
+
+ansible -i hosts  fileserver2 -a "bash /opt/fileserver-2/ceph-manager/bin/auto_create_pool.sh"
+--ok
+
+
+	
+		4.
+		±¸·İÄ¿Â¼²»¶Ô:								--ok
+			/opt/solea-tools/preprocess/buffer/backup
+/opt/solea
+ĞŞ¸ÄÎª£º
+/opt/solea-server-bcup/backup
+
+/opt/solea-tools/preprocess/bin/clean_backup_file.sh
+/opt/solea-tools/preprocess/buffer/etc/cron/solea_buffer_backup_process.cron
+
+ansible  -i hosts buffer -m copy -a "src=/opt/tmp/solea_buffer_backup_process.cron dest=/root/lcm.guard-1.7.9/etc/crond/cron.d"
+
+ansible -i hosts buffer -a "mkdir -p /opt/solea-server-bcup/backup"  --ok
+
+ansible  -i hosts buffer -m copy -a "src=/opt/tmp/config.properties dest=/opt/solea-tools/preprocess/etc/config.properties"
+
+
+ansible  -i hosts buffer -m copy -a "src=/opt/tmp/solea_input_upload.xml dest=/opt/solea-tools/preprocess/buffer/etc/guard/solea_input_upload.xml"
+ansible  -i hosts buffer -m copy -a "src=/opt/tmp/solea_input_upload.xml dest=/root/lcm.guard-1.7.9/etc/guard/conf.d/solea_input_upload.xml"
+
+ansible -i hosts  buffer -a "lcm_guard --reload"
+sleep 10
+ansible -i hosts  buffer -a "lcm_guard --killall"
+ansible -i hosts  buffer -a "lcm_guard --list"
+
+
+
+
+
+		5.
+		ÅäÖÃ±£´æÒ»·İ
+
+
+
+
+
+
+3.°²×°dockerÏà¹Ø
+	simba	--ok
+	consule		--ok
+	gateway		--ok
+	onlyoffice
+
+
+4.°²×°·­Òë
+
+°²×°docker:
+ansible -i hosts  trans -a "yum install docker -y"
+
+ansible -i hosts  trans -a "mkdir -p /opt/docker-data"
+
+
+
+ansible  -i hosts trans -m copy -a "src=/opt/tmp/docker dest=/etc/sysconfig/docker"
+
+ansible  -i hosts trans -m copy -a "src=/opt/tmp/docker-storage dest=/etc/sysconfig/docker-storage"
+
+
+ansible -i hosts  trans -a "systemctl start docker.service"
+
+ansible -i hosts  trans -a "systemctl enable docker.service"
+
+ansible -i hosts  trans -a "systemctl status docker "
+
+ansible -i hosts  trans -a "yum install lzy-docker-utils -y"
+
+
+ansibleÅúÁ¿²Ù×÷£º
+
+ansible  -i hosts trans -m copy -a "src=/opt/tmp/mynah-docker-2.1.0-dev.tar dest=/opt/mynah-docker-2.1.0-dev.tar"
+ansible -i hosts trans -a "tar xvf /opt/mynah-docker-2.1.0-dev.tar -C /opt"
+ansible -i hosts trans -m shell -a "for image in /opt/mynah-docker-2.1.0-dev/images/*.tar.gz ; do echo $image; zcat $image | docker load ; done"  --²»ĞĞ£¿ÊÖ¶¯×öÁË
+
+
+È·ÈÏ¾µÏñ             --ok
+ansible -i hosts trans -a "docker images"
+
+scp µ½gateway:
+cd /opt/mynah-docker-2.1.0-dev/docker-compose/translator
+scp -r consul-template-custom/* root@95.50.185.24:/opt/gateway/etc/consul-template-custom/
+
+
+
+ÅäÖÃ£¿£¿
+  #suggest max.running.count is 5 times of max.emulator.number
+  maxRunningCount: 10
+  #the number of emulator for multi translator
+  maxEmulatorNumber: 200
+  # support language list
+  translateLanguageList: all_language
+
+  neuralLength: 1900
+
+dockernum=20
+
+1.µ¼Èë¾µÏñ£º
+tar xvf mynah-docker-2.1.0-dev.tar -C /opt
+
+cd /opt/mynah-docker-2.1.0-dev/images
+for image in *.tar.gz ; do echo $image; zcat $image | docker load ; done
+
+2.¼ì²é¾µÏñ:
+docker images
+
+3.Æô¶¯·­Òë½ø³Ì£º
+cd /opt/mynah-docker-2.1.0-dev/docker-compose/translator
+scp consul-template-custom/* /opt/gateway/etc/consul-templat-custom/ -rf 
+
+ÅäÖÃtranslator-service 
+vim /opt/mynah-docker-2.1.0-dev/docker-compose/translator/application-prod.yml
+
+mkdir /opt/translator-conf
+cp /opt/mynah-docker-2.1.0-dev/docker-compose/translator/application-prod.yml /opt/translator-conf
+
+ÖØÆôgateway
+docker restart gateway_gateway_1
+
+cd /opt/mynah-docker-2.1.0-dev/docker-compose/translator
+DOCKER_NUM=20
+docker-compose up -d --scale translate-lib=$DOCKER_NUM translate-lib translate-service
+
+ÓïÖÖ
+
+4.
+scp µ½gateway
+
+
+5.ÑéÖ¤£º
+	95.50.185.10:15003/translator/translator-neural/index.html
+
+http://95.50.185.10:15000/translator/translator-neural/index.html
+
+
+
+5.µ÷Í¨ÎÄ±¾·ÖÀà£¬ÎÄ±¾ÕªÒª£¬¼ÌĞø·¢ËÍ
+	vim /etc/hosts
+	95.50.185.24	consul.lzy
+
+¸üĞÂÏÂhosts
+
+ansible  -i hosts all -m copy -a "src=/etc/hosts dest=/etc/hosts"
+
+ansible  -i hosts tika -m copy -a "src=/opt/tmp/content_analysis.sh dest=/opt/content-analysis/bin/content_analysis.sh"
+
+
+ansible -i hosts  tika -a "lcm_guard --kill solea_content_analysis"
+
+ansible -i hosts  tika -a "lcm_guard --l | grep  solea_content_analysis"
+
+
+
+
+24ÅäÖÃdns
+
+
+
+
+	
+
+  ½Ó¿ÚÎÊÌâ
+	841 ½Ó¿Úfile
+		 "current_url_s_i_s":"current_url_gz_solea",
+	ÓÃ»§µ¼ÈëÊı¾İ	
+  docker Ïà¹Ø£º
+	simba
+	·­Òë
+	content-analysit
+  ÍíÉÏÅªÉÏ·­ÒëºÍconent ÔËĞĞÆğÀ´
+
+
+
+2020.04.08
+1.¼ì²éÏµÍ³
+	mntos
+	ceph
+	solr
+
+
+2.°²×°·­Òë
+	°²×°register
+/opt/docker-common-docker/docker-compose/registrator
+
+
+Æô¶¯£º
+   ½¨Á¢env.override ²Î¿¼ .envÎÄ¼ş
+   env $(cat env.override  |grep ^# -v ) docker-compose up -d
+
+È·ÈÏ£º 
+    ¿´consul web½çÃæÊÇ·ñÓĞ×¢²áµÄĞÅÏ¢
+
+.env Òş²ØµÄ£º
+ll -a
+more .env
+
+°²×°docker-common:
+tar xvf docker-common-docker-0.0.1-dev.tar -C /opt
+bash /opt/docker-common-docker-xxx-dev/config.sh
+
+cd /opt/docker-common-docker/images
+for image in *.tar.gz ; do echo $image; zcat $image | docker load ; done
+docker images 
+
+
+
+
+ÑéÖ¤ÏÂ£º
+http://95.50.185.24:15003/translator/translator-demo/index.html
+http://95.50.185.24:15003/translator/translator-neural/index.html
+ocr
+http://95.50.185.24:15003/translator/recognize/index.html
+
+
+
+
+ansibleÅúÁ¿²Ù×÷£º
+
+ansible  -i hosts trans -m copy -a "src=/opt/tmp/docker-common-docker-0.0.1-dev.tar dest=/opt/docker-common-docker-0.0.1-dev.tar"
+ansible -i hosts trans -a "tar xvf /opt/docker-common-docker-0.0.1-dev.tar -C /opt"
+
+
+ansible -i hosts trans -a "bash /opt/docker-common-docker-0.0.1-dev/config.sh"
+
+
+ansible  -i hosts trans -m copy -a "src=/opt/tmp/env.override dest=/opt/docker-common-docker/docker-compose/registrator"
+
+ansible -i hosts trans -a "more /opt/docker-common-docker/docker-compose/registrator/env.override"
+
+
+
+ÊÖ¶¯µ¼Èë¾µÏñ  --ok
+
+ansible -i hosts trans -a "systemctl enable docker.service"
+ansible -i hosts trans -a "systemctl start docker.service"
+
+ansible -i hosts trans -a "systemctl restart docker.service"
+
+
+ansible -i hosts trans -a "cd /opt/docker-common-docker/docker-compose/registrator && env $(cat env.override  |grep ^# -v ) docker-compose up -d"
+
+
+
+cd /opt/mynah-docker-2.1.0-dev/docker-compose/translator
+
+vim /opt/mynah-docker-2.1.0-dev/docker-compose/translator/application-prod.yml
+
+
+ansible  -i hosts trans -m copy -a "src=/opt/tmp/application-prod.yml dest=/opt/mynah-docker-2.1.0-dev/docker-compose/translator/application-prod.yml"
+
+
+ansible -i hosts trans -a "mkdir /opt/translator-conf"
+
+ÊÖ¶¯ĞŞ¸Ä£º
+vim /opt/mynah-docker-2.1.0-dev/docker-compose/translator/application-prod.yml		--ok
+
+ansible -i hosts trans -a "cp /opt/mynah-docker-2.1.0-dev/docker-compose/translator/application-prod.yml /opt/translator-conf/"
+
+cp /opt/mynah-docker-2.1.0-dev/docker-compose/translator/application-prod.yml /opt/translator-conf
+
+ansible -i hosts trans -a "more /opt/translator-conf/application-prod.yml"
+
+Æô¶¯·­Òëdocker:
+cd /opt/mynah-docker-2.1.0-dev/docker-compose/translator
+docker-compose up -d --scale translate-lib=20 translate-lib translate-service
+
+
+
+
+
+ÅäÖÃÓïÖÖ
+·­Òë£º
+	Ó¢Óï£¬¶íÓï£¬ÈÕÓï£¬º«Óï
+ocr:	¼òÌå£¬·±Ìå£¬Ó¢Óï
+
+  translateLanguageList: English,Russian,Japanese,Korean
+  # support ocr language list
+  ocrLanguageList: zh-CHS,en,zh-CHT
+
+
+
+
+
+3.ÖØĞÂ×Ô¶¯²¿ÊğÒ»±é
+	Éı¼¶guard
+	¸üĞÂÒ»ÏÂsendFserver
+
+
+	¼ì²éÅäÖÃ
+		hosts
+		all.yml
+
+	ÎÊÒ»ÏÂ²Ì£¬webÓĞÄÄĞ©±ä¶¯£¿
+
+¸üĞÂsolea-send-fserver
+
+ansible -i hosts buffer -a "lcm_guard --kill-forever solea_send_fserver2*"
+
+ansible  -i hosts buffer -m copy -a "src=/opt/tmp/solea-send-fserver2-boot-2.0.4-SNAPSHOT.tar dest=/opt/solea-send-fserver2-boot-2.0.4-SNAPSHOT.tar"
+
+¸üĞÂgzÔ¤´¦Àí
+
+ansible  -i hosts buffer -m copy -a "src=/opt/tmp/solea-send-fileserver2-gz-2.0.4-SNAPSHOT.jar dest=/opt/solea-send-fserver2/lib/"
+
+
+
+
+
+TASK [solea_web : Create config files]  ±¨´í£¿
+
+ [WARNING]: Unable to find '/opt/solea-deploy-2.0.4-dev/environments/prod/files.ini/solea-web/solea-web-service/application-override_custom.properties' in
+expected paths.
+
+failed: [web.solea.bd.com] (item={u'dest': u'/opt/solea-web/webapps/solea-web-service/WEB-INF/classes/application-override.properties', u'src': u'web/solea-web-service/application-override.properties.j2'}) => {"changed": false, "item": {"dest": "/opt/solea-web/webapps/solea-web-service/WEB-INF/classes/application-override.properties", "src": "web/solea-web-service/application-override.properties.j2"}, "msg": "AnsibleError: An unhandled exception occurred while running the lookup plugin 'file'. Error was a <class 'ansible.errors.AnsibleError'>, original message: could not locate file in lookup: /opt/solea-deploy-2.0.4-dev/environments/prod/files.ini/solea-web/solea-web-service/application-override_custom.properties"}
+
+/opt/solea-deploy-2.0.4-dev/environments/prod/files.ini/solea-web/solea-web-servicel
+ÀïÃæÃ»ÓĞ£º
+application-override_custom.properties
+
+¼ÌĞø£º
+
+TASK [solea_web : Create config files] 
+
+cd /opt/solea-deploy
+
+ansible-playbook -i environments/prod site.yml --skip-tags "bind,common"  -v --start-at-task "solea_web : Create config files" 
+Ö´ĞĞ²»ÁË£¿copy´íÁË£¿£¿
+
+
+²¿ÊğÉÏÈ¥£º
+http://95.50.185.24:15003/simba/index?src=/simba/homepage/index
+
+
+nagios²»¶Ô£º
+
+ansible  -i hosts tika -m copy -a "src=send_nagios.cfg dest=/etc/sysconfig/send_nagios.cfg"
+
+
+4.Êı¾İÎÊÌâ£¿ÊµÊ±Êı¾İ£¬´ßÒ»ÏÂÀëÏßÊı¾İ
+
+
+
+
+2020.04.09
+1.¼ì²éÏµÍ³£¬¸ø¿Í»§ÑİÊ¾
+	mntos  
+	ceph
+		[root@tika01.solea.bd.com logs]# rados df
+POOL_NAME         USED  OBJECTS CLONES    COPIES MISSING_ON_PRIMARY UNFOUND DEGRADED     RD_OPS      RD   WR_OPS      WR USED COMPR UNDER COMPR
+ceph.meta.pool   8 KiB        1      0         2                  0       0        0        164 164 KiB       14  14 KiB        0 B         0 B
+solea_20200403  13 TiB 69984221      0 139968442                  0       0        0 1830500073 6.4 TiB 70051162 6.4 TiB    179 GiB     278 GiB
+solea_20200407 785 GiB  4120597      0   8241194                  0       0        0  107760412 388 GiB  4124614 388 GiB     11 GiB      16 GiB
+solea_20200408 6.3 TiB 33795848      0  67591696                  0       0        0  884180143 3.1 TiB 33827356 3.1 TiB     86 GiB     134 GiB
+solea_20200409 5.7 TiB 30569016      0  61138032                  0       0        0  800528352 2.8 TiB 30600247 2.8 TiB     76 GiB     118 GiB
+
+	solr
+	solea-send-fserver2
+	consul
+
+check_ceph_health
+	CRITICAL: no passtive check result
+
+check_disk_inodes
+
+check_os
+	assert swappiness == 0\nE assert 1 == 0
+
+check_oracle_system
+
+rpm_check: oracle-install-update-2.0.9-1.el7.x86_64
+check oracle clean crontab: the oracle_trc_tmpwatch.cron
+ERROR : the database is not archive mode
+
+
+2.¸üĞÂÏÂweb,¶Ô½ÓÀëÏßÊı¾İ
+	web»úÆ÷solea-sendfserver2°²×°		--ok
+	¶àcollection²éÑ¯
+		
+	ceph°´ÕÕÊı¾İÁ¿½¨Á¢
+		offline_solea_
+		°´ÕÕÊı¾İÁ¿»¹ÊÇ´óĞ¡½¨Á¢£¿¶àÉÙ£¿
+		5kw
+bash /opt/fileserver-2/ceph-manager/bin/create_pool_array.sh offline_solea_  /opt/fileserver-2/ceph-manager/etc/offline_solea_pool_config.conf
+
+kafka:
+	solea_fileserver_web 
+
+	solr´´½¨		--ok
+		offline_solea
+cd /opt/solea-release-2.0.4-dev/solr
+python /opt/millipede-solr/management/bin/solr_collection.py create-collection \
+ --auto-numshard  --replication-factor 1 --route-name implicit --auto-create-replication=2 \
+ --schema-file /opt/solea-release-2.0.4-dev/solr/conf/schema.xml  offline_solea_
+
+solrÃ»ÓĞ·¢½øÈ¥£¿ceph://offline_solea_20200409/5a6b3b03-c0aa-4999-baf2-3e383ee4b6a7
+ceph://offline_solea_20200409/5a6b3b03-c0aa-4999-baf2-3e383ee4b6a7
+
+·¢ËÍµ½ÁË solea_µÄcollection£¬Òª¸üĞÂÏÂfileserver2
+¸üĞÂÏÂweb£¬ÈçºÎÅäÖÃ£¿collection, fileserver2?
+
+ÎÊÏÂ²Ì£º		--ok
+	¶Ô½ÓÒª×öÄÇĞ©ÊÂÇé£¿
+	collection Ãû×Ö
+	
+
+841ÕËºÅ£¬²âÊÔ£¿£¿
+
+3.ÆäËûÒ»Ğ©ÎÊÌâ£¬nagios,simba_send_stat
+
+
+
+		 ¸ø¿Í»§ÑİÊ¾Ò»ÏÂ£¬ËµÃ÷Êı¾İÎÊÌâ
+		 		jpg»ù±¾´ò²»¿ª
+		 		
+		 
+		 °²×°ÀëÏßÊı¾İµ¼Èë
+		 		½¨Á¢ceph£¬topicºÍsolr collection
+		 				ÒªÇó£¿
+		 		µ¼ÈëÊı¾İ 
+
+
+5.ÒôÆµ½Ó¿ÚÏÂÖÜÏÈ¶Ô½ÓÆğÀ´£¬ÊÓÆµÏÈ¿´¿´demoÊÇ·ñ¿ÉÒÔ×ö¶Ô½Ó
+
+6.git¿Í»§¶Ë
+
+gitÌá½»
+http://95.50.185.30:9080/
+
+
+
+#################
+2020.04.10
+1.¼ì²éÒ»ÏÂÏµÍ³
+	mntos		--ok
+	ceph,solr
+		offlineÒÑ¾­ÇĞ»»ÁË£¬ÅäÖÃ¸Ä³É50000000
+	buffer
+	½çÃæ
+		classification_ms_i_s_dv:*
+		img_classifiers_ms_i_s_dv:*
+
+
+2.buffer³ÌĞòĞŞ¸ÄÒ»ÏÂ
+	È¥µôftp
+	sendFserver2½ø³Ì¼Óµ½10
+
+3.¸üĞÂweb£¬½â¾öÉÏ´«ÎÄ¼ş×´Ì¬²»¸üĞÂµÄÎÊÌâ
+
+4.¿ª·¢»·¾³´î½¨ÓĞÊ±¼ä×öÒ»Ğ©  ÓÅÏÈ×öÕâ¸ö
+
+	¹¤¾ß°ü£º		--ok
+		trans02:/opt/install/tools
+		
+	setting.gradle:
+		È¥µô
+		        mavenLocal()
+        maven { url "http://artifact.lzy.com/nexus/repository/lzy/" }
+		
+
+5.²éÒ»ÏÂshowappµÄÎÊÌâ£º
+ ÊÇÓ¢ÎÄµÄÓïÑÔ£¬ÔõÃ´ÏÔÊ¾
+  					This language[French] is not supported £¬Õâ¸öÎªÊ²Ã´ÊÇÓ¢ÎÄÏÔÊ¾
+			ÕâÀïµÄÓïÖÖÊÇÊµÊ±¼à²âµÄ£¬½ØÈ¡Ğ¡¶ÎÄÚÈİ×öÓïÖÖ¼ì²â£¬²¢ÇÒ½ØÈ¡µÄÄÚÈİÊÇ¸ü¼Ó²éÑ¯Ìõ¼ş±ä»¯µÄ
+				ÕâÀï¿ÉÒÔ³¢ÊÔÏÂÒÑ¾­Ê¶±ğ³öÀ´µÄÓïÖÖ£¬ÔÙ²»ĞĞ¾ÍÌáÊ¾£º
+					²éÑ¯µÄÄÚÈİ¿ÉÄÜÊÇ²»Ö§³ÖµÄÓïÖÖ
+
+  			 ÀëÏß²âÊÔÊı¾İ/3.21ÒÁË¹À¼¹úÎ¬ÓïĞû´«Çé¿öÉ¨Ãè°æ/isis/ISIS/ISIS/ĞÂ½¨ Microsoft Excel ¹¤×÷±í (2).xls
+						show app´ò²»¿ª£¬only office 
+	ÈÕÖ¾£º95.50.185.24£º/opt/onlyoffice/DocumentServer/logs
+	ÎªÊ²Ã´Ä¿Â¼´óĞ´¿ªÍ·£¿
+
+2020-04-10 11:38:28.690 DEBUG 18390 --- [http-nio-auto-1-exec-8] o.s.w.s.handler.SimpleUrlHandlerMapping  : Mapped to ResourceHttpRequestHandler ["classpath:/META-INF/resources/", "classpath:/resources/", "classpath:/static/", "classpath:/public/", "/"]
+2020-04-10 11:38:28.692 DEBUG 18390 --- [http-nio-auto-1-exec-8] o.s.web.servlet.DispatcherServlet        : Completed 304 NOT_MODIFIED
+2020-04-10 11:38:33.907 DEBUG 18390 --- [http-nio-auto-1-exec-6] o.s.web.servlet.DispatcherServlet        : GET "/solea-showapp/_test", parameters={}
+2020-04-10 11:38:33.907 DEBUG 18390 --- [http-nio-auto-1-exec-6] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to public java.lang.String com.lzy.solea.show.IndexController.test(
+
+				ÀëÏß²âÊÔÊı¾İ/ade.lusia@asean.org/Annexes- 10th PSC.zip
+					  show appÏÔÊ¾ÓĞÎÊÌâ£¬Ä¿Â¼µÄÕ¹¿ªµ½ÁË£¬¼û
+					  	D:\lzy\sbling\projectinfo\¹¤×÷ÈÕÖ¾\sbling\data\´íÎó\error_20200410_1.jpg 
+  		TODO£º
+  			¶Ô pdfÀïÃæµÄÍ¼Æ¬×öocr £¬¿ÉÄÜºÜ¶à£¬ÊÇ·ñÒª¿ØÖÆ
+
+
+ÎÊÌâ£º
+
+2020.04.10
+
+×¼±¸³ö²î´î½¨ºÃ¿ª·¢»·¾³ºó£¬ÒªÈ·ÈÏÏÂ£¬¿ÉÒÔÔÚÁíÒ»Ì¨¸É¾»µÄ£¬ÀëÏßµÄµçÄÔÉÏÃæÈ·ÈÏ
+
+841ÉÏ´«imÎÄ¼ş£»
+[doc=573fe9f1-58c8-43c8-aacf-9709bbd1b474] multiple values encountered for non multiValued field batch_id: [20191019134001
+, 20200410]\n\tat org.apache.solr.client.solrj.impl.HttpSolrClient.executeMethod(HttpSolrClient.java:643)\n\tat org.apache.solr.client.solrj.impl.HttpSol
+
+
+²éÑ¯½çÃæ¶à¸öcollectionÇĞ»»µÄÎÊÌâ
+	Í¼Æ¬²éÑ¯ÀïÃæ£¬ÔÚÏßÊı¾İ°üº¬ÁËÀëÏßÊı¾İ£¿Ã»ÓĞ´ø²éÑ¯Ìõ¼ş
+
+showapp ´ò²»¿ª£¿ÓĞĞ©office´ò²»¿ª£¿
+
+ ÊÇÓ¢ÎÄµÄÓïÑÔ£¬ÔõÃ´ÏÔÊ¾
+  					This language[French] is not supported £¬Õâ¸öÎªÊ²Ã´ÊÇÓ¢ÎÄÏÔÊ¾
+			ÕâÀïµÄÓïÖÖÊÇÊµÊ±¼à²âµÄ£¬½ØÈ¡Ğ¡¶ÎÄÚÈİ×öÓïÖÖ¼ì²â£¬²¢ÇÒ½ØÈ¡µÄÄÚÈİÊÇ¸ü¼Ó²éÑ¯Ìõ¼ş±ä»¯µÄ
+				ÕâÀï¿ÉÒÔ³¢ÊÔÏÂÒÑ¾­Ê¶±ğ³öÀ´µÄÓïÖÖ£¬ÔÙ²»ĞĞ¾ÍÌáÊ¾£º
+					²éÑ¯µÄÄÚÈİ¿ÉÄÜÊÇ²»Ö§³ÖµÄÓïÖÖ
+
+
+
+2020.04.09
+
+²éÑ¯¶à¸öcollectionÊ±£¬
+×óÉÏ½ÇÖ»ÓĞÒ»¸ötabÒ³Ãæ£¬Õ¹Ê¾²»Õı³££¬µçÄÔÔ­Òò?
+
+·¢ÏÖºÜ¶àjpgÎÄ¼şÊÇÊÓÆµÎÄ¼ş£¬ÄÜ¿´µ½ËõÂÊÍ¼£¬µ«ÊÇÏêÇéÒ³²»ÄÜ²¥·Å
+	ÕâÀïÒªÖ§³ÖÏÂ
+
+
+¾«×¼·­ÒëÖĞ£¬²»Ö§³ÖµÄÓïÖÖÌáÊ¾£º
+
+		·­ÒëÊ§°Ü,ÍøÂçÒì³£..
+
+
+ÖØÆôÁËnginxµ¼ÖÂtikaµ½fileserver2Ã»ÓĞÏÂÔØµ½ÎÄ¼ş£¬Ã»ÓĞ×öÖØÊÔ¾ÍĞ´badÎÄ¼şÁË
+nCaused by: com.lzy.solea.tika.app.exception.CephNotFoundException: cant not get data from ceph url:ceph://solea_20200409/dfb472c2-96c9-4f4c-b75d-364f359a6492\n\tat 
+
+
+dns×°´íÁË£¿£¿
+»¹ÊÇ95.50.185.29
+
+tika01-10 check_ceph_health 
+	/root/lcm.guard-1.7.9/etc/crond/cron.d/ceph_check.cron	Ò»Ì¨»úÆ÷¾Í¹»ÁË
+	ÔÚlzy-data-platform-toolsÏÂ£¬ÊÇ·ñÃ¿Ì¨¶¼×°£¿
+
+/opt/solea-send-fserver2/logs
+-rw-rw-rw- 1 root root    0 Apr  9 09:30 solea_send_fserver2_.log
+
+
+ceph
+ÊÇ·ñÔÚ×Ô¶¯²¿ÊğÖĞÅäÖÃÒª½¨ÄÄĞ©pool?
+bash /opt/fileserver-2/ceph-manager/bin/create_pool_array.sh offline_solea_  /opt/fileserver-2/ceph-manager/etc/offline_solea_pool_config.conf
+
+ÊÇÊ²Ã´ÎÊÌâ£¿
+ceph»úÆ÷
+check_os 
+timewait number is exceeded . The number is 11270 skip check_iptables skip check_temperature skip check_resove_host
+
+¿ÉÄÜÊÇfileserver2µ½nginxµÄ¶ÌÁ´½Ó¹ı¶à
+
+
+solea-send-fserver2¿ÉÄÜ»¹ÊÇ²»¹»£º
+	¼Óµ½12
+	È¥µôftp	
+
+
+solr×Ö¶Î£¬Ó¦¸ÃÄ¬ÈÏÊÇtext
+
+
+1.
+	/opt/solea-tools/preprocess/buffer/backup
+	Ä¿Â¼²»¶Ô
+	cephÅäÖÃ²»¶Ô
+	cephºÍzipÎÄ¼ş¶Ô²»ÉÏ£¿
+		56T vs 12T 
+		solea_send_fserver2 ÓĞĞÔÄÜÎÊÌâ -
+			nagissÓĞÂğ£¿			
+
+2.
+	gz Ô¤´¦Àí£º
+     "XX_SENDER_ss":[""],
+        "XX_RECEIVER_ss":[""],
+        "XX_MT_AUTHOR_ss":[""],
+        "XX_MT_COMPANY_ss":[""],
+			ÊÇ·ñÒªÈ¡µôÃ»ÓĞÖµµÃ
+
+3.
+·­ÒëÎÄµµÓĞÎÊÌâ£¿
+
+
+1.Ö»ÓĞ°²×°µ¥¸ö·şÎñÆ÷µÄ,°²×°¶àÌ¨Ã»ÓĞËµÃ÷
+2.ÅäÖÃÓĞÎÊÌâ£¿
+/opt/mynah-docker-2.1.0-dev/docker-compose/translator/application-prod.yml
+
+3.maxRunningCount£ºÏÖÔÚÓÃ²»µ½£¿
+4.
+translateUrlÕâ¸öÊÇÅäÖÃgatewayµÄip£¬Ğè²»ĞèÒª£¿
+5.register Ã¿Ì¨¶¼ÒªÅäÖÃip£¿£¿£¿
+
+4.solea×Ô¶¯²¿Êğ£º
+1.	[dns_servers]
+	#±ØĞëÒ²ÊÇÖ÷¿Ø»úÆ÷
+	web.solea.bd.com
+		ÎªÊ²Ã´±ØĞëÊÇÖ÷¿Ø»úÆ÷£¿Ã»ÓĞËµÇå³ş
+
+2.
+[nagios_servers]
+# Ä¬ÈÏ°²×°ÔÚweb.solea.bd.com, ²»ÒªĞŞ¸Ä
+# nagiosserver.solea.bd.com -> web.solea.bd.com
+tika31.solea.bd.com
+	ÎªÊ²Ã´²»ÒªĞŞ¸Ä£¿
+
+simbaµÄip?
+simba_host
+
+3.
+[external_service_servers]
+tika11.solea.bd.com
+	ÊÇ·ñÒ²Òª°²×°¶àÌ¨£¬Í¨¹ıconsul¹ÜÀí
+
+4.Íâ²¿·şÎñµÄ£º
+
+  translateLanList: all_language
+	ÕâÀïÊÇ·ñĞèÒªÅä£¿·­ÒëÄÇ±ßÒÑ¾­ÅäÁËÒ»±éÁË
+English,Russian,Japanese,Korean
+
+English,Russian,Japanese,Korean,Chinese_Simplified --ok
+	
+  translateUrl: http://95.50.185.10:15003/translator/rest/translate/post
+	95.50.185.24:15003/translator/
+	ÅäÖÃÄÄ¸ö£¿
+
+
+5.
+solea_tika:
+   # fileservers·şÎñÆ÷ÁĞ±í£¬ÓÃ,·Ö¿ª£¬×îºÃwebÓÃµÄfilservers·Ö¿ª
+   filesever2_servers: >
+     http://tika01.solea.bd.com:15003/fileserver2/api/v1,http://tika02.solea.bd.com:15003/fileserver2/api/v1,http://tika03.solea.bd.com:15003/fileserver2/api/v1,http://tika04.solea.bd.com:15003/fileserver2/api/v1,http://tika05.solea.bd.com:15003/fileserver2/api/v1,http://tika06.solea.bd.com:15003/fileserver2/api/v1,http://tika07.solea.bd.com:15003/fileserver2/api/v1,http://tika08.solea.bd.com:15003/fileserver2/api/v1,http://tika09.solea.bd.com:15003/fileserver2/api/v1,http://tika10.solea.bd.com:15003/fileserver2/api/v1
+   # solr·şÎñÆ÷ÁĞ±í£¬ÓÃ,·Ö¿ª
+   solr_servers: http://95.50.185.41:15003/solr,http://95.50.185.42:15003/solr,http://95.50.185.43:15003/solr,http://95.50.185.44:15003/solr,http://95.50.185.45:15003/solr,http://95.50.185.46:15003/solr,http://95.50.185.47:15003/solr,http://95.50.185.48:15003/solr,http://95.50.185.49:15003/solr,http://95.50.185.450:15003/solr,http://95.50.185.51:15003/solr,http://95.50.185.52:15003/solr,http://95.50.185.53:15003/solr,http://95.50.185.54:15003/solr,http://95.50.185.55:15003/solr,http://95.50.185.56:15003/solr,http://95.50.185.57:15003/solr,http://95.50.185.58:15003/solr,http://95.50.185.59:15003/solr,http://95.50.185.60:15003/solr
+ÅäÖÃÌ«¶à£¬ÊÇ·ñ¿ÉÒÔ¼ò»¯£¬Èç£º
+tika[01:10].solea.bd.com:15003/fileserver2/v1
+
+
+
+ÓĞÁ½¸ö£¿
+simba_send_to_stat                              True    start   pid=[3131, 3557]
+
+
+6.web:
+
+ÓĞ±¨´í£º
+java.lang.ArrayIndexOutOfBoundsException: 1
+        at com.lzy.solea.web.support.SoleaConfig.getSolrCollections(SoleaConfig.java:344)
+        at com.lzy.solea.web.controller.ISolrSearchController.index(ISolrSearchController.java:166)
+        at com.lzy.solea.web.controller.ISolrSearchController$$FastClassBySpringCGLIB$$cd14e089.invoke(<generated>)
+        at org.springframework.cglib.proxy.MethodProxy.invoke(MethodProxy.java:204)
+        at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.invokeJoinpoint(CglibAopProxy.java:736
+
+ÒµÎñÅäÖÃ°´ÕÕÕâ¸öĞŞ¸Ä£¿
+Ä¬ÈÏÖµ: solea:ÔÆ¶ÈÊı¾İ;10.1.46.29;15003;true;false;false
+		--ok
+
+solea-web-service/search/fetchPageElements/{status}
+2020-04-08 18:21:23.553  INFO --- [http-nio-8080-exec-4] c.l.s.w.s.controller.SearchController    : getSettingSearchOpt getConditions params:
+2020-04-08 18:21:23.556  INFO --- [http-nio-8080-exec-34] c.l.solea.web.support.RestTemplateUtil   : Result of the Delete HttpRequest: 1
+2020-04-08 18:21:23.557  INFO --- [http-nio-8080-exec-34] c.l.s.web.service.SolrSearchServiceImpl  : Query doc size: q *:*, params [df=text, fl=*, hl=true, hl.requireFieldMatch=true, hl.simple.pre=<font color=red size=4><B>, hl.simple.post=</B></font>, hl.fragsize=200, hl.maxAnalyzedChars=204800, hl.fl=text,filename,text_trans, facet=true, facet.field=file_classify, facet.field=file_lang, facet.field=mentioned_classify_ms_i_s_dv, fq=]
+2020-04-08 18:21:23.557  INFO --- [http-nio-8080-exec-34] c.l.m.twoStepSearch.TwoStepSearcher      : detect doc num url:http://95.50.185.29:15003/solr/solea_search_collection/lzy-select and params: [df=text, fl=*, hl=true, hl.requireFieldMatch=true, hl.simple.pre=<font color=red size=4><B>, hl.simple.post=</B></font>, hl.fragsize=200, hl.maxAnalyzedChars=204800, hl.fl=text,filename,text_trans, facet=true, facet.field=file_classify, facet.field=file_lang, facet.field=mentioned_classify_ms_i_s_dv, fq=, q=*:*, timeAllowed=30000, start=0, rows=0, wt=json]
+2020-04-08 18:21:23.597 ERROR --- [http-nio-8080-exec-34] c.l.s.web.service.SolrSearchServiceImpl  : get solr total docs number error
+org.json.JSONException: A JSONObject text must begin with '{' at character 1
+        at org.json.JSONTokener.syntaxError(JSONTokener.java:410)
+
+solea-send-fserver2ÎÊÌâ£º
+	1.Ó¦¸Ã¼ÓÒ»¸önagios,¼ì²é·¢ËÍÄ¿Â¼ÊÇ·ñÓĞ¶Ñ»ı
+	2.nagiosÉÏÃæÊÇcheck_solea_send_fserver2
+½Å±¾Àï·¢ËÍµ½check_solea_send_fserver£¬²»¶Ô
+
+²»Ó¦¸Ã´ò¿ª£º
+solr / meta
+
+prodÓ¦¸ÃÄ¬ÈÏ¹Ø±Õ
+
+
+
+
+
+     	  1259 [main] ERROR com.lzy.solea.gz.main.FileExtractMain  ¨C file not exist
+java.lang.NullPointerException: entry
+        at java.util.zip.ZipFile.getInputStream(ZipFile.java:361)
+
+/opt/solea-gz-custom/input/440000-440000-1586304949-DATA_PMT-30059.zip
+
+TODO:
+1.
+vim content_analysis.sh 
+consule ¸ÄÎªyes
+
+2.
+modle¸üĞÂÏÂ
+
+3.
+ÄÄ¸öÅäÖÃ£¿
+distributedir = /opt/solea-tools/preprocess/tmp/dispatch
+ftp_server_config_file = /opt/solea-tools/preprocess/buffer/etc/ftp-upload/ftp_input_server.config
+
+4.
+ÏÈ×¢ÊÍµô£º
+vim bin/solea_buffer_tmpwatch.sh
+
+5.
+²®¼á£º
+ÎÒÃÇÆ½Ì¨ÏÖÓĞµÄÊÓÆµÍ¼ÏñÄÜÁ¦Ö÷ÒªÊÇÕâĞ© ÒıÇæ»¹Ã»²¼ÉÏÈ¥£¬ÄãÃÇÏÈ¿´¿´½Ó¿ÚÎÄµµÓĞÃ»ÓĞÎÊÌâ£¬ÎÄµµÎ¢ĞÅ·¢¹ıÈ¥ÁË
+
+6.¿Ì³öÍâÍø
+¸½¼ş3£º·Ç½á¹¹»¯ÎÄ¼ş·ÃÎÊ½Ó¿Ú.docx
+
+
+7.onlyoffice ÖØĞÂÒªÒ»·İ
+
+8.°ïÀîÓñÁú¿´ÏÂ¶à¼¶ÎÄ¼şµÄbcpÈçºÎ±£´æ£¿
+
+
+9.cephµÄpool ÅäÖÃ¸ÄÒ»ÏÂ£ºoffline_solea
+/opt/fileserver-2/ceph-manager/etc/offline_solea_pool_config.conf

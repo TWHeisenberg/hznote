@@ -1,0 +1,1418 @@
+## tips
+
+注意：
+
+夜盘数据比较特殊,  比如 2021-04-01 21:00:00 ~ 2021-04-02 00:00:00 的数据, 其实是 2021-03-31 21:00:00 ~ 2021-04-01 00:00:00 的数据.  即夜盘一整天的开盘时间是 昨天 21:00
+
+maven 官方下载地址：
+
+https://archive.apache.org/dist/maven/maven-3/
+
+服务器地址：
+
+```
+10.10.10.104   administrator  Admin123
+10.10.10.102 administrator  Admin711406
+```
+
+
+
+项目 SVN 地址:
+https://10.10.10.102/svn/量化系统/nc_tree_parse/nc_algo
+
+confluence 地址：http://10.10.0.47:8090/
+
+​	ftp:list_delete_rowkey.shb
+
+	   历史股指期权 和 商品期权 数据的下载地址 ：
+	   域名：tik-ftp.citicsf.com 端口：8371
+	   电信IP：58.33.80.163     端口：8371
+	   联通IP：140.206.97.123 端口：8371
+	   李佳桧/83g3Mh7m
+
+​	历史数据：
+
+​		50ETF期权数据
+​		CFFEX股指期货
+​		DCE大连商品
+​		CZC3郑州商品
+​		SHFE上海商品
+
+钉钉邮箱：wangdao6551@dingtalk.com
+
+jira账号：u00479/123456
+
+jira   ip地址更换成：http://10.10.0.47:8080/
+
+svn账号和密码：liuzhenjiang/liuzhenjiang
+
+hbase:
+	hadoop-daemon.sh start datanode
+	hbase-daemon.sh start regionserver
+	tail  -n -500 /usr/local/hbase/logs/hbase-hadoop-regionserver-slave4.log
+
+sql server:
+		properties.setProperty("user", "R16");
+		properties.setProperty("password", "R16_0625");
+
+现有集群规模：共有七台机器，老机房两台，新机房五台。
+
+老机房两台：
+
+​     主机名：keep-0        IP：10.10.10.110    nc_007用户登录密码：nc_007
+
+主机名：keep-1        IP：10.10.10.111       nc_008用户登录密码：nc_008
+
+ ![image-20210510085345685](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20210510085345685.png)
+
+新机房五台：
+
+​     主机名：master      IP：10.10.0.254        root用户登录密码：1
+
+主机名：slave1        IP：10.10.0.119        root用户登录密码：1
+
+主机名：slave2        IP：10.10.0.54        root用户登录密码：1
+
+主机名：slave3        IP：10.10.0.253        hadoop用户登录密码：1
+
+主机名：slave4        IP：10.10.0.252        hadoop用户登录密码：1
+
+ 
+
+集群配置：
+
+​     三台zookeeper，七台HDFS（master，slave1，上运行namenode，七台DataNode）
+
+​     Master，slave3作为HBASE的HMaster节点，除master节点之外，六台起HRegionserver服务，HMaster节点需要另起ThriftServer服务来提供读取数据服务。集群启动步骤见《集群各项服务启动命令.txt》文件
+
+Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas
+
+HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview
+
+
+
+git key: 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
+
+
+
+## 每天做的
+
+```
+1.检查下hadoop集群, hbase集群
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  
+	进程：RunOnlyGuzhi，
+    	  
+10.10.10.102 administrator/Admin711406  
+	进程：GetMarketDataAndStore
+	     GuPiaoReduce（RunDataMerge?）
+```
+
+
+
+
+
+## 20210506
+
+1.每天上班要做的
+
+```
+1.检查下hadoop集群, hbase集群		--ok
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  
+	进程：RunOnlyGuzhi		9:20
+    	  
+10.10.10.102 administrator/Admin711406  
+	进程：GetMarketDataAndStore		8:50
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+	     GetMarketDataAdnStore 有两个进程在跑？ 关掉一个		--ok
+```
+
+
+
+2.k线程序继续开发啊
+
+​		继续优化：多线程去做			--ok
+
+​		tick数据：
+
+2021/05/06 10:59:21 INFO  [store-tick] - store tick: IC05_1620269959 ok, count: 1
+
+1170: 2021/05/06 11:04:33 INFO  [store-tick] - store tick: IC05_1620270271 ok, count: 600
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IC05_1620269959", ENDROW => "IC05_1620270271"}
+
+
+
+1s:		--ok
+
+scan "hznc_mkdata:1sdata", {STARTROW => "IC05_1620281281", ENDROW => "IC05_1620283799"}
+
+1: 77:2021/05/06 14:08:03 INFO  [mergeAndstore-kline-1] - put kline IC05_1620281281 to hznc_mkdata:1sdata ok
+
+88380:2021/05/06 14:50:00 INFO  [mergeAndstore-kline-1] - put kline IC05_1620283799 to hznc_mkdata:1sdata ok
+
+
+
+5s:			--ok
+
+put kline IC05_1620281281 to hznc_mkdata:5sdata ok
+
+IC05_1620284100 to hznc_mkdata:5sdata
+
+scan "hznc_mkdata:5sdata", {STARTROW => "IC05_1620281281", ENDROW => "IC05_1620284100"}
+
+
+
+1min:		--ok
+
+put kline IC05_1620281281 to hznc_mkdata:1mindata ok
+
+pkline IC05_1620284040 to hznc_mkdata:1mindata
+
+scan "hznc_mkdata:1mindata", {STARTROW => "IC05_1620281281", ENDROW => "IC05_1620284040"}
+
+
+
+```
+
+hbase(main):005:0> get "hznc_mkdata:1sdata", "IC05_1620270342"
+COLUMN                                                       CELL
+ cf_data:01cSymbol                                           timestamp=1620270344250, value=IC05
+ cf_data:02dbClosePrice                                      timestamp=1620270344250, value=6421.6
+ cf_data:03dbHeightPrice                                     timestamp=1620270344250, value=6421.6
+ cf_data:04dbLowPrice                                        timestamp=1620270344250, value=6421.6
+ cf_data:05dbOpenPrice                                       timestamp=1620270344250, value=6421.6
+ cf_data:06dbSum                                             timestamp=1620270344250, value=5137280.0
+ cf_data:07dbYTClosePrice                                    timestamp=1620270344250, value=6477.6
+ cf_data:08uTime                                             timestamp=1620270344250, value=1620270342
+ cf_data:09uVolume                                           timestamp=1620270344250, value=4
+ cf_data:10uVolume_Sell                                      timestamp=1620270344250, value=35561
+ cf_data:11zpos                                              timestamp=1620270344250, value=66098.0
+ cf_data:12zpos_diff                                         timestamp=1620270344250, value=-4.0
+ cf_data:13avgPrice                                          timestamp=1620270344250, value=6486.400000000001
+1 row(s) in 0.0320 seconds
+```
+
+
+
+​		主力数据				--ok
+
+​		打包， 定时脚本， cron
+
+​	
+
+​		测试发送结果
+
+
+
+​		继续测试
+
+​		上传到git?
+
+
+
+3. 补一下k线数据
+
+   4.26日的
+
+   ​	查询一下线上多少条，本地的数据多少条，tick是否需要补
+
+2021/4/26,09:30:00
+
+date  -d "2021-4-26 09:30:00" +%s
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IC05_1619400600_0", ENDROW => "IC05_1619420400_1"}
+
+IC， 11:10 - 11:25少了
+
+date  -d "2021-4-26 11:10:00" +%s     1619406600
+
+date  -d "2021-4-23 11:10:00" +%s     1619147400
+
+get "hznc_mkdata:5mindata", "IC05_1619406600"
+
+scan "hznc_mkdata:5mindata", {STARTROW => "IC05_1619141400", ENDROW => "IC05_1619161200"}	正常48条
+
+scan "hznc_mkdata:5mindata", {STARTROW => "IC05_1619400600", ENDROW => "IC05_1619420400"}		40条
+
+​		date  -d "2021-4-23 09:30:00" +%s     1619141400
+
+​		date  -d "2021-4-23 15:00:00" +%s	1619161200
+
+
+
+ cf_data:01cSymbol                                           timestamp=1617240602523, value=IC05
+ cf_data:02dbClosePrice                                      timestamp=1617240602523, value=6182.8
+ cf_data:03dbHeightPrice                                     timestamp=1617240602523, value=6182.8
+ cf_data:04dbLowPrice                                        timestamp=1617240602523, value=6182.8
+ cf_data:05dbOpenPrice                                       timestamp=1617240602523, value=6182.8
+ cf_data:06dbSum                                             timestamp=1617240602523, value=2473600.0
+ cf_data:07dbYTClosePrice                                    timestamp=1617240602523, value=6176.2
+ cf_data:08uTime                                             timestamp=1617240602523, value=1617240600
+ cf_data:09uVolume                                           timestamp=1617240602523, value=2
+ cf_data:10uVolume_Sell                                      timestamp=1617240602523, value=2
+ cf_data:11zpos                                              timestamp=1617240602523, value=4161.0
+ cf_data:12zpos_diff                                         timestamp=1617240602523, value=4161.0
+ cf_data:13avgPrice                                          timestamp=1617240602523, value=0.0
+
+
+
+{"symbol":"IC05","utime:1617240600100,当前成交量:2,当前成交额:2473600.0,高:6185.2,低:6182.8,当前开:6182.8,当前收:6182.8,今量:2,今额:2473600.0,今持仓:4161.0,今开:6185.2,今收:6182.8,今均:6182.8,交易日:20210401,}
+
+
+
+```
+tickCycle		56420
+kCycle			50
+
+kBuff.Timestamp 1619712 时间戳不对
+
+对比下1s数据：
+2021/04/30 13:29:53 INFO  [main] - put kline IC09_1619760592 to hznc_mkdata:1sdata ok
+2021/04/30 13:29:53 INFO  [main] - put kline IC12_1619760592 to hznc_mkdata:1sdata ok
+
+
+2021/04/30 13:38:35 INFO  [main] - put kline IC06_1619761110 to hznc_mkdata:5sdata ok
+
+几个字段不对：
+ cf_data:09uVolume                                           timestamp=1619761117066, value=0
+ cf_data:06dbSum                                             timestamp=1619761117066, value=0
+ cf_data:12zpos_diff                                         timestamp=1619761117066, value=0
+
+
+
+	行 5262: 2021/04/30 14:25:01 INFO  [main] - put kline IC05_1619763600 to hznc_mkdata:5mindata ok
+	行 5973: 2021/04/30 14:30:01 INFO  [main] - put kline IC05_1619763900 to hznc_mkdata:5mindata ok
+	行 6641: 2021/04/30 14:35:01 INFO  [main] - put kline IC05_1619764200 to hznc_mkdata:5mindata ok
+	行 7322: 2021/04/30 14:40:00 INFO  [main] - put kline IC05_1619764500 to hznc_mkdata:5mindata ok
+	
+	
+	2021/04/30 15:54:57 INFO  [main] - put kline IC05_1617245932 to hznc_mkdata:1sdata ok
+2021/04/30 15:54:57 INFO  [main] - put kline IC05_1617245933 to hznc_mkdata:1sdata ok
+2021/04/30 15:54:57 INFO  [main] - put kline IC05_1617245934 to hznc_mkdata:1sdata ok
+2021/04/30 15:54:57 INFO  [main] - put kline IC05_1617245935 to hznc_mkdata:1sdata ok
+2021/04/30 15:54:57 INFO  [main] - put kline IC05_1617245942 to hznc_mkdata:1sdata ok
+2021/04/30 15:54:57 INFO  [main] - put kline IC05_1617245944 to hznc_mkdata:1sdata ok
+2021/04/30 15:54:57 INFO  [main] - put kline IC05_1617245950 to hznc_mkdata:1sdata ok
+	
+	
+	
+	问题：
+	06dbSum   hbase中是累积的成交额还是差值，即减去上一个tick的？
+	09uVolume	当前成交量，hbase总是累积的成交量还是差值？
+	03dbHeightPrice	取Math.Max(open, last) ? 还是last?
+	12zpos_diff	持仓量，相减的。
+```
+
+
+
+代码考一份出去
+
+.c文件.h文件
+
+
+
+昨日结算价：
+
+ic:6443.0
+
+if:5119.4
+
+IH:3515.6
+
+不清空了，直接补发
+
+## 20210507
+
+1.每天上班要做的
+
+```
+1.检查下hadoop集群, hbase集群			--ok
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+2.检查程序运行和发送情况		--ok
+10.10.10.104   administrator/Admin123  
+	进程：RunOnlyGuzhi		9:20
+    	  
+10.10.10.102 administrator/Admin711406  		--ok
+	进程：GetMarketDataAndStore		8:50
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+	     GetMarketDataAdnStore 有两个进程在跑？ 关掉一个
+```
+
+
+
+2.k线程序继续开发
+
+​	createKLine	调试修改一下
+
+​	正式的运行一下
+
+​			打包： mvn clean assembly:assembly
+
+java -jar  datacenter-0.0.1-SNAPSHOT.jar realtime_spif_hbase G:\test\datacenter\config\config.properties
+
+
+
+死循环了？		--ok
+
+56261 - 50
+
+while (tickCycle - kCycle > 1)
+
+``` 
+kBuff.Timestamp    --不对了？1620316 哪里变的
+
+1620354183700	normtime 》 1620316800
+
+date -d @1620354232
+
+测试一下：
+1620354567200
+```
+
+
+
+看看tick，发送的条数, 数据是否一致		--ok	
+
+ 09:30:52 INFO  [store-tick] - store tick: IC05_1620351051
+
+[store-tick] - store tick: IC05_1620358080 ok, 
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IC05_1620351051_0", ENDROW => "IC05_1620358080_2"}
+
+本地的：
+
+IC05_1620358080_1                                           column=cf_data:21AskVolume1, timestamp=1620358085233, value=2
+12985 row(s) in 48.1530 seconds
+
+线上的：
+
+ IC05_1620358080_1                                           column=cf_data:21AskVolume1, timestamp=1620358081806, value=2
+12985 row(s) in 25.6760 seconds
+
+数量			--ok
+
+随便找几条看下数据是否一致		--ok
+
+
+
+各个周期的k线
+
+1s:
+
+13:00:02 INFO  [mergeAndstore-kline-1] - store kline IC05_1620363600 to hznc_mkdata:1sdata
+
+13:30:59 INFO  [mergeAndstore-kline-1] - store kline IC05_1620365458 to hznc_mkdata:1sdata ok
+
+scan "hznc_mkdata:1sdata", {STARTROW => "IC05_1620363600", ENDROW => "IC05_1620365458 "}
+
+本地：
+
+IC05_1620365458                                             column=cf_data:13avgPrice, timestamp=1620365461292, value=6488.0
+1788 row(s) in 4.2380 seconds
+
+线上：
+
+ IC05_1620365458                                             column=cf_data:13avgPrice, timestamp=1620365459335, value=6488.0
+1788 row(s) in 1.8270 seconds
+
+
+
+数量		--ok
+
+数据属性
+
+```
+INFO  [mergeAndstore-kline-1] - store kline IC05_1620365490 to hznc_mkdata:1sdata ok
+	行 3555: 212093:2021/05/07 13:31:32 INFO  [mergeAndstore-kline-1] - store kline IC05_1620365491 to hznc_mkdata:1sdata ok
+	行 3557: 212115:2021/05/07 13:31:33 INFO  [mergeAndstore-kline-1] - store kline IC05_1620365492 to hznc_mkdata:1sdata ok
+	行 3558: 212136:2021/05/07 13:31:34 INFO  [mergeAndstore-kline-1] - store kline IC05_1620365493 to hznc_mkdata:1sdata ok
+	行 3560: 212169:2021/05/07 13:31:36 INFO  [mergeAndstore-kline-1] - store kline IC05_1620365494 to hznc_mkdata:1sdata ok
+	行 3562: 212199:2021/05/07 13:31:36 INFO  [mergeAndstore-kline-1] - store kline IC05_1620365495 to hznc_mkdata:1sdata ok
+	行 3564: 212217:2021/05/07 13:31:37 INFO  [mergeAndstore-kline-1] - store kline IC05_1620365496 to hznc_mkdata:1sdata ok
+	行 3565: 212234:2021/05/07 13:31:38 INFO  [mergeAndstore-kline-1] - store kline IC05_1620365497 to hznc_mkdata:1sdata ok
+	行 3567: 212252:2021/05/07 13:31:39 INFO  [mergeAndstore-kline-1] - store kline IC05_1620365498 to hznc_mkdata:1sdata ok
+	行 3568: 212302:2021/05/07 13:31:40 INFO  [mergeAndstore-kline-1] - store kline IC05_1620365499 to hznc_mkdata:1sdata ok
+	行 3572: 212318:2021/05/07 13:31:41 INFO  [mergeAndstore-kline-1] - store kline IC05_1620365500 to hznc_mkdata:1sdata ok
+	行 3573: 212337:2021/05/07 13:31:42 INFO  [mergeAndstore-kline-1] - store kline IC05_1620365501 to hznc_mkdata:1sdata ok
+	行 3575: 212359:2021/05/07 13:31:44 INFO  [mergeAndstore-kline-1] - store kline IC05_1620365502 to hznc_mkdata:1sdata ok
+
+get "hznc_mkdata:1sdata", "IC05_1620365423"				--ok
+	09uVolume			private long volume_diff;				//数量差额（当前成交量）
+	
+	
+	
+get "hznc_mkdata:1sdata", "IC05_1620365491"				--ok
+	12zpos_diff  对应属性 private double openInterest_diff;		//当前持仓量（自己增加）
+	cf_data:02dbClosePrice 
+	cf_data:03dbHeightPrice                          
+	
+get "hznc_mkdata:1sdata", "IC05_1620365492"			--ok
+	11zpos 应该取最新的
+		
+get "hznc_mkdata:1sdata", "IC05_1620365494"				--ok
+	cf_data:02dbClosePrice                                      timestamp=1620365497354, value=6476.4
+ 	cf_data:03dbHeightPrice                                     timestamp=1620365497354, value=6476.4
+```
+
+
+
+5s:
+
+13:00:05 INFO  [mergeAndstore-kline-1] - store kline IC05_1620363600 to hznc_mkdata:5sdata ok
+
+13:34:46 INFO  [mergeAndstore-kline-1] - store kline IC05_1620365680 to hznc_mkdata:5sdata ok
+
+
+
+数据量：				--OK
+
+scan "hznc_mkdata:5sdata", {STARTROW => "IC05_1620363600", ENDROW => "IC05_1620365680"}
+
+ IC05_1620365675                                             column=cf_data:13avgPrice, timestamp=1620365680444, value=6488.0
+416 row(s) in 0.3000 seconds
+
+数据一致性：
+
+```
+ [mergeAndstore-kline-1] - store kline IC05_1620363600 to hznc_mkdata:5sdata ok
+	行 17: 165235:2021/05/07 13:00:09 INFO  [mergeAndstore-kline-1] - store kline IC05_1620363605 to hznc_mkdata:5sdata ok
+INFO  [mergeAndstore-kline-1] - store kline IC05_1620365585 to hznc_mkdata:5sdata ok
+	行 3752: 214872:2021/05/07 13:33:16 INFO  [mergeAndstore-kline-1] - store kline IC05_1620365590 to hznc_mkdata:5sdata ok
+	行 3762: 215019:2021/05/07 13:33:20 INFO  [mergeAndstore-kline-1] - store kline IC05_1620365595 to hznc_mkdata:5sdata ok
+	 kline IC05_1620365645 to hznc_mkdata:5sdata ok
+	行 3864: 216414:2021/05/07 13:34:16 INFO  [mergeAndstore-kline-1] - store kline IC05_1620365650 to hznc_mkdata:5sdata ok
+	
+	
+	get "hznc_mkdata:5sdata", "IC05_1620363600"
+	都不对？
+```
+
+1min:
+
+数据量：				--ok
+
+[mergeAndstore-kline-2] - store kline IC05_1620363600 to hznc_mkdata:1mindata ok
+
+[mergeAndstore-kline-2] - store kline IC05_1620365520 to hznc_mkdata:1mindata ok
+
+scan "hznc_mkdata:1mindata", {STARTROW => "IC05_1620363600", ENDROW => "IC05_1620365520"}
+
+
+
+5min:
+
+store kline IC05_1620363600 to hznc_mkdata:5mindata ok
+
+13:29:59 INFO  [mergeAndstore-kline-2] - store kline IC05_1620365100 to hznc_mkdata:5mindata ok
+
+scan "hznc_mkdata:5mindata", {STARTROW => "IC05_1620363600", ENDROW => "IC05_1620365100"}
+
+
+
+性能测试基本ok, 对比了一天tick，各个周期的数据的发送数量基本ok, 
+
+但是部分k线合并价格不对，单元测试调一下
+
+## 20210508
+
+1.每天上班要做的
+
+```
+1.检查下hadoop集群, hbase集群				--ok
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+	
+	两个节点退出了？ keep-0和keep-1
+		启动zk节点
+		启动regionserver  --ok
+		启动datanode      --ok
+		
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  
+	进程：RunOnlyGuzhi		9:20
+    	  
+10.10.10.102 administrator/Admin711406 
+	进程：GetMarketDataAndStore		8:50
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+	     GetMarketDataAdnStore 有两个进程在跑？ 关掉一个
+```
+
+2.继续测试下性能和功能
+
+主力代码是空的？ 查询一下	--今天不开盘
+
+今天没有实时数据，那就用历史数据进行测试。
+
+IC05_1617240600
+
+IC05_1617246059
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IC05_1617240600_0", ENDROW => "IC05_1617246059_1"}
+
+
+
+5S:
+
+scan "hznc_mkdata:5sdata", {STARTROW => "IC05_1617240600 ", ENDROW => "IC05_1617246050"}
+
+IC05_1617240600  IC05_1617246050  
+
+get "hznc_mkdata:5sdata", "IC05_1617246050"   价格不对			--ok
+
+​	行 2614: 2021/05/08 14:58:07 INFO  [mergeAndstore-kline-1] - store kline IC05_1617240630 to hznc_mkdata:5sdata ok			--ok
+​	行 2926: 2021/05/08 14:58:07 INFO  [mergeAndstore-kline-1] - store kline IC05_1617240635 to hznc_mkdata:5sdata ok		--ok
+
+​	e-1] - store kline IC05_1617244575 to hznc_mkdata:5sdata ok																					--ok
+​	行 13374: 2021/05/08 14:58:23 INFO  [mergeAndstore-kline-1] - store kline IC05_1617244580 to hznc_mkdata:5sdata ok			--ok
+
+​	store kline IC05_1617246045 to hznc_mkdata:5sdata ok
+​	行 15592: 2021/05/08 14:58:28 INFO  [mergeAndstore-kline-1] - store kline IC05_1617246050 to hznc_mkdata:5sdata ok
+
+
+
+1min:
+
+store kline IC05_1617240600 to hznc_mkdata:1mindata			--ok
+
+store kline IC05_1617242100 to hznc_mkdata:1mindata ok			--ok
+
+store kline IC05_1617245640 to hznc_mkdata:1mindata ok
+
+line IC05_1617245940 to hznc_mkdata:1mindata ok				--ok
+
+scan "hznc_mkdata:1mindata", {STARTROW => "IC05_1617240600", ENDROW => "IC05_1617245940"}			--OK
+
+
+
+30min:
+
+[mergeAndstore-kline-2] - store kline IC05_1617240600 to hznc_mkdata:30mindata ok		--ok
+	行 8049: 2021/05/08 14:58:11 INFO  [mergeAndstore-kline-2] - store kline IC05_1617242400 to hznc_mkdata:30mindata ok
+	行 8675: 2021/05/08 14:58:13 INFO  [mergeAndstore-kline-2] - store kline IC05_1617244200 to hznc_mkdata:30mindata ok
+
+scan "hznc_mkdata:30mindata", {STARTROW => "IC05_1617240600", ENDROW => "IC05_1617244200"}		
+
+​	
+
+
+
+60min:
+
+​	14:58:09 INFO  [mergeAndstore-kline-2] - store kline IC05_1617240600 to hznc_mkdata:60mindata ok
+​	行 8677: 2021/05/08 14:58:13 INFO  [mergeAndstore-kline-2] - store kline IC05_1617244200 to hznc_mkdata:60mindata ok
+
+小时k线怎么合并
+
+```
+小于0说明是十点半之前的
+//十点半之后 十二点之前 
+```
+
+d:
+
+scan "hznc_mkdata:ddata", {STARTROW => "IC05_1617240600", ENDROW => "IC05_1619838050"}	
+
+
+
+mvn 编译不跑单元测试 -DskipTests
+
+​		数量
+
+​		数据是否正确
+
+​	问题：
+
+​		夜盘是否有
+
+​		合并哪些k线？ 周线和月线？		--ok
+
+​			先合到日线
+
+
+
+
+
+## 20210510
+
+1.每天上班要做的			--ok
+
+```
+1.检查下hadoop集群, hbase集群				--ok
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+	
+	keep-1:50010
+	keep-0:50010
+	死掉了？
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  
+	进程：RunOnlyGuzhi		9:20
+    	  
+10.10.10.102 administrator/Admin711406 
+	进程：GetMarketDataAndStore		8:50
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+	     GetMarketDataAdnStore 有两个进程在跑？ 关掉一个
+```
+
+
+
+问题：
+
+102的机器重启后时间变成2015年了		要自动校验一下
+
+
+
+2.实时k线继续测试
+
+​		离线的单元测试过
+
+​		本地正式运行起来
+
+​				 mvn clean assembly:assembly
+
+java -jar  datacenter-0.0.1-SNAPSHOT.jar realtime_spif_hbase G:\test\datacenter\config\config.properties
+
+​		检查结果
+
+
+
+​		tick:
+
+​		store tick: IC05_1620610420 ok, count: 1
+
+store tick: IC05_1620610869 ok, count: 895
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IC05_1620610420_0", ENDROW => "IC05_1620610869_1"}
+
+ IC05_1620610869_0                                           column=cf_data:21AskVolume1, timestamp=1620610868305, value=0
+894 row(s) in 5.2700 seconds
+
+IC05_1620610869_0                                           column=cf_data:21AskVolume1, timestamp=1620610869715, value=1
+895 row(s) in 1.4970 seconds
+
+
+
+bash list_delete_rowkey.sh "hznc_mkdata:tickdata" "IC05_1620610420_0" "IC05_1620610869_1" ic05tick.txt
+
+少了一条？ 启动的时候少了一条		--ok
+
+
+
+get "hznc_mkdata:tickdata", "IC05_1620610869_0"
+
+​			1s:
+
+[mergeAndstore-kline-1] - store kline IC05_1620610388 to hznc_mkdata:1sdata ok
+
+IC05_1620610868 to hznc_mkdata:1sdata ok
+
+
+
+scan "hznc_mkdata:1sdata", {STARTROW => "IC05_1620610388 ", ENDROW => "IC05_1620610868"}			--ok
+
+ IC05_1620610867                                             column=cf_data:13avgPrice, timestamp=1620610868621, value=6437.400000000001
+479 row(s) in 0.8960 seconds
+
+
+
+store kline IC05_1620610854 to hznc_mkdata:1sdata ok
+行 876: 14019:2021/05/10 09:40:52 INFO  [mergeAndstore-kline-1] - store kline IC05_1620610855 to hznc_mkdata:1sdata ok
+
+
+
+store kline IC05_1620610865 to hznc_mkdata:1sdata ok
+	行 899: 14387:2021/05/10 09:41:04 INFO  [mergeAndstore-kline-1] - store kline IC05_1620610866 to hznc_mkdata:1sdata ok
+
+get "hznc_mkdata:1sdata", "IC05_1620610865"
+
+
+
+​			5s
+
+store kline IC05_1620610425 to hznc_mkdata:5sdata ok
+
+store kline IC05_1620610860 to hznc_mkdata:5sdata ok
+
+scan "hznc_mkdata:1sdata", {STARTROW => "IC05_1620610425", ENDROW => "IC05_1620610860"}			--ok
+
+get "hznc_mkdata:5sdata", "IC05_1620610860"					--ok
+
+​			1min
+
+[mergeAndstore-kline-2] - store kline IC05_1620610320 to hznc_mkdata:1mindata ok
+
+store kline IC05_1620610800 to hznc_mkdata:1mindata ok
+
+
+
+scan "hznc_mkdata:1mindata", {STARTROW => "IC05_1620610320", ENDROW => "IC05_1620610800"}			--ok
+
+get "hznc_mkdata:1mindata", "IC05_1620610800"
+
+
+
+测试下结果：
+
+tick:
+
+IC05_1620622800 ok, count: 1
+
+store tick: IC05_1620624919 ok, count: 3859
+
+
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IC05_1620622800_0", ENDROW => "IC05_1620624919_1"}		--ok
+
+ IC05_1620624919_0                                           column=cf_data:21AskVolume1, timestamp=1620624914896, value=5
+3859 row(s) in 19.2580 seconds
+
+get "hznc_mkdata:tickdata", "IC05_1620624919_0"			--ok
+
+
+
+1s:
+
+store kline IC05_1620622800 to hznc_mkdata:1sdata ok
+
+store kline IC05_1620624918 to hznc_mkdata:1sdata ok
+
+scan "hznc_mkdata:1sdata", {STARTROW => "IC05_1620622800", ENDROW => "IC05_1620624918"}				--ok
+
+
+
+测试：2118 row(s) in 7.7890 seconds， 线上： 2045 row(s) in 3.7500 seconds
+
+​	数量不一致？对比一下
+
+bash list_delete_rowkey.sh "hznc_mkdata:1sdata" "IC05_1620622800" "IC05_1620624918" ic05_1s_test_txt
+
+IC05_1620622800    13:00:00
+
+IC05_1620624917    13:35:17
+
+35分钟 + 18s = 2118s
+
+
+
+get "hznc_mkdata:1sdata","IC05_1620624910"
+
+```
+昨收价不对：07dbYTClosePrice
+12zpos_diff
+不一致：10uVolume_Sell  
+
+1617243766
+
+1617243760
+
+有多线程的问题？？？
+
+```
+
+
+
+## 20210511
+
+1.每天上班要做的			--ok
+
+```
+1.检查下hadoop集群, hbase集群			
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+	
+	keep-1:50010
+	keep-0:50010
+	死掉了？
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  
+	进程：RunOnlyGuzhi		9:20
+    	  
+10.10.10.102 administrator/Admin711406 
+	进程：GetMarketDataAndStore		8:50
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+	     GetMarketDataAdnStore 有两个进程在跑？ 关掉一个
+```
+
+
+
+
+
+2.继续测试k线程序
+
+昨收价不对：			--ok
+
+```
+get "hznc_mkdata:1sdata", "IC05_1620697385"
+昨收价不对：07dbYTClosePrice				昨收价：6443.8		--ok, 结构体中的preClosePrice 不是昨收价，是上周期收盘价格，用来计算涨幅和震幅。
+
+kBuff.PreClosePrice = kBuff.ClosePrice;
+
+12zpos_diff					周期内相加的	-14   现在的是:536905.0？？难道是没有清空			--ok ， 下个周期开始时kbuff中应该reset
+不一致：10uVolume_Sell  				--ok， 应该是原来的计算不对
+
+    1617243766
+
+1617243760
+```
+
+本地先运行起来，定时观察
+
+java -jar  datacenter-0.0.1-SNAPSHOT.jar realtime_spif_hbase G:\test\datacenter\config\config.properties
+
+​			刚起来的时候kline线程卡住了？  在这个方法里面：_packKLineDayHour
+
+
+
+2021/05/11 13:02:01 INFO  [mergeAndstore-kline-1] - store kline IC12_1620709310 to hznc_mkdata:10sdata ok
+
+
+
+测试完整的，一天的数据，主要是测试补数据的功能：_packKLineDayHour
+
+2021/05/11 14:51:36 INFO  [mergeAndstore-kline-1] - store kline IH05_1620715894 to hznc_mkdata:2sdata ok
+
+
+
+对比下结果：		--ok
+
+
+
+最后1s的价格不对		原来的有问题，没有算15:00的tick数据		--ok
+
+
+
+
+
+装一个leet code插件
+
+明天工作：
+
+
+
+明天部署上线
+
+
+
+问题： 开盘前的第一个tick撮合到11:30？
+
+
+
+3.处理期货数据
+
+共享目录		share (file://PC201812201007/share)
+
+file://10.10.0.16/share
+
+10.10.0.16
+
+今日工作：
+
+20210511
+
+1. 继续测试实时k线程序， 完善单元测试
+
+2. 历史期权数据处理， 与合约执行价关联
+
+​		--明天继续测试
+
+周期优先序为：tick->1s->2s->3s->5m->10m->5s->15s->30s->1m->15m->30m->1h
+
+品种优先序为：IC->IH->IF
+
+5s:
+
+store kline IC05_1620622800 to hznc_mkdata:5sdata ok      13:00:00
+
+tore kline IC05_1620624910 to hznc_mkdata:5sdata ok        13:35:10
+
+scan "hznc_mkdata:5sdata", {STARTROW => "IC05_1620622800", ENDROW => "IC05_1620624910"}			--ok
+
+预期：422
+
+store kline IC05_1620622800 to hznc_mkdata:5sdata ok
+
+[mergeAndstore-kline-1] - store kline IC05_1620624875 to hznc_mkdata:5sdata ok
+
+hznc_mkdata:5sdata ok
+
+
+
+```
+get "hznc_mkdata:5sdata", "IC05_1620622800"	
+07dbYTClosePrice                                    timestamp=1620622855288, value=6430.2
+12zpos_diff
+
+get "hznc_mkdata:5sdata", "IC05_1620622800"	
+```
+
+1min:
+
+store kline IC05_1620622800  to hznc_mkdata:1mindata ok  13:00
+
+store kline IC05_1620624840 to hznc_mkdata:1mindata ok           13:34:00
+
+
+
+scan "hznc_mkdata:1mindata", {STARTROW => "IC05_1620622800", ENDROW => "IC05_1620624840"}			--ok
+
+33条
+
+5min:
+
+store kline IC05_1620622800 to hznc_mkdata:5mindata ok
+
+store kline IC05_1620624000 to hznc_mkdata:5mindata ok
+
+store kline IC05_1620624600 to hznc_mkdata:5mindata ok
+
+scan "hznc_mkdata:5mindata",  {STARTROW => "IC05_1620622800", ENDROW => "IC05_1620624600"}		--ok
+
+
+
+6条
+
+get "hznc_mkdata:5mindata", "IC05_1620622800"
+
+get "hznc_mkdata:5mindata", "IC05_1620624000"
+
+
+
+60min
+
+
+
+主力：			--ok
+
+tick：
+
+scan "hznc_mkdata:tickdata",  {STARTROW => "IC9999_1620622800_0", ENDROW => "IC9999_1620624910_2"}	
+
+5s:
+
+store kline IC9999_1620622800 to hznc_mkdata:5sdata ok
+
+store kline IC9999_1620624910 to hznc_mkdata:5sdata ok
+
+
+
+scan "hznc_mkdata:5sdata",  {STARTROW => "IC9999_1620622800", ENDROW => "IC9999_1620624910"}				--ok
+
+422 row(s) in 0.4910 seconds
+
+
+
+
+
+下午测试下packingKline
+
+问题：				--ok
+
+昨收价不对：07dbYTClosePrice
+
+不一致：10uVolume_Sell  
+
+## 20210512
+
+1.每天上班要做的
+
+```
+1.检查下hadoop集群, hbase集群			
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+	
+	keep-0:50010
+	死掉了？
+	2021-05-12 08:55:31,664 WARN  [regionserver/keep-0/127.0.0.1:60020] regionserver.HRegionServer: reportForDuty failed; sleeping and then retrying.
+2021-05-12 08:55:34,665 INFO  [regionserver/keep-0/127.0.0.1:60020] regionserver.HRegionServer: reportForDuty to master=master,16000,1616666881192 with port=60020, startcode=1620780239570
+2021-05-12 08:55:34,666 WARN  [regionserver/keep-0/127.0.0.1:60020] regionserver.HRegionServer: error telling master we are up
+
+不知道是谁，把/etc/hosts修改错了，导致不能和master通信			--ok
+
+	
+2.检查程序运行和发送情况							--ok
+10.10.10.104   administrator/Admin123  
+	进程：RunOnlyGuzhi		9:20
+    	  
+10.10.10.102 administrator/Admin711406 			--ok
+	进程：GetMarketDataAndStore		8:50
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+```
+
+
+
+2.测试下实时k线程序
+
+​		本地先跑起来
+
+​		下午一点的数据？		--ok
+
+java -jar  datacenter-0.0.1-SNAPSHOT.jar realtime_spif_hbase G:\test\datacenter\config\config.properties
+
+get "hznc_mkdata:1sdata", "IC05_1617247800" 
+
+
+
+scan "hznc_mkdata:1sdata", {STARTROW => "IC05_1617240600", ENDROW => "IC05_1617260400"}
+
+bash list_delete_rowkey.sh "hznc_mkdata:1sdata" IC05_1617240600 IC05_1617260400 ic05.txt
+
+
+
+```
+(CKBuff.getUtime(false) > 0 && CKBuff.getUtime(false) < 1617240540)|| (CKBuff.TimeStamp > 0 &&CKBuff.TimeStamp < 1617240540)
+(cKData.getUtime(false) > 0 && cKData.getUtime(false) < 1617240540)|| (cKData.TimeStamp > 0 &&cKData.TimeStamp < 1617240540)
+
+应该是一个对象重复使用的问题，每个合并任务都clone一份自己的对象就可以了
+```
+
+
+
+测试packKline:
+
+endTs:1620802800
+
+kbuff:1617260399
+
+
+
+1s数据应该是14400条
+
+2s数据应该是7200条
+
+5s是2880条
+
+1min是240条
+
+5min是48条
+
+30min是8条
+
+1h是4条
+
+1d是1条
+
+
+
+合理规划一下线程任务：			--ok
+
+1s:14399
+
+2s:7505
+
+3s:4799
+
+5s:2879
+
+
+
+3.升级k线程序		--ok
+
+
+
+lc插件装一下
+
+
+
+今天工作：
+
+20210512
+
+1.测试实时k线程序，完善测试用例
+
+2.实时k线程程序线上升级		--ok
+
+​		明天检查运行情况和运行结果
+
+
+
+## 20210513
+
+1.每天上班要做的				--ok
+
+```
+1.检查下hadoop集群, hbase集群			
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  
+	进程：RunOnlyGuzhi		9:20
+    	  
+10.10.10.102 administrator/Admin711406 
+	进程：GetMarketDataAndStore		8:50
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+```
+
+
+
+2.检查升级情况：
+
+​			程序是否正常运行			--ok
+
+​			tick是否完整		--ok
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IC05_1620869400_0", ENDROW => "IC05_1620889200_2"}
+
+​			合并k线是否正确， 1s, 5s, 1min, 30min		--ok
+
+​			tick和1s数据是否有延迟？		--ok
+
+​			11：30和15:00 补k线		--ok
+
+
+
+
+
+scan "hznc_mkdata:1sdata", {STARTROW => "IC05_1620869400", ENDROW => "IC05_1620889200"}
+
+​	多了9:29的数据？get "hznc_mkdata:1sdata", "IC05_1620869340" 不是我程序生成的。			--ok
+
+
+
+```
+
+ IC05_1620889199                                             column=cf_data:01cSymbol, timestamp=1620889213787, value=IC05
+ IC05_1620889199                                             column=cf_data:02dbClosePrice, timestamp=1620889213787, value=6435.0
+ IC05_1620889199                                             column=cf_data:03dbHeightPrice, timestamp=1620889213787, value=6438.0
+ IC05_1620889199                                             column=cf_data:04dbLowPrice, timestamp=1620889213787, value=6435.0
+ IC05_1620889199                                             column=cf_data:05dbOpenPrice, timestamp=1620889213787, value=6438.0
+ IC05_1620889199                                             column=cf_data:06dbSum, timestamp=1620889213787, value=2.188408E7
+ IC05_1620889199                                             column=cf_data:07dbYTClosePrice, timestamp=1620889213787, value=6506.6
+ IC05_1620889199                                             column=cf_data:08uTime, timestamp=1620889213787, value=1620889199
+ IC05_1620889199                                             column=cf_data:09uVolume, timestamp=1620889213787, value=17
+ IC05_1620889199                                             column=cf_data:10uVolume_Sell, timestamp=1620889213787, value=52139
+ IC05_1620889199                                             column=cf_data:11zpos, timestamp=1620889213787, value=65360.0
+ IC05_1620889199                                             column=cf_data:12zpos_diff, timestamp=1620889213787, value=5.0
+ IC05_1620889199                                             column=cf_data:13avgPrice, timestamp=1620889213787, value=6447.400000000001
+
+```
+
+​		是不是有老的程序在跑， 老的程序过滤掉股指数据： GetMarketDataAndStore_20210513.jar		
+
+1620873259 IH2105
+
+IH05_1620873259_0
+
+​	程序卡住了？
+
+at org.apache.hadoop.hbase.client.HTable.put(HTable.java:542)
+
+
+
+补一下tick数据， 检查：
+
+get "hznc_mkdata:tickdata", "IH05_1620873259_0"
+
+
+
+删除数据：
+
+
+
+ih:
+
+ scan "hznc_mkdata:tickdata", {STARTROW => "IH05_1620867600_0", ENDROW => "IH05_1620891000_2"}
+
+13596 IH 2105 1 Tick Bar.txt		--ok
+
+
+
+ic:
+
+16212
+
+if:
+
+21069
+
+
+
+
+
+今天工作：
+
+20210513
+
+​	1.实时k线程序线上联调，修改收盘补k线的问题	--ok
+
+​	2.补数据		--ok
+
+################
+
+## 20210514
+
+1.每天上班要做的				--ok
+
+```
+1.检查下hadoop集群, hbase集群			
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  
+	进程：RunOnlyGuzhi		9:20
+    	  
+10.10.10.102 administrator/Admin711406 
+	进程：GetMarketDataAndStore		8:50
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+```
+
+
+
+2.实时k线程序升级
+
+​		检查下是否正常运行
+
+​					增加了一个标记：dataSource: dc
+
+scan "hznc_mkdata:tickdata",{STARTROW => "IC05_1620954000_0", ENDROW => "IC05_1620977400_2"}
+
+​		测试数据都放开的情况， 性能测试
+
+​		商品期货的数据什么时候来？ 合并规则？开盘收盘时间？
+
+​			9:00-15:00
+
+```
+hbase admin 是否线程安全
+getTable.put()
+
+是否可以优化，hbase 批量保存
+public void loadTableCache() throws IOException {
+    tables = Maps.newConcurrentMap();
+    // 需要设置缓冲区
+    tables.put(TABLE_TICK,  connection.getTable(TableName.valueOf(TABLE_TICK)));
+    tables.put(TABLE_SECOND_ONE, connection.getTable(TableName.valueOf(TABLE_SECOND_ONE)));
+    tables.put(TABLE_SECOND_TWO, connection.getTable(TableName.valueOf(TABLE_SECOND_TWO)));
+    tables.put(TABLE_SECOND_THREE, connection.getTable(TableName.valueOf(TABLE_SECOND_THREE)));
+    tables.put(TABLE_SECOND_FIVE, connection.getTable(TableName.valueOf(TABLE_SECOND_FIVE)));
+    tables.put(TABLE_SECOND_TEN, connection.getTable(TableName.valueOf(TABLE_SECOND_TEN)));
+    tables.put(TABLE_SECOND_FIFTEEN, connection.getTable(TableName.valueOf(TABLE_SECOND_FIFTEEN)));
+    tables.put(TABLE_SECOND_THIRTY, connection.getTable(TableName.valueOf(TABLE_SECOND_THIRTY)));
+    tables.put(TABLE_MINUTE_ONE, connection.getTable(TableName.valueOf(TABLE_MINUTE_ONE)));
+    tables.put(TABLE_MINUTE_FIVE, connection.getTable(TableName.valueOf(TABLE_MINUTE_FIVE)));
+    tables.put(TABLE_MINUTE_FIFTEEN, connection.getTable(TableName.valueOf(TABLE_MINUTE_FIFTEEN)));
+    tables.put(TABLE_MINUTE_THIRTY, connection.getTable(TableName.valueOf(TABLE_MINUTE_THIRTY)));
+    tables.put(TABLE_HOUR_ONE, connection.getTable(TableName.valueOf(TABLE_HOUR_ONE)));
+    tables.put(TABLE_DAY_ONE, connection.getTable(TableName.valueOf(TABLE_DAY_ONE)));
+  }
+```
+
+3.lc插件安装
+
+
+
+4.git仓库
+
+​	总结
+
+​	脑图
+
+
+
+
+
+todo:
+
+SPI ,serviceLoader
+
+hbase性能测试，吞吐量如何？
+
+用flink去实现k线合并的程序
+
+装一套hive,跟hbase集成
+
+装一套监控的系统
+
+看看：
+
+开仓，平仓
+
+盘面资金
+
+大单数据
+
+北向资金
+
+策略
+
+主力合约Tick数据
+
+股指
+
+期权
+
+股票的开盘时间
+
+主连
+
+股票
+
+
+
+代码问题：
+
+​	日志问题，直接System.println.out
+
+​	配置文件，ip端口直接写死的
+
+​	打出来的jar包是用eclipse导出来的，应该用mvn install
+
+​	依赖的jar包直接提交了
+
+​	代码格式化问题，格式太乱，大量重复代码，没有用到的变量。
+
+​	单元测试
+
+
+
+## TODO
+
+
+
+LinkedBlockingQueue 线程安全
+
+算法和计算机原理
+
+flink
+
+clickhouse
+
+mysql
+
+数据仓库
+
+
+
+
+
+
+
+
+​	

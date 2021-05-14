@@ -1,0 +1,954 @@
+记录：
+
+
+sourcegraph
+
+    地址：http://10.1.13.1:7080/search
+    用户名密码: lzy/123456
+
+
+maven 配置：
+D:\soft\maven\apache-maven-3.3.9\conf\settings.xml
+
+ceph 建新的osd:
+ 1013  2020-05-21 19:34:10 ceph -s
+ 1014  2020-05-21 19:34:17 ceph osd out osd.0
+ 1015  2020-05-21 19:34:28 systemctl stop ceph-osd@0
+ 1016  2020-05-21 19:34:35 ceph osd crush remove osd.0
+ 1017  2020-05-21 19:34:45 ceph auth del osd.0
+ 1018  2020-05-21 19:34:53 ceph osd rm osd.0
+ 1019  2020-05-21 19:34:59 umount /var/lib/ceph/osd/ceph-0
+ 1020  2020-05-21 19:35:04 lsblk
+ 1021  2020-05-21 19:35:10 lvdisplay
+ 1022  2020-05-21 19:35:25 lvremove /dev/ceph-897eaa6d-d2d6-4b94-ba7a-734505cf974a/osd-block-922b9306-b72b-47df-90fe-a58eae21d36f
+ 1023  2020-05-21 19:35:43 vgremove /dev/ceph-897eaa6d-d2d6-4b94-ba7a-734505cf974a
+ 1024  2020-05-21 19:35:50 lsblk
+ 1025  2020-05-21 19:35:58 cd /opt/ceph-cluster
+ 1026  2020-05-21 19:36:07 ceph-deploy osd create --data /dev/sdb ceph-10-1-46-32
+
+46.12是solea的web,showApp和数据库, 
+46.13是solea的后台这些七七八八的
+jgcai(蔡建国) 2019-07-31 11:59:44
+solr在46.29
+arm：10.1.132.78 root/arm654321
+gradlew:f
+gradlew -Pprod bootDistTar test / gradlew -Pprod clean bootDistTar
+推荐书籍：
+http://wiki.lzy.com/%E6%96%B0%E5%91%98%E5%B7%A5%E5%85%A5%E8%81%8C%E5%BF%85%E7%9C%8B
+
+10.1.12.4 share 123456
+10.1.11.5 user 123456
+# solea 1.9 solea-1.9 B环境：
+连接：l
+10.2.30.4 root/123456	高级》隧道：10.1.50.18 gw/123456
+prometheus
+:15018
+
+c环境分配：
+http://wiki.lzy.com/%E7%A0%94%E5%8F%91%E6%B5%8B%E8%AF%95%E7%8E%AF%E5%A2%83%28C%E7%8E%AF%E5%A2%83%EF%BC%89ip%E5%88%86%E9%85%8D?highlight=%2810.1.58.1%29
+
+消费情况：
+/usr/hdp/current/kafka-broker/bin/kafka-consumer-groups.sh  --bootstrap-server 10.1.46.32:6667 --describe --group solea-tika
+
+
+远程调试forkparse:
+-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8012
+
+清除kafka数据：
+清除kafka数据  --ok
+		  kafka 清掉数据
+ZK_HOSTS="10.1.61.5:2181"
+		  /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper ${ZK_HOSTS} --topic  solea_fileserver_web  --alter --config  retention.ms=10 
+/usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper ${ZK_HOSTS} --topic solea_fileserver_web --alter --config cleanup.policy=delete
+		  
+		  查看等到log大小为0
+		  ll /opt/kafka-logs/solea_fileserver_web-*
+		  
+		  kafka还原设置
+		  /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper ${ZK_HOSTS} --topic solea_fileserver  --alter --config  retention.ms=604800000 
+		
+	  清空solr数据	--ok
+		  python /opt/millipede-solr/management/bin/solr_collection.py delete-collection solea_
+
+		  创建collection:
+cd /opt/solea-release-2.0.0-r1/solr
+python /opt/millipede-solr/management/bin/solr_collection.py create-collection --auto-numshard  --replication-factor 1 --route-name implicit --auto-create-replication=2 --schema-file /opt/solea_schema/schema.xml  solea_
+
+ /opt/solea-release-2.0.3-r1/solr/conf/schema.xml  solea_
+ 
+ /usr/hdp/current/kafka-broker/bin/kafka-topics.sh  --zookeeper $ZK_HOSTS  --topic solea_fileserver  --describe
+ 
+听包：
+tcpdump -i any tcp port  15003 -w 1.pcap
+
+http and ip.src==10.1.30.4 and ip.dst==10.1.30.4
+ 
+
+liyulong:
+lovexiafe1314
+ 
+ 
+source /opt/solea-tika-app/bin/solea_tika_profile.sh
+export SOLEA_TIKA_APP_OPTS="$SOLEA_TIKA_APP_OPTS -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8019"
+
+cd /opt/solea-tika-app
+bash /opt/solea-tika-app/bin/solea-tika-app start-tika-api \
+ --app.id=api
+ 
+curl http://10.1.46.32:8018/tika/api/doParse  -F "file=@/opt/solea-tika-external-service/test-data/test_ocr.jpg" -d "config=@{\"translateEnable\":\"true\",\"ocrEnable\":\"true\"}" -X POST
+ 
+ 
+source /opt/solea-tika-app/bin/solea_tika_profile.sh
+export SOLEA_TIKA_APP_OPTS="$SOLEA_TIKA_APP_OPTS -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8019"
+	 
+ bash /opt/solea-tika-app/bin/solea-tika-app run-tika \
+ --app.id=xxx.test --application.tika.file.debug=false \
+ --application.kafka.topic=solea_fileserver \
+ --application.solr.collection=solea_redirect_collection
+ 
+远程调试forkparse:
+-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8021
+
+netstat -nap | grep 1096
+ 
+ solea数据库：
+ 10.1.46.31/solea/123456/ora11g
+ 
+
+
+A环境：
+http://10.1.12.4/ssh%20proxy#preview
+
+查询占用端口进程：
+netstat -nlp | grep :8080 | awk '{print $7}' |awk -F"/" '{ print $1 }'
+
+c mntos:
+ http://10.1.16.1/mntos/
+
+20201009
+1.南京sj出差						--ok
+	1.找客户拿硬盘
+	2.检查系统
+	3.更新tika
+	4.im数据问一下
+
+
+2.SOLEA-3212 【详情】敏感信息的实际个数与标注的个数不符
+
+
+3.SOLEA-3149 【tika】zip解压文件对子文件名编码写死了GB18030，导致一些包含中文名子文件解压异常
+	iso编码是否可以用GBK代替
+
+4. SOLEA-3192 【showapp】邮件附件下载样式异常, 且下载变成预览
+下载接口：
+http://10.1.61.2:15003/solea-showapp/tempfile/download?fileId=/opt/solea-showapp/temp/20201009/4553af60d02749a8a5c0695574369666
+
+  public static final String REQUEST_FILE_TMP_PATH = "tempFilePath";
+  ATTR_TEMPFILEPATH
+ 
+jstack -l tika-pid | grep lzy -C 4
+ 
+
+20201010
+1.SOLEA-3212 【详情】敏感信息的实际个数与标注的个数不符
+好像是铭感词提取有问题？没有提取出来
+
+2.SOLEA-3141 【tika】查一下哪些库是需要发布到maven仓库的
+
+
+进行分词：
+  static List<Term> tokenizer(String content) {
+    List<Term> terms = NlpAnalysis.parse(content);
+    return terms;
+  }
+
+
+
+1.已经发布的有哪些库？
+		http://artifact.lzy.com/nexus/#browse/search=group.raw%3Dcom.lzy.solea.*
+			1.x版本以及以前是maven的默认都会发布：
+				solea-common
+				solea-tika-parseutil
+				solea-tika-parsers
+				solea-tika-parent
+
+			2.x版本是gradle的默认不发布，已发布的有：
+				filemetaparser
+				fileserver-2_openapi
+				
+				solea-document-convert（maven）
+				
+				发布到本地：
+				
+				
+2.gradle怎么发布？
+
+//上传jar包
+filemetaparser:
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+        }
+    }
+}
+
+fileserver-2_openapi:
+publishing {
+   publications {
+     openapi(MavenPublication) {
+	    artifactId = "${project.name}_openapi"
+		artifact 'src/main/resources/swagger/api.yml'
+     }
+  }
+}
+filemetaparser
+fileserver-2_openapi
+通过gradlew publish 发布到remote maven
+
+solea-tika-parsers
+solea-tika-parseutil
+通过gradlew -Pprod publishToMavenLocal发布到本地仓库
+
+
+3.有哪些被依赖的库需要发布？
+如之前发现的问题，2.x项目依赖了一个1.x 的tika-parsers，应该将2.x tika-parsers发布，依赖当前版本的tika-parsers			--ok
+solea-tika-parsers
+solea-tika-parseutil
+publishing {
+   publications {
+      maven(MavenPublication) {
+         groupId "com.lzy.solea.tika"
+         from components.java
+      }
+   }
+} 
+
+1.tika中的内部依赖的默认库发布到本地仓库，通过：gradlew -Pprod publishToMavenLocal，有：
+solea-tika-parsers
+solea-tika-parseutil
+
+2.提供外部依赖的库，通过：gradlew -Pprod publish，有：
+filemetaparser
+fileserver-2_openapi
+
+
+3.SOLEA-3192 【showapp】邮件附件下载样式异常, 且下载变成预览
+	SOLEA-2963 【onlyoffice】文档转换的问题
+		在这里被注释掉了？
+
+
+4.SOLEA-3149 【tika】zip解压文件对子文件名编码写死了GB18030，导致一些包含中文名子文件解压异常
+测试一下跑起来
+
+
+20201012
+1.电脑--ok
+
+2.出差jira，邮件		--ok
+（市外出差）领取《论之语研发部客户现场工作检查清单》、《研发部现场数据处理checklist》、《论###之语研发部现场工作确认单》
+
+3.谢杰的patch		--ok
+
+4.编码识别的代码		--ok
+
+5.过一下jira --ok
+SOLEA-3192 【showapp】邮件附件下载样式异常, 且下载变成预览
+	应该分给蔡或者谢来做
+SOLEA-3176 【solea统计】页面的统计数量不准确
+	本周徐吉去兰州了，联系排查一下
+SOLEA-3149 【tika】zip解压文件对子文件名编码写死了GB18030，导致一些包含中文名子文件解压异常
+	1.现场测试一下
+	2.全量上传测试一下
+SOLEA-3229 【文件上传失败回调】返回定义的失败code和中文的描述信息到页面提示
+
+
+# 本周工作：
+total: 2d
+SOLEA-3212 【详情】敏感信息的实际个数与标注的个数不符											4h
+SOLEA-3149 【tika】zip解压文件对子文件名编码写死了GB18030，导致一些包含中文名子文件解压异常		4h
+南京sj出差																						4h
+SOLEA-3141 【tika】查一下哪些库是需要发布到maven仓库的											2h
+SOLEA-3192 【showapp】邮件附件下载样式异常, 且下载变成预览										2h
+
+20201024
+1.问下崔哥，广州gpu显卡事情		--ok
+	暂时不用管了
+
+2.验收文档		--给王艳玲，扫描完成后再给楚雪  ok
+招标文件		--ok
+
+3.关jira,整理一下		--ok
+	报销
+	还电脑
+	回复邮件
+
+ 
+solea：
+vue: 文件统计
+文档翻译是否要做？已经完成设计了
+showapp 是否要重新设计？
+
+facebook：是否要搞？
+ 
+20201026
+1.本周工作			--ok
+
+
+2.报销
+还电脑
+
+3.SOLEA-2929【solea】文档转换测试
+	3.1 想一下，如何测试
+		1.docx,pptx,xlsx三种文件，现有程序用的poi，测试一下打开率
+		2.其他不带x的文件，用liboffice测试下转换成功率
+		3.pdf》》 word使用adobe reader做，测试下转换率 看看中译
+			adobe reader ?
+			libreffice?
+			aabby
+	3.2 搜集一下所有的文档
+	/opt/documentConvert/data
+	
+	
+预测试方法：
+准备尽可能多的docx,pptx,xlsx,doc,ppt,xls,pdf文件
+1.测试docx,pptx,xlsx三种文件的打开率：
+	运行转换程序:	bash solea-document-convert --inputDir /opt/test/input --outputDir /opt/test/output
+	统计： 原始文件总数/转换结果数
+	查看一下文档，可输出打上分段标记后的新文件
+2.测试使用libreoffice doc转docx,ppt转pptx,xls转xlsx:
+	运行转换程序:	bash solea-document-convert --inputDir /opt/test/input --outputDir /opt/test/output
+	统计： 原始文件总数/转换结果数， 转换时间
+	查看文档转换结果
+3.测试调用adobe reader pdf转换word
+	同上运行程序查看转换的结果
+	统计： 原始文件总数/转换结果数， 转换时间
+	查看文档转换结果
+
+	
+主要难点:
+1.poi读取三种文档
+2.使用liboffice转换
+3.使用adobe reader 转换pdf到word
+
+
+20201027
+1.sendFserver解压问题，临时文件清理
+解压失败的问题
+
+加上打印的日志 --ok
+
+生成bad文件有问题，找一个841文件测试
+46675
+
+http://git.lzy.com/lzy/solea/merge_requests/1870
+
+
+2.徐吉那边的问题，听包看看			--ok
+web的url跟external-service改成一致就行了
+
+3.测试一下poi的打开率
+
+3种不带x的:
+find -regex ".*\.doc\|.*\.xls\|.*\.ppt" | xargs -i mv {} /opt/solea-document/3n/
+
+3种带x的：
+find -regex ".*\.docx\|.*\.xlsx\|.*\.pptx" | xargs -i mv {} /opt/solea-document/3x/
+
+pdf:
+find -name "*.pdf"| xargs -i mv {} /opt/solea-document/pdf/
+
+
+测试一下：
+bash /opt/solea-tools/solea-document-convert/bin/document_convert.sh --source /opt/test/f7eb48f7-95c3-4d82-9036-bcd75486d9e8-104774-2260273.docx --dest /opt/test/simple_result.docx --middleConvertUrl http://10.1.46.31:15003/solea-showapp/onlyoffice/convert?filetype=doc&outputtype=docx
+
+
+报错：
+Exception in thread "main" java.lang.OutOfMemoryError: GC overhead limit exceeded
+
+
+4.看看中译的实现，adobe reader转pdf
+
+
+solea:
+广州问题记录一下
+王涛，三级故障，并且出一个题目,并且培训
+省厅的问题尽快调试
+
+20201028
+1.领一个三级故障，培训，出个题目						--ok
+合下代码：
+http://git.lzy.com/lzy/solea/merge_requests/1870
+
+培训
+一些程序因为场景或者需要会产生临时文件，这些文件一般用完要立即删掉。
+并且对生成临时文件的目录要做一个tmpwatch，用来清理程序出现异常情况时没有及时删除的临时文件。一般一天清理一次
+包括我们写单元测试时有时会在本地写文件，也需要在单元测试中清理掉。
+
+
+题目：
+程序中产生的临时文件应该如何管理，下面说明正确的是：
+	A.临时文件用完及时在程序中清理掉，防止堆积，这时就没有必要多做tmpwatch
+	B.临时文件用完可以不在程序中清理，统一对该目录做一个tmpwatch
+	C.因为一些场景需求，临时文件需保留一段时间不能在程序中清理的，这时做tmpwatch就可以
+	D.临时文件用完应该由程序清理，同时做tmpwatch保障程序异常情况
+	E.新程序，新功能要做性能测试，做完要确认日志，相关数据的堆积情况
+
+
+2.测试poi打开的程序
+
+测试：
+bash /opt/solea-tools/solea-document-convert/bin/document_convert.sh --inputDir /opt/test/f7eb48f7-95c3-4d82-9036-bcd75486d9e8-104774-2260273.docx --outputDir /opt/test/simple_result.docx
+
+SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+版本冲突
+
+log4j:WARN No appenders could be found for logger (com.lzy.solea.convert.ConverterProcess).
+log4j:WARN Please initialize the log4j system properly.
+log4j:WARN See http://logging.apache.org/log4j/1.2/faq.html#noconfig for more info.
+
+加上配置文件 log4j.properties
+
+
+oom了：
+79649 [main] INFO  com.lzy.solea.convert.ConverterProcess  – start convert file: 169fc47f-bbae-4438-8ad5-8a67802dc927-104774-2441826.xlsx
+Exception in thread "main" java.lang.OutOfMemoryError: GC overhead limit exceeded
+
+
+bash bin/solea_document_convert.sh --inputDir /opt/test/solea-document/3x --outputDir /opt/test/solea-document/output/3x
+
+
+3.测试adobe reader 转pdf
+	1.
+	avDoc = Dispatch("AcroExch.AVDoc")
+	2.
+	pdDoc = avDoc.GetPDDoc()
+	jsObject = pdDoc.GetJSObject()
+	3.
+	jsObject.SaveAs(dst, "com.adobe.acrobat.docx")
+	4.
+	current_app.logger.info("close pdDOC")
+
+AcroExch.PDDoc
+
+
+java.lang.NoClassDefFoundError: Could not initialize class com.jacob.com.Dispatch
+
+需要 jacob.dll 在jdk/bin目录下
+
+System.setProperty("jacob.dll.name", "jacob");
+ComThread.InitSTA();
+
+adobe pid?
+app = new ActiveXComponent("AcroExch.AVDoc");
+
+
+4.libreoffice转换：
+
+Caused by: java.lang.ClassNotFoundException: com.sun.star.task.ErrorCodeIOException
+
+
+doc转docx失败：
+org.artofsolving.jodconverter.office.OfficeException: unsupported conversion
+
+DocumentFormat
+
+没有setStoreProperties
+
+    DocumentFormat doc = new DocumentFormat("Microsoft Word", "doc", "application/msword");
+    doc.setInputFamily(DocumentFamily.TEXT);
+    doc.setStoreProperties(DocumentFamily.TEXT, Collections.singletonMap("FilterName", "MS Word 97"));
+    this.addFormat(doc);
+    DocumentFormat docx = new DocumentFormat("Microsoft Word 2007 XML", "docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+    docx.setInputFamily(DocumentFamily.TEXT);
+    this.addFormat(docx);
+	
+	
+
+
+20201029
+1.SOLEA-2929 【solea】文档转换测试
+	 不带x的转换到带x的 可以，今天全量测试一下
+	 pdf转word测试一下
+	 
+
+文件名处理一下 不能有空格
+	 
+	 
+运行一下：
+
+不带x转带x:
+bash bin/solea_document_convert.sh --inputDir /opt/test/solea-document/3n --outputDir /opt/test/solea-document/output/3n
+
+先测试几千个：
+bash bin/solea_document_convert.sh --inputDir /opt/test/solea-document/tmp --outputDir /opt/test/solea-document/output/tmp_out
+
+带x poi测试：
+bash bin/solea_document_convert.sh --inputDir /opt/test/solea-document/3x --outputDir /opt/test/solea-document/output/3x
+
+
+libreoffice 命令行测试下：
+soffice --headless --invisible --convert-to docx F:\documentConvert\inputDir\3n\3n\001625.doc --outdir F:\documentConvert\outputDir
+
+
+   --headless          Starts in "headless mode" which allows using the
+                       application without GUI. This special mode can be used
+                       when the application is controlled by external clients
+                       via the API
+					   
+   --invisible         Starts in invisible mode. Neither the start-up logo nor
+                       the initial program window will be visible. Application
+                       can be controlled, and documents and dialogs can be
+                       controlled and opened via the API. Using the parameter,
+                       the process can only be ended using the taskmanager
+                       (Windows) or the kill command (UNIX-like systems). It
+                       cannot be used in conjunction with --quickstart.
+
+问题：
+1. poi打开率：
+42701f3e-3ee7-4b5d-8a12-041b1674ddbc-104774-2258651.xlsx 30MB 卡死
+
+
+
+总数： 1318 输出结果数：1262  还有44个没有输出
+
+看看日志：
+[root@solea-10-1-61-3 solea-document-convert]# grep -rn "cost time" 3x.log | wc -l
+1263
+
+[root@solea-10-1-61-3 solea-document-convert]# grep -rn "error" | wc -l
+66
+
+
+
+
+
+2.pdf转docx
+pdf转换很慢，2.5MB的要转3分钟，有一个100MB的左右转直接卡死了
+start convert file: 131-Word2007宝典.pdf
+GetPDDoc.Close
+AcroExch.AVDoc.Close
+adobe reader: convert file: 131-Word2007宝典.pdf cost time: 0:56:41.951000
+
+几个比较慢的：
+start convert file: 2f213423-c193-421e-a720-a8b6444fe79d-104774-2442123.pdf
+
+start convert file: 3ed53ed9-c449-45f9-8fcc-c8ac0564c422-104774-2252115.pdf
+(-2147352567, '\xb7\xa2\xc9\xfa\xd2\xe2\xcd\xe2\xa1\xa3', (1001, u'Acrobat JavaScript', u'NotAllowedError: \u5b89\u5168\u6027\u8bbe\u7f6e\u7981\u6b62\u8bbf\u95ee\u672c\u5c5e\u6027\u6216\u65b9\u6cd5\u3002', None, 0, 0), None)
+
+
+start convert file: 69d658f7-4111-4681-85b5-65841c42568a-104774-2419208.pdf
+
+local variable 'pdDoc' referenced before assignment
+
+7fefbe77-d5e4-4c61-8844-18d1e65a4d7b-104774-2259938.pdf
+85e08568-9971-4480-89c5-5cc96247ad45-104774-2259634.pdf
+889107e0-ba23-4e51-bca2-047e1b119600-104774-2252221.pdf
+9c9266e7-1f05-4444-ace8-7a4a31dc2771-104774-2258589.pdf
+a3828624-1782-44fd-8225-e4594c9fc544-104774-2255985.pdf
+
+3.libreoffice转换：
+doc转docx:
+Error: no export filter for E:\work\logbook\202010\data\libreofficeTest\output\智联招聘_Danni_英文.docx found, aborting.
+Error: no export filter
+
+有几个比较慢：
+2179007 [main] INFO  com.lzy.solea.convert.ConverterProcess  – class com.lzy.solea.documentconvert.impl.DocConverter: convert file: /opt/test/solea-document/3n/006940.doc cost time: 33457
+
+2908617 [main] INFO  com.lzy.solea.convert.ConverterProcess  – class com.lzy.solea.documentconvert.impl.DocConverter: convert file: /opt/test/solea-document/3n/010798.doc cost time: 369771
+
+
+root     3795649       1 97 15:46 pts/7    00:48:00 /opt/libreoffice7.0/program/soffice.bin --headless --invisible --convert-to docx /opt/test/solea-document/3n/010798.doc --outdir /opt/test/solea-document/output/3n
+root     3799455 3709238  0 15:52 pts/7    00:00:00 /opt/libreoffice7.0/program/oosplash --headless --invisible --convert-to docx /opt/test/solea-document/3n/010806.doc --outdir /opt/test/solea-document/output/3n
+
+
+
+日志没有报错，没有输出
+
+
+
+
+/opt/test/solea-document/output/tmp_out
+
+SOLEA-2929 【solea】文档转换测试
+1.3中带x的poi打开率：
+
+总数： 1318 输出结果数：1262  还有44个没有输出
+
+找一些看看：
+3x.log:807:101893 [main] ERROR com.lzy.solea.convert.ConverterProcess  – convert doc /opt/test/solea-document/3x/500968.xlsx error: com.lzy.solea.util.ConvertException: java.lang.NullPointerException
+
+基本都是文件大小为空或者损坏的
+
+
+2.libreoffice转换，不带x的转带x的：
+
+[root@solea-10-1-61-2 solea-document-convert]# find /opt/test/solea-document/tmp -type f | wc -l
+1500
+[root@solea-10-1-61-2 solea-document-convert]# find /opt/test/solea-document/output/tmp_out -type f | wc -l
+728
+
+有一半没有成功？
+
+命令拿出来看看：
+soffice --headless --invisible --convert-to xlsx E:\work\logbook\202010\tmp\3n\000032.xls  --outdir E:\work\logbook\202010\data\libreofficeTest\output
+
+三种具体区分开，各式多少成功率
+
+doc转docx:
+
+
+
+试试office转
+
+试试福昕阅读器
+
+3.pdf 转换：
+
+pdf转换很慢，2.5MB的要转3分钟，有一个100MB的左右转直接卡死了
+start convert file: 131-Word2007宝典.pdf
+GetPDDoc.Close
+AcroExch.AVDoc.Close
+adobe reader: convert file: 131-Word2007宝典.pdf cost time: 0:56:41.951000
+
+有转换失败的，查看文件有问题
+问题：
+会唤起客户端
+
+	 
+  
+	 
+2.SOLEA-3265 【tika-external-service】自动部署安装多台，分解调用
+
+
+ 
+ 
+ab压力测试一下
+
+
+ab -n 1000000 -c 300 -k http://10.1.61.3:15003/solea-tika-external-service/translator/sync/_test
+
+
+
+FZhang(章峰) 10:15:27
+各个 WEB 开发注意一下，没有配置的请配置一下，不要浪费时间去等待 ide 的刷新了
+
+映射本地 resources 目录，映射出来，修改前端代码无需等待 eclipse/idea 刷新；
+增加工作效率，等待 idea 的刷新消耗大量时间！
+//TITAN为例：
+location /titan/resources/ {
+    alias D:/WORK/GITN/titan/06sourcecode/web/titan-interface/src/main/webapp/WEB-INF/resources/;
+    proxy_buffering off;
+}
+
+http://wiki.lzy.com/web开发环境搭建
+
+
+ansible-playbook -i environments/dev  site.yml --list-tags
+ansible-playbook -i environments/dev  site.yml  --tags "solea_tools" -v
+
+20201030
+1. 文档转换测试
+
+1.1 office转换
+convert /opt/test/solea-document/tmp/413280.doc -> /opt/test/solea-document/tmp_out/413280.docx using filter : MS Word 2007 XML
+Error: source file could not be loaded
+
+soffice --headless --invisible --convert-to ${suffix} ${file}  --outdir ${output_dir}
+
+cd /opt/test/solea-document-convert
+bash bin/convert_3x.sh /opt/test/solea-document/tmp /opt/test/solea-document/tmp_out
+
+总数： 1500
+[root@solea-10-1-61-2 tmp_out]# find -type f | wc -l
+1496
+
+看看失败的：
+
+413309.doc
+001630.ppt
+002163.ppt
+002164.ppt
+
+损坏文件，office打不开
+
+
+
+1.2 pdf转word
+	对比下：    
+	测试文件：  论之语业务大数据平台架构说明2.pdf（2.5MB） 			6页
+				测试之美].Beautiful.Testing.文字版.pdf(5.53MB)  
+				[Python学习手册(第4版)].(Learning.Python).Mark.Lutz.扫描版.pdf(94MB)
+				[Programming.Computer.Vision.with.Python(2012.6)].Jan.Erik.Solem.文字版.pdf(69MB)
+
+	
+	pdf大小：					2.5MB			5.53MB（文字版）352页		94MB(扫描版)/1162页		69MB(文字版)/261页
+			adobe reader		0:04:18/845KB			45s/3.17MB			40m没有完成				01m54s/63.5MB
+			福昕    			等了10分钟无响应		23s/3.00MB			3m24s/88.9MB			1m08s/63.8MB
+			WPDFCPro			14s						3m/5.4MB			5m才一半				1m05s/7.47MB
+	adobe reader（关闭ocr）		3m/845k					23s/2.99MB			3m/94MB					1m10s/64.1MB
+			
+adobe reader关闭ocr之后性能会显著提高，较福昕的速度稍微快一点，优于福昕和WPDFcPro
+
+start convert file: 1027c6bd-4b6f-44a7-85b8-57782e9d8da8-104774-2442260.pdf
+adobe reader: convert file size: 11.98 MB, cost time: 0:01:30.443000
+
+start convert file: 1128f70d-27b7-4e57-b5dd-198ed4b26728-104774-2252016.pdf
+adobe reader: convert file size: 7.29 MB, cost time: 0:00:04.580000
+
+start convert file: 11dfa9b5-12f2-4bc4-8ad1-b856a0a7832e-104774-2258669.pdf
+adobe reader: convert file size: 0.51 MB, cost time: 0:00:02.204000
+
+start convert file: 0e4d41f8-eedf-4a2f-a73a-461a9c019609-104774-2257546.pdf
+adobe reader: convert file size: 6.51 MB, cost time: 0:00:14.770000
+
+start convert file: 0e08b5c5-6716-435a-a501-0eb9ff2710b3-104774-2416849.pdf
+adobe reader: convert file size: 2.62 MB, cost time: 0:00:10.034000
+
+start convert file: 12b84a05-9181-4998-9e11-0b74eac0eda9-104774-2253174.pdf
+adobe reader: convert file size: 15.63 MB, cost time: 0:00:26.086000
+
+
+2.外部服务安装多台:
+
+1.要解决什么问题，要说清楚
+	解决tika进程远大于external-service时间，external会被调死的单点故障
+其它系统间的依赖关系，输入和输出
+依赖什么
+	下游调用的接口：翻译服务，图片分类服务
+给谁使用
+	主要给tika，控制调用外部接口（翻译，分类服务）的并发数量，解决单点故障
+如果完成了，交付的是什么（客户的角度）
+	主要是保障翻译的接口可以稳定调用，翻译功能稳定
+用什么技术方案
+	tika跟external-service 安装一定比例的数量，如tika有300进程，external-service 安装10台，控制每台外部服务并发数
+	能够均衡的把tika调用分配到每一台external-service
+	主要调用链关系：
+		tika 》external-service 》 翻译服务
+	
+	1.增加nginx配置
+	为了保证tika可以均衡的调到外部服务：
+	在顶层nginx中配置upstream:
+	upstream solea-external-servers{
+		# 流量分发到连接数较少的服务，保证平均分配
+		least_conn;
+		external-server1:15003;
+		external-server2:15003;
+		external-server3:15003;
+        # 同时加上健康检查，保证其中一台故障后，可以分配到其他机器
+		check interval=10000 rise=2 fall=3 timeout=3000 type=http;
+		check_http_expect_alive http_2xx;
+		check_http_send "GET /solea-tika-external-service/translator/sync/_test HTTP/1.0\r\n\r\n";
+}
+	2.自动部署配置中说明：
+	
+	3.安装文档中说明
+	
+	
+
+如果完成后，如何部署的
+	外部服务安装由tika的数量决定安装数量，参考广州的，如果tika 300个进程，external-service 装10台，翻译200台
+如果完成后，数据流如何走
+	tika》web（顶层nginx）》分发到external-service 》翻译
+如果有性能指标要一起写进去
+例如计算要多少时间，入全文花多少时间
+
+分解出jira（包含前台，后台），并且关联起来
+
+
+max_conns=2
+测试下视频转换服务：
+upstream solea-media-service {
+    #hash $clientRealIp;
+        server solea-10-1-61-3:15003 max_conns=1;
+        server solea-10-1-61-6:15003 max_conns=3;
+        # 检查服务状态
+    check interval=10000 rise=2 fall=3 timeout=3000 type=http;
+    check_http_expect_alive http_2xx;
+    check_http_send "GET /solea-media-service/media/_test HTTP/1.0\r\n\r\n";
+}
+
+curl 10.1.61.2:15003/solea-media-service/media/_test
+
+
+ab -n 4000 -c 400 -k 10.1.61.2:15003/solea-media-service/media/_test
+
+预期结果：
+查看nginx日志：
+10-1-61-3 调用次数 * 3 = 10-1-61-6 调用次数
+
+150						354
+164						362
+
+[root@solea-10-1-61-2 nginx]# grep -rn "/solea-media-service/media/_test" | grep 10.1.61.2 | wc -l
+401
+
+用 least_conn;
+将流量分发到当前连接数最少的服务器上的一个策略
+
+
+看看61.3日志：
+[root@solea-10-1-61-3 nginx]# grep -rn "solea-media-service/media/_test" | wc -l
+2077
+
+[root@solea-10-1-61-3 nginx]# grep -rn "solea-media-service/media/_test" access.log| wc -l
+2005
+
+[root@solea-10-1-61-3 nginx]# grep -rn "solea-media-service/media/_test" access.log| wc -l
+1988
+
+再看看61.6的日志：
+[root@solea-10-1-61-6 nginx]# grep -rn "solea-media-service/media/_test" access.log | wc -l
+1994
+
+[root@solea-10-1-61-6 nginx]# grep -rn "solea-media-service/media/_test" access.log | wc -l
+2024
+
+20201031
+1.
+SOLEA-3255 【自动部署】自动部署改进						
+
+延期：
+SOLEA-2866 【翻译】合肥xxx张校校发现的问题，日语没有进行翻译				--ok
+
+2.SOLEA-3265 【tika-external-service】自动部署安装多台，分解调用		--ok
+
+
+3.重新部署，发起来
+
+java -cp '/opt/solea-tools/split-word-jcseg/lib/jcseg-server-2.1.2-dev.jar://opt/solea-tools/split-word-jcseg/lib/*' org.lionsoul.jcseg.server.Bootstrap /opt/solea-tools/split-word-jcseg/resource/jcseg-server.properties
+
+
+ffmpeg 安装包没有考
+继续：
+ansible-playbook -i environments/prod site.yml --skip-tags "bind,common"  -v --start-at-task "solea_media_service : install ffmpeg" 
+
+
+1.simba自动部署关掉		--ok
+	mv /vagrant/auto-deploy/auto-deploy.sh /vagrant/auto-deploy/auto-deploy.sh.bak
+2.磁盘限额					--ok
+3.tika都打开，不发solr		--ok
+4.电脑休眠			--ok
+
+问题：
+NAGIOS:{'/usr/bin/timeout --signal=9 5h bash /opt/solea-tika-app/bin/solea_monitor_kafka_topic.sh': 1.0}	
+[root@solea-10-1-65-103 ~]# bash /opt/solea-tika-app/bin/solea_monitor_kafka_topic.sh
+Exception in thread "main" joptsimple.UnrecognizedOptionException: new-consumer is not a recognized option
+        at joptsimple.OptionException.unrecognizedOption(OptionException.java:108)
+
+
+4.adobe reader 在linux下转换
+
+5.改一下：
+http://10.1.50.18:15003/solr
+	
+
+
+curl http://10.1.50.18:15003/solr/solea_redirect_collection/update -d '[{"id":"001","text":"test"}]'
+	
+	
+编译总是报错：
+Caused by: java.io.FileNotFoundException: /tmp/kafka-3455662551931611518/solea_fileserver-0/00000000000000000001.snapshot (No such file or directory)
+
+	
+本周工作
+total: 4d 6h
+SOLEA-2929 【solea】文档转换测试														4d
+SOLEA-3265 【tika-external-service】自动部署安装多台，分解调用							4h
+SOLEA-3255 【自动部署】自动部署改进														2h
+SOLEA-2866 【翻译】合肥xxx张校校发现的问题，日语没有进行翻译
+	
+	
+################
+20201102
+1.检查下发送情况
+	页面
+		没有解析完
+	nagios:
+		solea-10-1-65-103 check_os:
+		timewait number is exceeded . The number is 58677 skip check_iptables skip check_temperature skip check_resove_host
+			check_guard:
+			'/usr/bin/timeout --signal=9 5h bash /opt/solea-tika-app/bin/solea_monitor_kafka_topic.sh': 1.0
+		check_solea_tika_app， bad文件
+		check_solea_send_fserver2， bad文件
+			
+	后台日志看看			--ok
+	/opt/solea-send-fserver2/logs
+		grep -rn "NullPointerException" 
+		grep -rn "error"  *.log
+	
+	tmp文件有没有							--ok
+		/opt/solea-send-fserver2/tmp    
+			[root@solea-10-1-65-104 tmp]# find -type f | wc -l
+			0
+
+		/opt/solea-tika-app/tmp
+			[root@solea-10-1-65-103 tmp]# find -type f | wc -l
+			170
+	bad文件
+		14个bad文件，几个解不开其他是加密的：
+		zip-data/jasper.zip 没有解开，本地可以
+		zip-data/transx.zip
+		柯南.zip  空的文件
+		
+	压缩包解压，跟之前对比		--ok
+	14个失败的，没变化
+		
+	
+2.去广州之前联系一下客户，文档什么时候可以拿到		--ok
+
+
+3.预测试方法：
+	SOLEA-3301 【文档翻译】实现一个dispatch程序，对文件做转换，翻译等命令
+		taskId/时间/原始文件，状态文件，controller.json, 结果文件
+		
+		ctl.sjon
+		{"操作"}
+		
+	SOLEA-3302 【文档翻译】转换程序具体实现，dispatch根据不同的command调用转换程序
+	
+	
+3.本周工作
+total: 5d
+SOLEA-3301 【文档翻译】实现一个dispatch程序，对文件做转换，翻译等命令			2d		@预测试方法
+COMMON-6500 【广东】：机器巡检，有一程序BUG需要修复								2d
+SOLEA-3302 【文档翻译】转换程序具体实现，dispatch根据不同的command调用转换程序	1d		@预测试方法
+	
+	
+	
+TODO:
+A环境演示数据:
+
+演示数据放在\\10.1.11.5\share\项目相关\solea
+ ** 每次安装升级完成后，删除数据，并且全部重发，保证下面的测试也过
+
+ nanj sj
+ 
+ 
+ 登录账号密码:
+admin/1qaz@WSX
+
+服务器登录：
+root/qazwsx@okm
+
+检查下所有nginx都应该有：
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+http://wiki.lzy.com/shell%E5%A6%82%E4%BD%95%E6%94%AF%E6%8C%81%E6%AF%8F%E4%B8%80%E4%B8%AA%E5%91%BD%E4%BB%A4%E4%B8%8D%E8%83%BD%E9%94%99%E8%AF%AF
+
+
+南京sj 再建一个collection 测试下
+
+文档写一下，force-clean
+
+
+1.工程文档修改：
+	1. 机房楼层12改成6
+	2. 服务器密码修改：lzy@qazokm
+	
+	
+c环境solr切一下50.18

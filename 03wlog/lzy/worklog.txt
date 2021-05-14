@@ -1,0 +1,1442 @@
+记录：
+
+sourcegraph * 地址：http://10.1.13.1:7080/search * 用户名密码: lzy/ lzy@123456@lzy 
+sourcegraph
+
+    地址：http://10.1.13.1:7080/search
+    用户名密码: lzy/123456
+
+
+maven 配置：
+D:\soft\maven\apache-maven-3.3.9\conf\settings.xml
+
+ceph 建新的osd:
+ 1013  2020-05-21 19:34:10 ceph -s
+ 1014  2020-05-21 19:34:17 ceph osd out osd.0
+ 1015  2020-05-21 19:34:28 systemctl stop ceph-osd@0
+ 1016  2020-05-21 19:34:35 ceph osd crush remove osd.0
+ 1017  2020-05-21 19:34:45 ceph auth del osd.0
+ 1018  2020-05-21 19:34:53 ceph osd rm osd.0
+ 1019  2020-05-21 19:34:59 umount /var/lib/ceph/osd/ceph-0
+ 1020  2020-05-21 19:35:04 lsblk
+ 1021  2020-05-21 19:35:10 lvdisplay
+ 1022  2020-05-21 19:35:25 lvremove /dev/ceph-897eaa6d-d2d6-4b94-ba7a-734505cf974a/osd-block-922b9306-b72b-47df-90fe-a58eae21d36f
+ 1023  2020-05-21 19:35:43 vgremove /dev/ceph-897eaa6d-d2d6-4b94-ba7a-734505cf974a
+ 1024  2020-05-21 19:35:50 lsblk
+ 1025  2020-05-21 19:35:58 cd /opt/ceph-cluster
+ 1026  2020-05-21 19:36:07 ceph-deploy osd create --data /dev/sdb ceph-10-1-46-32
+
+46.12是solea的web,showApp和数据库, 
+46.13是solea的后台这些七七八八的
+jgcai(蔡建国) 2019-07-31 11:59:44
+solr在46.29
+arm：10.1.132.78 root/arm654321
+gradlew:f
+gradlew -Pprod bootDistTar test / gradlew -Pprod clean bootDistTar
+推荐书籍：
+http://wiki.lzy.com/%E6%96%B0%E5%91%98%E5%B7%A5%E5%85%A5%E8%81%8C%E5%BF%85%E7%9C%8B
+
+10.1.12.4 share 123456
+10.1.11.5 user 123456
+# solea 1.9 solea-1.9 B环境：
+连接：l
+10.2.30.4 root/123456	高级》隧道：10.1.50.18 gw/123456
+prometheus
+:15018
+
+c环境分配：
+http://wiki.lzy.com/%E7%A0%94%E5%8F%91%E6%B5%8B%E8%AF%95%E7%8E%AF%E5%A2%83%28C%E7%8E%AF%E5%A2%83%EF%BC%89ip%E5%88%86%E9%85%8D?highlight=%2810.1.58.1%29
+
+消费情况：
+/usr/hdp/current/kafka-broker/bin/kafka-consumer-groups.sh  --bootstrap-server 10.1.46.32:6667 --describe --group solea-tika
+
+
+远程调试forkparse:
+-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8012
+
+清除kafka数据：
+清除kafka数据  --ok
+		  kafka 清掉数据
+ZK_HOSTS="10.1.61.5:2181"
+		  /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper ${ZK_HOSTS} --topic  solea_fileserver_web  --alter --config  retention.ms=10 
+/usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper ${ZK_HOSTS} --topic solea_fileserver_web --alter --config cleanup.policy=delete
+		  
+		  查看等到log大小为0
+		  ll /opt/kafka-logs/solea_fileserver_web-*
+		  
+		  kafka还原设置
+		  /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper ${ZK_HOSTS} --topic solea_fileserver  --alter --config  retention.ms=604800000 
+		
+	  清空solr数据	--ok
+		  python /opt/millipede-solr/management/bin/solr_collection.py delete-collection solea_
+
+		  创建collection:
+cd /opt/solea-release-2.0.0-r1/solr
+python /opt/millipede-solr/management/bin/solr_collection.py create-collection --auto-numshard  --replication-factor 1 --route-name implicit --auto-create-replication=2 --schema-file /opt/solea_schema/schema.xml  solea_
+
+ /opt/solea-release-2.0.3-r1/solr/conf/schema.xml  solea_
+ 
+ /usr/hdp/current/kafka-broker/bin/kafka-topics.sh  --zookeeper $ZK_HOSTS  --topic solea_fileserver  --describe
+ 
+听包：
+tcpdump -i any tcp port  15003 -w 1.pcap
+
+http and ip.src==10.1.30.4 and ip.dst==10.1.30.4
+ 
+
+liyulong:
+lovexiafe1314
+ 
+ 
+source /opt/solea-tika-app/bin/solea_tika_profile.sh
+export SOLEA_TIKA_APP_OPTS="$SOLEA_TIKA_APP_OPTS -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8019"
+
+cd /opt/solea-tika-app
+bash /opt/solea-tika-app/bin/solea-tika-app start-tika-api \
+ --app.id=api
+ 
+curl http://10.1.46.32:8018/tika/api/doParse  -F "file=@/opt/solea-tika-external-service/test-data/test_ocr.jpg" -d "config=@{\"translateEnable\":\"true\",\"ocrEnable\":\"true\"}" -X POST
+ 
+ 
+source /opt/solea-tika-app/bin/solea_tika_profile.sh
+export SOLEA_TIKA_APP_OPTS="$SOLEA_TIKA_APP_OPTS -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8019"
+	 
+ bash /opt/solea-tika-app/bin/solea-tika-app run-tika \
+ --app.id=xxx.test --application.tika.file.debug=false \
+ --application.kafka.topic=solea_fileserver \
+ --application.solr.collection=solea_redirect_collection
+ 
+远程调试forkparse:
+-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8021
+-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=28983
+
+netstat -nap | grep 1096
+ 
+ solea数据库：
+ 10.1.46.31/solea/123456/ora11g
+ 
+
+
+A环境：
+http://10.1.12.4/ssh%20proxy#preview
+
+查询占用端口进程：
+netstat -nlp | grep :8080 | awk '{print $7}' |awk -F"/" '{ print $1 }'
+
+c mntos:
+ http://10.1.16.1/mntos/
+
+20210104					--ok
+1.本周工作：4d 6h
+SOLEA-3501 【gz需求】新闻网站实现推荐系统，推荐相似新闻										1d @预测试方法
+SOLEA-3405 【文本翻译】pdf转换，加密或损坏的pdf会导致虚拟机内adobe弹出对话框卡住			1d
+SOLEA-3444 【tika】文件上传解压逻辑修改														4h
+SOLEA-3304 【sendFserver】压缩包解压发送的问题												4h
+COMMON-6719 【python-common】format to bcp 支持全path的过滤									4h
+SOLEA-3502 【现场维护】solea现场维护(W54 20210104)											4h
+SOLEA-3496 【tika】gz现场发现的bad文件。													4h
+SOLEA-3454 【内容标签】上传枪支、飞机、证件类的图片，不会自动显示相关的标签					2h
+
+节前的jira延期：										--ok
+	SOLEA-3444 【tika】文件上传解压逻辑修改
+	SOLEA-3405 【文本翻译】pdf转换，加密或损坏的pdf会导致虚拟机内adobe弹出对话框卡住
+	SOLEA-3367 【南京sj】权限的bug,新建用户权限过滤的问题
+	SOLEA-3340 【南京sj】 客户反馈在页面点击翻译，页面会卡住
+	SOLEA-3312 【广州】广州的一些问题和需求
+	SOLEA-2866 【翻译】合肥xxx张校校发现的问题，日语没有进行翻译
+
+2.SOLEA-3501 【gz需求】新闻网站实现推荐系统，推荐相似新闻				--ok
+	预测试方法，先测试一下效果如何：
+	1.相似文本测试，取一批新闻数据测试相似文本的推荐效果
+	2.用提取出来的类别和关键词，按照score排序
+		catLabel: 时事/教育
+		appName: 中国时报/华尔街日报美国版
+		sourceRegion： 台湾/美国
+		topKeywords：["接種", "西班牙", "疫苗"，"疾病", "COVID", "衛生部", "冠狀病毒"]
+			1.catLabel=时事 and (topKeywords=西班牙 or topKeywords=疫苗 or topKeywords=疾病 topKeywords=冠状病毒)
+			2.catLabel=时事 topkeywords命中四个就算命中。
+	3.solr more like this
+		solr自带的功能
+	
+3.SOLEA-3496 【tika】gz现场发现的bad文件。
+
+Caused by: org.apache.solr.client.solrj.impl.HttpSolrClient$RemoteSolrException: Error from server at http://10.1.61.11:15003/solr: Expected mime type application/octet-stream but got text/html. <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+
+
+切到50.18:
+创建collection:
+curl -F "schemaFile=@/opt/solea-deploy-install/solr/conf/schema.xml" -F "method=create" -F "name=case_solea" -F "replicationFactor=1" -F "routeName=implicit" -F "autoCreateTlogReplication=2" http://10.1.50.18:15003/solr-rpc
+
+是不是因为有不可见字符？
+
+4.SOLEA-3454 【内容标签】上传枪支、飞机、证件类的图片，不会自动显示相关的标签
+
+5.SOLEA-3487 【自动编译】对文档翻译的虚拟机做自动部署			--ok
+	给出windows安装的步骤:windows下安装.txt
+	
+6.这个有问题：											--ok
+/opt/content-analysis/etc/logrotate.conf
+@ROOT_DIR@ 没有替换掉
+
+明天再看一下nagios
+
+20210105
+自动部署失败？
+
+1.SOLEA-3496 【tika】gz现场发现的bad文件。
+	继续调试
+	cp application-override.yml.template application-override.yml
+
+http://wiki.lzy.com/%E5%8F%91%E9%80%81%E9%94%99%E8%AF%AF%E6%A0%BC%E5%BC%8F%E7%9A%84%E6%95%B0%E6%8D%AE%E5%88%B0%E5%85%A8%E6%96%87%EF%BC%8C%E5%AF%BC%E8%87%B4%E6%95%B0%E6%8D%AE%E4%B8%A2%E5%A4%B1#preview
+	
+2.SOLEA-3501 【gz需求】新闻网站实现推荐系统，推荐相似新闻
+
+更新一下：
+10.1.47.20 web.solea.bd.com web
+10.1.47.22 process.solea.bd.com process
+
+http://10.1.47.103:15003/solr
+
+		
+	找一天的数据
+	
+	测试三种算法
+	
+	
+		1.测试相似文本：
+			http://10.1.47.103:8983/solr/news_solea_search_collection/tvrh?q=id:de2a9ff2-2ce7-4f44-8542-61050b71981a&start=0&rows=10&fl=similar_text_minhash_i_ns
+			
+			查询：
+			http://10.1.47.103:8983/solr/case_solea_202012141217/query?q={!min_hash%20field=similar_text_minhash_i_ns%20sep=%22,%22%20sim=0.6}%C3%A4%E2%B9%B3%E4%A7%84%E6%A2%9E%E4%A9%BE%EE%A7%B7%E5%80%85%E1%9D%96,%E4%80%9E%EE%B0%A3%EF%BF%BD%E0%B3%9B%E6%87%8D%E8%BB%B3%EC%98%8E%E6%BD%9E,%E8%83%9A%E9%B2%A4%EF%BF%BD%E6%91%8F%E9%8A%97%EB%B3%A4%EE%91%8E%E5%89%BE,%EC%81%B1%EA%BA%89%EF%9E%AE%EC%B4%BB%EE%BA%B6%E3%89%9B%E9%B5%92%E7%84%9C
+			
+			solr也要更新？ 还是在c环境上传测试，直接查看推荐
+		
+		2.标签特征值
+		catLabel: 时事/教育
+		// appName: 中国时报/华尔街日报美国版
+		sourceRegion： 台湾/美国
+		topKeywords：["接種", "西班牙", "疫苗"，"疾病", "COVID", "衛生部", "冠狀病毒"]
+			1.catLabel=时事 and (topKeywords=西班牙 or topKeywords=疫苗 or topKeywords=疾病 topKeywords=冠状病毒)
+			2.catLabel=时事 topkeywords命中四个就算命中。
+	
+MLP-1467
+【文档】 全文 Cn，m 的查询，n 个里面必须有 m 个
+	
+测试一下：
+sourceRegion_s_i_s_dv":"中国香港",
+
+
+	
+	发送新闻网站数据		--ok
+	
+	查询试试,看看效果
+
+
+3.SOLEA-3304 【sendFserver】压缩包解压发送的问题
+	
+	
+4.
+   guard xml 有问题：
+
+   1. 版本替换的？或者 bat 来做??
+   1. 有 out，logratotae 没有做，没有 cron？ --不做
+   1. 内存问题？
+
+生成bat,用bat启动
+   
+http://wiki.lzy.com/windows%E5%A6%82%E4%BD%95%E6%94%AF%E6%8C%81winrm
+	
+	
+20210106
+1.生成bat,用bat启动，guard启动不了？    --ok
+
+试试有没有调到bat? echo > 文件试试  --ok
+
+把启动命令输出， java_home不对？
+
+        <Profiles>
+            <Profile>JAVA_HOME=/usr/java/default</Profile>
+            <Profile>LANG=en_US.UTF-8</Profile>
+            <Profile>MY_PROGRAM_MAX_MEM=2g</Profile>
+        </Profiles>
+		
+bat里面去掉这个<Profile>JAVA_HOME=/usr/java/default</Profile>
+
+2.SOLEA-3444 【tika】文件上传解压逻辑修改					--ok
+
+3.SOLEA-3304 【sendFserver】压缩包解压发送的问题			--ok
+	
+4.SOLEA-3501 【gz需求】新闻网站实现推荐系统，推荐相似新闻		--ok
+	再看一下
+	
+	
+维护：
+5.tika bad文件？						--ok
+
+[root@solea-10-1-61-3 20210105]# grep -rn "appCode_s_i_s" | wc -l
+117
+
+[root@solea-10-1-61-3 20210105]# grep -rn "catLabel2_s_i_s_dv" | wc -l
+69
+
+[root@solea-10-1-61-3 20210105]# grep -rn "ext_solea" | wc -l
+13
+
+还有1个测试bad文件
+
+看看retry逻辑？
+	
+6.广州出差的jira，需求邮件发一下			--ok
+
+7. fileserver2加几条日志		--ok
+
+c环境自动部署失败：
+2021-01-06 14:05:33,097 p=3047689 u=root |  fatal: [solea-10-1-61-3]: FAILED! => {"changed": false, "msg": "AnsibleUndefinedVariable: 'dict object' has no attribute 'tika_api_consul_host'"}
+	
+master代码被rb冲掉了？反馈给宁  --ok
+8.
+http://10.1.30.5:15003/solea-showapp/file/show?showAll=true&url=http://10.1.61.2:15003/solea-fserver2/api/v1/getFile?url=ceph://crow_20201229/c9879ff5-47b3-4787-80be-5c7870097674&contentType=message/rfc822&isDownload=true&highlight=ceph://crow_20201229/c9879ff5-47b3-4787-80be-5c7870097674
+	
+20210107
+1.COMMON-6719 【python-common】format to bcp 支持全path的过滤
+
+python /opt/python-common/format_to_bcp/bin/format_to_bcp.py
+format-bcp加一个参数：full-file-filter
+
+http://git.lzy.com/lzy/solea/-/jobs/299638
+SBLing(凌世播) 16:14:50
+windows 自动编译
+
+
+实现：			--ok
+
+单元测试			--ok
+
+c环境测试
+
+增加一个参数：
+--full-file-filter=.*idata.*\\.json$  --okm
+/opt/python-common-1.3.5/format_to_bcp/lib/files/main
+
+
+	
+	
+todo:
+check_git 装一下
+
+
+
+
+2.SOLEA-3405 【文本翻译】pdf转换，加密或损坏的pdf会导致虚拟机内adobe弹出对话框卡住
+
+3.SOLEA-3496 【tika】gz现场发现的bad文件。
+继续调试一下
+
+cpu如何？
+
+超时时间：
+10:52 应该是 5分钟
+
+        <tokenizer class="com.lzy.millipede.solr.analysis.standard.UAX29LikeEmailTokenizerFactory"/>
+        <!-- 限制 indexer 时间，5分钟，一般超时是6分钟 -->
+        <filter class="com.lzy.millipede.solr.analysis.LimitTimeFilterFactory" maxTimeLimitMilliseconds="300000">
+
+		
+tika超时？
+2021-01-07 10:52:41.888  INFO 3386862 --- [taskExecutor-1] com.lzy.solea.tika.app.batch.SolrWriter  : start send to solr id: 6f5a6024-ce17-4cc8-8d68-14bd7f7e3a73, docSize: 3156061, solrCollection: solea_redirect_collection
+
+2021-01-07 11:02:42
+
+10分钟超时了
+		
+		
+等了30分钟还在卡住，超时配置没有生效？
+		
+mlp的bug :
+MLP-1485 【solr】对附件内容分词时，卡在UAX29LikeEmailTokenizer.incrementToken
+		
+20210108
+1.COMMON-6719 【python-common】format to bcp 支持全path的过滤
+
+	单元测试不过：	
+		搭建开发环境 http://wiki.lzy.com/python%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83%E6%9E%84%E9%80%A0
+	linux测试一下
+	
+	linux下 跑时会加上 bash -c 
+
+	bash -c 'python -c import shutil;shutil.copy("/opt/tmp/format_to_bcp/test/unit/files/main/input/idata/news.json", "/opt/tmp/format_to_bcp/test/unit/files/main/tmpdir")'
+
+在脚本里面操作了
+
+
+加单元测试：		--ok
+
+	文件不存在
+
+	full命中 base没有
+
+	full 命中 base命中
+
+	full没有， base也没有
+
+	full没有， base命中
+
+	http://git.lzy.com/lzy/python-common/-/merge_requests/175
+	
+2.2.SOLEA-3405 【文本翻译】pdf转换，加密或损坏的pdf会导致虚拟机内adobe弹出对话框卡住
+		
+		
+3.新闻网站能不能先设计一下页面
+		
+		
+4.showapp 问题看看			--下周看了
+http://10.1.30.5:15003/solea-showapp/file/show?showAll=true&url=http://10.1.61.2:15003/solea-fserver2/api/v1/getFile?url=ceph://crow_20201229/c9879ff5-47b3-4787-80be-5c7870097674&contentType=message/rfc822&isDownload=true&highlight=ceph://crow_20201229/c9879ff5-47b3-4787-80be-5c7870097674
+
+5.doc没有解出来密码
+	http://10.1.50.18:15003/solea/fileDetail/index/?docId=83cbab79-21da-4afe-a3a1-764609192f91&highlight=&collectionPrefix=case_solea
+	password_s_ni_s
+
+6.广州 翻译没有结果
+
+页面确认翻译是不是好的  --ok
+
+外部服务是不是好的				-- no ok
+
+其他接口正常，翻译接口返回406， 参数不对？
+
+
+nginx 是不是好的
+
+
+tika的翻译开关？
+
+tika日志
+
+
+		
+bad 文件，cpu是否高？
+		
+  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+28577 root      20   0 7008m 2.4g  19m S 94.5 25.2 248:07.64 java
+		
+放到异常测试文件里面：
+http://git.lzy.com/lzy-opensource-group/tika/-/tree/main
+		
+http://git.lzy.com/lzy-opensource-group/tika/-/tree/main/tika-parser-modules/tika-parser-code-module/src/test/resources/test-documents
+		
+维护：
+看看广州视频接口
+
+	看看后台日志
+	1.关闭tika程序的forkparse开关：
+		ssh 95.50.185.29
+		1.2 cd /opt/solea-tika-app/config
+		vim application-override.yml
+		修改配置       fork.enabled: true > fork.enabled: false
+		保存，退出
+	2.重启tika进程：
+		lcm_guard --kill solea-tika-001
+	3.观察tika解析日志
+		cd /opt/solea-tika-app/logs
+		tail -f solea_tika_app_001.log
+	4.后台上传视频
+		通过WinScp登录95.50.185.29
+		上传视频文件到目录：
+		/opt/solea-server-bcup/bcpdirs/841
+		
+		观察tika日志输出
+
+旷视那边上传限制了300M，联系一下是否可以先升级这个问题。
+	
+
+20210109
+1.SOLEA-3405 【文本翻译】pdf转换，加密或损坏的pdf会导致虚拟机内adobe弹出对话框卡住 
+
+cp close_error_windows_win.py > D:\lcm.guard-1.9.1\lib\
+
+执行：python D:\lcm.guard-1.9.1\lib\close_error_windows_win.py
+
+
+
+2.
+
+SOLEA-3515
+	
+本周工作：4d 6h
+SOLEA-3501 【gz需求】新闻网站实现推荐系统，推荐相似新闻										1d @预测试方法
+SOLEA-3405 【文本翻译】pdf转换，加密或损坏的pdf会导致虚拟机内adobe弹出对话框卡住			1d
+SOLEA-3444 【tika】文件上传解压逻辑修改														4h
+SOLEA-3304 【sendFserver】压缩包解压发送的问题												4h
+COMMON-6719 【python-common】format to bcp 支持全path的过滤									4h
+SOLEA-3502 【现场维护】solea现场维护(W54 20210104)											4h
+SOLEA-3496 【tika】gz现场发现的bad文件。													4h
+SOLEA-3454 【内容标签】上传枪支、飞机、证件类的图片，不会自动显示相关的标签					2h
+	
+新闻网站需求
+SOLEA-3501 【gz需求】新闻网站实现推荐系统，推荐相似新闻
+
+2.新闻网站推荐的需求是否要做？		--ok
+
+
+
+
+20210111
+1.本周工作
+	维护记录c环境
+curl http://127.0.0.1:15003/content-analysis/img_predict -F "img=@/opt/content-analysis/data/seal.jpg"
+SOLEA-3494 【tika-api】使用时的一些问题
+SOLEA-3514 【showapp】邮件溯源 调用showApp接口展示以后 无法下载附件
+
+ systemctl disable xxx.service
+    systemctl reset-failed
+
+nagios检查：
+check_solea_send_fserver2： 告警有bad文件， 查看目录，12月份的bad文件，查看日志，发送fileserver2报502可能是fileserver2不通导致的，清理掉先。
+
+check_solea_tika_app： 告警有bad文件，
+	告警检查目录：/opt/solea-tika-app-data/bad 不能有问题
+	但是retry的文件也会影响：./webretry-bad/20201221/2020-12-21/1767cf84-0c2e-48a8-b211-472e0d64b32b.retry
+	检查bad文件目录应该改成：/opt/solea-tika-app-data/bad/tika-bad
+	
+check_os： AssertionError: systemd service ['ambari-server.service'] failed
+	用systemctl --failed --type=service查看，确认不需要此服务，先disable掉。
+
+未处理
+check_guard：（c环境内存不足，先把prometheus进程停掉了）
+	NAGIOS: lzy_prometheus_aggregation_gateway have not match pid
+	NAGIOS: lzy_prometheus_push_gateway have not match pid
+check_oracle:
+	olea_user_db have not remote backup!
+	没有做异机备份？
+
+	
+check_tika 加密的程序告警，文档中是否有？确认下
+
+2.南京市局下午去   --ok
+
+
+3.广州翻译的问题
+	
+	1.测试其他服务是不是正常？
+		tika12 tika13 tika14
+		用curl测试下, 其他都是好的？ 
+			用tika12的更新tika11程序
+			
+			查看nginx配置，吧tika11剔除
+	
+	2.日志级别改成debug,再看一下完整的日志
+	vim /opt/solea-tika-external-service/conf/logback-spring.xml  将INFO改成DEBUG
+	
+	
+	3.看一下配置
+	cd /opt/solea-tika-external-service/conf
+	
+	4.埋一些日志
+
+		更新tika的配置
+		1.备份下tika原来的配置
+			ssh tika01
+			cd /opt/solea-tika-app/config
+			cp application-override.yml application-override.yml.bak_20210111
+			vim application-override.yml
+			修改配置：translator.host
+			保存，退出
+			把配置scp到web目录下面：
+			scp application-override.yml root@web:/opt/tmp
+			
+		2.批量更新：
+		cd /opt/solea-deploy
+		ansible -i environments/prod solea_tika_servers -m copy -a "src=/opt/tmp/application-override.yml dest=/opt/solea-tika-app/config/application-override.yml"
+
+		重启所有进程：
+		ansible -i environments/prod solea_tika_servers -a "lcm_guard --kill solea-tika-0*"
+
+		sleep 30
+
+		确认都起来了：
+		ansible -i environments/prod solea_tika_servers -a "lcm_guard --l | grep solea-tika-0"
+
+		3.验证一下就ok了
+	
+4.SOLEA-3405  【文本翻译】pdf转换，加密或损坏的pdf会导致虚拟机内adobe弹出对话框卡住
+	验证一下		--ok
+	
+5.SOLEA-3483 【自动部署】所有的 C 环境的自动部署要判断 ansible.log 的里面的东西是否正确
+
+
+6.工程文档更新下
+代码提交下
+
+20210112
+1.
+工程文档更新下													--ok
+	三台新的服务器 + 全民档案机器信号， 内存硬盘
+	3.2 机柜板位及物理连接图和3.1 机房平面图 麻烦更新			--ok
+代码提交下
+
+windows虚拟机：
+http://10.1.11.6/daily_releases_new/vm/virtualbox/solea/master/202101110721/
+
+2.SOLEA-3483 【自动部署】所有的 C 环境的自动部署要判断 ansible.log 的里面的东西是否正确
+
+
+3.SOLEA-3518 【新闻推荐】推荐页面设计，找客户确定下
+	参考一下其他新闻网页的样式： 央视新闻。。。
+
+4.去sj										--OK
+	dispatch程序， 备份
+	需要加多少硬盘？  --带工程区看一下
+	权限的问题更新patch。  --ok
+	onlyoffice的问题。
+	ceph安装文档          --ok
+	
+	问题：
+		1.多级别目录，目录丢了  限制5层  --OK
+		2.限制条件目录xxx ,查询邮件： 右边列表是： aaa.lzy.com, 去掉限制条件： aaa.lzy2.com 不应该是aaa.lzy.com + aaa.lzy2.com
+
+http://git.lzy.com/lzy/python-common/-/merge_requests/176   --ok
+
+	
+广州翻译问题：
+http://tika12:15003/solea-tika-external-service/translator/sync/translate
+应该是：
+http://tika12:15003/solea-tika-external-service/translator/sync
+
+
+20210113
+1.SOLEA-3518 【新闻推荐】推荐页面设计，找客户确定下
+	http://10.1.40.55:15003/solea-news/news/index?docId=40009a20-e14e-4498-ae01-232c5af4afb5&highlight=
+	http://10.1.131.63:15003/solea-news/
+	
+2.SOLEA-3483 【自动部署】所有的 C 环境的自动部署要判断 ansible.log 的里面的东西是否正确
+	用30.4测试了，正好部署一下
+	进入docker:	docker exec -it 304_solea-web_1 /bin/bash
+
+ed3ce78d404        lzy/oracle-docker-vm:master   "/sbin/init"        2 weeks ago         Up 2 days                               304_solea-web_1
+304_solea_1
+65.105??? 应该是65.104， 重新up一下  --okm
+
+wget -O ansible_errors.txt http://share.lzy.com/share/dev-tools/ansible/ansible_errors.txt
+# include import_tasks include_tasks
+DEPRECATION\s+WARNING
+# 查看有没有warning
+ansible-playbook -i environments/dev --syntax-check site.yml 
+
+ansible版本：ansible-playbook 2.4.2.0
+
+先用老版本2.4.2.0部署试试：
+
+目的是：
+	include等命令,尽量用静态的： include_tasks 》 import_tasks
+	否则2.4版本会告警： [DEPRECATION WARNING]: The use of 'include' for tasks has been deprecated. Use 'import_tasks
+	
+	然后再日志中grep一下，有就错误
+	
+1.
+cd /opt/solea-deploy
+grep -rn ""
+ansible-playbook -i environments/prod --syntax-check site.yml -vv
+先复现， 用2.4版本跑一下
+可以告警
+
+yum install ansible-2.4* -y
+
+ansible --version
+ansible 2.4.2.0
+
+solea已经改过了，先手动把include_tasks改成import_tasks   --ok
+
+检查：
+ansible-playbook -i environments/prod --syntax-check /opt/solea-deploy/site.yml -vv
+
+
+问题：
+[solea_tools_jcseg_server]
+# file_count_install 一台，安装到web机器上
+	
+WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!
+# 更新一下
+ssh-keygen -R 10.1.65.104
+# 继续
+ssh-copy-id -i ~/.ssh/id_rsa.pub  root@10.1.65.104  --ok
+
+
+先修改一个：
+E:\work\gits\solea\solea2\04sourcecode\dev_tools\docker\solea-c\auto-deploy\auto-deploy.sh
+	
+下午跑一下自动部署测试下
+	
+	
+TASK [solea_tools : create jcseg-server config] ****************************************************************************************************************************
+fatal: [solea-10-1-65-104]: FAILED! => {"changed": false, "msg": "AnsibleUndefinedVariable: 'dict object' has no attribute 'jcseg_server_host'"}
+
+
+3.绩效考核表格		--ok
+
+4.SOLEA-3315 【CI】做一些对所有的项目做自动化测试 pre-commit 检查
+
+参考wiki:
+http://wiki.lzy.com/windows%20%E4%B8%8B%E5%A6%82%E4%BD%95%E6%A3%80%E6%9F%A5%E4%B8%80%E4%B8%AA%E9%A1%B9%E7%9B%AE%E6%98%AF%E5%90%A6%E6%BB%A1%E8%B6%B3%20pre-commit#preview
+
+执行：
+git ls-files -z |   xargs -0 gitignore_file_filter --config .precommit.gitignore |   xargs -n 50 -0 pre-commit run     --config=sys-pre-commit-config.yaml     --files
+
+先使用 shfmt -i 2 -d -l -ci 检测shell脚本格式
+
+在使用shellcheck 命令检查shell脚本语法
+
+MINGW_JDK_11_HOME=/d/soft/Java/jdk-11
+export PATH=$MINGW_JDK_11_HOME/bin:$PATH
+git ls-files -z | \
+ xargs -0 gitignore_file_filter --config .precommit.gitignore | \
+ xargs -0 -n 10 pre-commit run \
+ --config=sys-pre-commit-config.yaml \
+ --files
+
+
+04sourcecode/content-analysis/     --ok
+04sourcecode/solea-media-service  --ok
+
+shfmt -d -l -i 2 -ci 04sourcecode/solea-media-service/src/main/dist/bin/solea_media_service_guard_check.sh 04sourcecode/solea-media-service/src/main/dist/bin/solea_media_service.in.sh 04sourcecode/solea-media-service/src/main/dist/bin/solea_media_service.sh 04sourcecode/solea-media-service/src/main/dist/bin/solea_media_service_update_nginx.sh
+
+04sourcecode/second-analysis/
+
+
+04sourcecode/second-analysis/modules/hotword-analysis/etc/log4j.xml: Failed to xml parse (unknown url type: '04sourcecode/second-analysis/modules/hotword-analysis/etc/log4j.dtd')
+
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+去掉这个，对比下其他的没有这个头
+
+
+20210114
+
+看一下自动部署，检查ansible.log有没有生效？
+	没有生效
+ansible-playbook -i environments/prod --syntax-check /opt/solea-deploy/site.yml
+ansible.log里面没有错误信息？
+
+[DEPRECATION WARNING]: The use of 'include' for tasks has been deprecated. Use 'import_tasks' for static inclusions or 'include_tasks' for dynamic
+
+改错了，应该是include		--ok, 再看看吧
+
+广州的跟谢杰讨论下		--ok
+
+南京市局机器规划
+	
+
+1.SOLEA-3494 【tika-api】使用时的一些问题 
+
+	1.tika-api的接口，超过100M的文件就会报这个错，springboot上传限制  --ok
+	2.tika-api应该增加超时时长参数
+		接口超时？可以
+		springbatch job 有没有超时控制？ 
+				public Step step1() {
+					DefaultTransactionAttribute attribute = new DefaultTransactionAttribute();
+					attribute.setPropagationBehavior(Propagation.REQUIRED.value());
+					attribute.setIsolationLevel(Isolation.DEFAULT.value());
+					attribute.setTimeout(30);
+					return this.stepBuilderFactory.get("step1")
+					.<String, String>chunk(2)
+					.reader(itemReader())
+					.writer(itemWriter())
+					.transactionAttribute(attribute)
+					.build();
+				}
+					控制每个process的时间 ？？还是总体的？
+						超时就直接抛出异常失败了：
+						Caused by: org.springframework.transaction.TransactionTimedOutException: Transaction timed out: deadline was Sat Jan 16 17:49:41 CST 2021
+						
+		是否可以控制spring的task
+		
+	3.tika-api的接口文档说明，写个wiki
+		http://git.lzy.com/lzy/solea/-/wikis/solea%E4%B8%AD%E5%AF%B9%E5%A4%96%E9%80%9A%E7%94%A8%E7%9A%84%E6%9C%8D%E5%8A%A1%E6%A2%B3%E7%90%86
+	4.tika-api是否支持并发
+		2021-01-14 16:09:09.655  INFO 57335 --- [http-nio-auto-1-exec-10] o.s.b.c.l.support.SimpleJobLauncher      : Job: [FlowJob: [name=tikaParserJob]] launched with the following parameters: [{jobId=949e4a1b-61db-441b-bf05-70a7d671bc1c}]
+		支持并发，10并发
+
+		
+2.SOLEA-3515 【汇总】solea-2.1.1 的剩余 bug 
+
+
+
+
+3.SOLEA-3518 【新闻推荐】推荐页面设计，找客户确定下
+再找客户确认一下
+看下这个问题：
+http://10.1.47.103:8983/solr/news_solea_202101010001/select/?q=id:f8a0534d-0ed8-4c64-8619-ec1a4bb4a5d4&mlt=true&mlt.mindf=1&mlt.mintf=1&mlt.fl=text&mlt.count=10
+
+http://10.1.47.103:15003/solr/news_solea_search_collection/select?q=id:f8a0534d-0ed8-4c64-8619-ec1a4bb4a5d4&mlt=true&mlt.mindf=1&mlt.mintf=1&mlt.fl=text&mlt.count=10
+
+改成redirect --ok
+
+http://10.1.47.103:8983/solr/news_solea_202101010001/select/?q=id:40009a20-e14e-4498-ae01-232c5af4afb5&mlt=true&mlt.mindf=1&mlt.mintf=1&mlt.fl=text&fl=id,title_mt_i_s&mlt.count=10
+
+
+20210115
+SOLEA-3483 【自动部署】所有的 C 环境的自动部署要判断 ansible.log 的里面的东西是否正确
+	看一下有没有告警		--ok
+
+precommit， 导致一些程序起不来， 改一下  --ok
+	
+1.SOLEA-3494 【tika-api】使用时的一些问题
+	还差一个超时控制
+
+2.SOLEA-3515 【汇总】solea-2.1.1 的剩余 bug				--ok
+
+	2.1.1版本： 上传加密文件，不会自动解密（目前A环境已升级的2.1.2也存在该问题）
+		英文中文日文（简单-123456）.docx
+		
+查看解密程序solea-tika-decypt-001日志有报错：
+2021-01-15 11:53:42.403  WARN 834694 --- [taskExecutor-1] c.l.s.t.a.batch.SoleaTikaItemProcessor   : parse error ceph://solea_20210115/32c95f8b-cabb-4baf-b1b8-30c62dde3f4f
+
+org.apache.tika.exception.TikaException: Unexpected error in forked server process
+        at org.apache.tika.fork.ForkParser.parse(ForkParser.java:291) ~[tika-core-1.24-lzy1.0.0.jar!/:1.24-lzy1.0.0]
+
+Caused by: java.lang.ArrayIndexOutOfBoundsException: 1
+        at com.lzy.solea.tika.util.DecyptUtils.computeHashkey(DecyptUtils.java:58) ~[solea-tika-parsers-2.1.3-SNAPSHOT.jar!/:na]
+        at com.lzy.solea.tika.decypt.DecyptParser.getCurrentPassword(DecyptParser.java:123) ~[solea-tika-parsers-2.1.3-SNAPSHOT.jar!/:na]
+        at com.lzy.solea.tika.decypt.DecyptParser.parse(DecyptParser.java:104) ~[solea-tika-parsers-2.1.3-SNAPSHOT.jar!/:na]
+        at com.lzy.solea.tika.parser.media.MediaParser.parse(MediaParser.java:76) ~[solea-tika-parsers-2.1.3-SNAPSHOT.jar!/:na]
+        at com.lzy.solea.tika.app.batch.OcrExternalServiceParser.parse(OcrExternalServiceParser.java:110) ~[classes!/:na]
+        at com.lzy.solea.tika.app.util.ImageFeatureParser.parse(ImageFeatureParser.java:85) ~[solea-tika-parseutil-2.1.3-SNAPSHOT.jar!/:na]
+        at org.apache.tika.parser.RecursiveParserWrapper.parse(RecursiveParserWrapper.java:233) ~[tika-core-1.24-lzy1.0.0.jar!/:1.24-lzy1.0.0]
+        at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:1.8.0_271]
+
+关掉forkparse:
+java.lang.ArrayIndexOutOfBoundsException: 1
+        at com.lzy.solea.tika.util.DecyptUtils.computeHashkey(DecyptUtils.java:58) ~[solea-tika-parsers-2.1.3-SNAPSHOT.jar!/:na]
+        at com.lzy.solea.tika.decypt.DecyptParser.getCurrentPassword(DecyptParser.java:123) ~[solea-tika-parsers-2.1.3-SNAPSHOT.jar!/:na]
+        at com.lzy.solea.tika.decypt.DecyptParser.parse(DecyptParser.java:104) ~[solea-tika-parsers-2.1.3-SNAPSHOT.jar!/:na]
+        at com.lzy.solea.tika.parser.media.MediaParser.parse(MediaParser.java:76) ~[solea-tika-parsers-2.1.3-SNAPSHOT.jar!/:na]
+        at com.lzy.solea.tika.app.batch.OcrExternalServiceParser.parse(OcrExternalServiceParser.java:110) ~[classes!/:na]
+        at com.lzy.solea.tika.app.util.ImageFeatureParser.parse(ImageFeatureParser.java:85) ~[solea-tika-parseutil-2.1.3-SNAPSHOT.jar!/:na]
+        at org.apache.tika.parser.RecursiveParserWrapper.parse(RecursiveParserWrapper.java:233) ~[tika-core-1.24-lzy1.0.0.jar!/:1.24-lzy1.0.0]
+        at com.lzy.solea.tika.app.batch.SoleaTikaItemProcessor.process(SoleaTikaItemProcessor.java:448) [classes!/:na]
+        at com.lzy.solea.tika.app.batch.SoleaTikaItemProcessor.process(SoleaTikaItemProcessor.java:63) [classes!/:na]
+        at com.lzy.solea.tika.app.batch.MultiProcessor.processItem(MultiProcessor.java:51) [classes!/:na]
+        at com.lzy.solea.tika.app.batch.MultiProcessor.process(MultiProcessor.java:38) [classes!/:na]
+
+		
+apache-tika-6478182650597695277.tmp:$office$*2007*20*128*16*32722e88fc2a8a8e79915fdae9d658b3*0c634c9a0db210af07bbcec7da74db3e*3efbdce2d49f8f242dc3de60e507c972920020e1
+
+inputfile:/opt/solea-tika-app/tmp/apache-tika-6478182650597695277.tmp
+
+
+
+/opt/solea-tika-app/tmp/apache-tika-886954136207301516.tmp:$pdf$4*4*128*-1028*1*16*825599c233ce11de8c0b0003938a64b0*32*b73921b88641ca5b8955146c57018af500000000000000000000000000000000*32*c431fab9cc5ef7b59c244b61b745f71ac5ba427b1b9102da468e77127f1e69d6
+
+		
+	文件内容标签，上传相关文件试了下，比如“时政”类的，不会显示；图片内容标签，2.1.1版本没有问题
+		习近平.doc
+	2.1.2版本下：图片/文件内容标签还不清楚修复后的具体情况，都需要再验证下		--ok
+		seal.jpg
+		
+		/opt/rh/rh-python36/root/usr/bin/python3 lib/manage.py runserver 0.0.0.0:8000
+		测试：
+			curl http://127.0.0.1:8000/content-analysis/classify -F "content=测试接口是否正常,测试接口是否正常。"
+
+			python把详细的保存信息打印出来
+				1.用repr
+				
+				2.
+				import traceback
+				traceback.print_exc()
+				
+			报错：  File "/opt/content-analysis-2.1.3-dev/lib/keras/engine/saving.py", line 274, in _deserialize_model
+    model_config = json.loads(model_config.decode('utf-8'))
+AttributeError: 'str' object has no attribute 'decode'
+
+可能是版本引起的， 网上查找需要重新安装：
+/opt/rh/rh-python36/root/usr/bin/python3 -m pip install h5py==2.10
+
+
+print(h5py.__version__)
+3.10
+修改requirements.txt:			--ok
+指定版本 h5py==2.10
+
+patch:用新打出来的lib替换一下  
+
+3.看看common jira
+	COMMON-6779 【ansible】docker vm的虚拟机自动部署后，nagios中没有check_rpm检查项
+		lzy_common_service.cfg.j2
+	
+	COMMON-6780 【nagios】自动部署后，nagios检查项中没有check_versions
+		check_version
+	check_versions在脚本/root/lcm.guard-1.9.2-dev/bin/check_machine_common.sh执行
+	
+  detect_dir=/etc/lcm-guard/check_versions
+  files=$(find $detect_dir -type f -name "*.conf")
+  for file in $files; do
+    check_depend_version "$file"
+  done
+
+	
+check_depend_version() {
+  # 要判断的VESION文件
+  file=$1
+  while read -r line; do
+    if [[ ${line:0:1} == '#' ]]; then
+      continue
+    fi
+    IFS=" " read -r -a arra <<<"$line"
+    version_file=${arra[0]}
+    require_version=${arra[1]}
+    python "${LCM_GUARD_ROOT}"/bin/tools/version_check.py -f "$version_file" -e "$require_version"
+    exit_status=$?
+    if [ $exit_status -ne 0 ]; then
+      check_version_errors=$((check_version_errors + 1))
+      check_version_text="$check_version_text ERROR:version in $version_file less than required version $require_version"
+      echo "ERROR:version in $version_file less than required version $require_version"
+    fi
+  done <"$file"
+}
+
+http://10.1.13.1:7080/search?q=check_versions&patternType=regexp
+
+check_versions
+INFO:root:current is 1.3.6-dev, expect version: 1.3.6-dev
+ERROR:root:main except.
+Traceback (most recent call last):
+  File "/root/lcm.guard-1.9.2-dev/bin/tools/version_check.py", line 15, in <module>
+    if not check_version.main(sys.argv[1:]):
+  File "/tmp/pip-install-TJpuyQ/lcm.guard/lcm/guard/utils/check_version.py", line 73, in main
+IOError: [Errno 21] Is a directory: '.'
+ERROR:version in  less than required version
+ ERROR:version in  less than required version  check depend versions error.
+
+检查哪些依赖？
+	
+	nagios增加告警：
+		check_version
+	自动部署加一些 依赖配置文件：
+		/etc/lcm-guard/check_versions
+	
+4.性能测试发起来
+	ceph好像有问题
+http://buildbot-linux-slave01.lzy.com/daily_releases_new/centos6/lzy-data-platform/master/2021011503/lzy-data-platform-release-1.0.0-dev/docs/install/webhelp/index/content/ch04s10.html
+
+
+[ceph_deploy][ERROR ] RuntimeError: connecting to host: 10.1.131.48 resulted in errors: HostNotFound 10.1.131.48
+
+
+
+装客户端：
+
+在50.18执行：
+ceph-deploy install --repo-url http://10.1.50.18/ceph --gpg-url http://10.1.50.18/ceph/release.asc 10.1.65.103
+
+cd /etc/ceph
+
+yum install python-setuptools
+
+vim /usr/bin/ceph-deploy
+# 第一行改为#!/usr/bin/python
+
+mkdir -p /opt/ceph-cluster
+
+yum clean all
+yum install ceph-deploy
+
+
+问题：
+[root@solea-10-1-65-104 logs]# tail -f jcseg_server_app.stderr.out
+Java HotSpot(TM) 64-Bit Server VM warning: Cannot open file /opt/tools/split-word-jcseg/logs/jcseg_server_gc.out due to No such file or directory
+
+
+延期：
+SOLEA-3315 【CI】做一些对所有的项目做自动化测试 pre-commit 检查
+SOLEA-3312 【广州】广州的一些问题和需求
+SOLEA-2866 【翻译】合肥xxx张校校发现的问题，日语没有进行翻译
+SOLEA-3522 【南京sj】对接烽火的邮件数据
+
+20210116
+SOLEA-3518 【新闻推荐】推荐页面设计，找客户确定下		
+	修改一下，再跟客户确认下
+
+COMMON-6780 【nagios】自动部署后，nagios检查项中没有check_versions
+	提交一下	
+	http://git.lzy.com/lzy/ansible-common/-/merge_requests/14
+
+	http://10.1.13.1:7080/search?q=compile_build_docker&patternType=literal#2
+	
+SOLEA-3515 【汇总】solea-2.1.1的剩余bug
+	patch?
+	http://git.lzy.com/lzy/solea/-/commit/bd8ea388b618fa5d0b7b3a14fbd8e312627d6896/pipelines
+		等patch
+		http://git.lzy.com/lzy/solea/-/merge_requests/1961
+	
+	http://git.lzy.com/lzy/ansible-common/-/merge_requests/16
+	
+1.COMMON-6784 【guard】：检查java security的random类型
+	securerandom.source=file:/dev/urandom
+		如何打印出securerandom.source信息，并且是urandom?
+			java -XshowSettings:all
+	
+			/usr/java/jdk1.8.0_271-amd64/jre/lib/security
+				看一下java在哪里调用这个配置？
+			SeedGenerator
+			
+			system.properties
+	
+2.SOLEA-3494 【tika-api】使用时的一些问题
+	超时的问题？
+	
+	
+	直接控制forkparse超时了
+	
+check_rpm:
+http://git.lzy.com/lzy/ansible-common/-/merge_requests/16
+	
+SOLEA-3515 【汇总】solea-2.1.1的剩余bug
+	patch给测试通过
+COMMON-6784 【guard】：检查java security的random类型
+	再查一下
+COMMON-6779 【ansible】docker vm的虚拟机自动部署后，nagios中没有check_rpm检查项
+	周一确认一下
+	
+	
+广州调研， 去广州之前联系规划部
+
+
+发数据关闭simba:
+
+
+todo恢复：
+[root@simba-10-1-46-1 /]# mv /vagrant/auto-deploy/auto-deploy.sh /vagrant/auto-deploy/auto-deploy.sh.bak_20210116
+[root@lzy-10-1-30-5 ~]# mv /opt/lzy-dockers/simba-c/init.sh /opt/lzy-dockers/simba-c/init.sh.bak
+
+本周工作：
+@王涛 4d
+SOLEA-3522 【南京 sj】对接烽火的邮件数据 4h                
+SOLEA-3519 【广州翻译问题】上传文件，详情页面没有译文展示 4h  --ok, 延期下次去现场查
+SOLEA-3518 【新闻推荐】推荐页面设计，找客户确定下 4h
+SOLEA-3483 【自动部署】所有的 C 环境的自动部署要判断 ansible.log 的里面的东西是否正确 4h
+SOLEA-3315 【CI】做一些对所有的项目做自动化测试 pre-commit 检查，-4h  --ok,做了三个项目
+SOLEA-3494 【tika-api】使用时的一些问题 4h
+SOLEA-3515 【汇总】solea-2.1.1 的剩余 bug 4h 
+solea 性能测试 安装，导入数据，看看几个 jira（文档相似，上传 100 万） -4h
+COMMON-6779 【ansible】docker vm的虚拟机自动部署后，nagios中没有check_rpm检查项
+COMMON-6780 【nagios】自动部署后，nagios检查项中没有 check_versions
+COMMON-6784 【guard】：检查 java security 的 random 类型
+
+
+20210118
+1.检查一下
+COMMON-6779 【ansible】docker vm的虚拟机自动部署后，nagios中没有check_rpm检查项		--ok
+
+2.本周工作					--ok
+	total: 4d 4h
+	@王涛 total: 4d + 4h
+	SOLEA-3529 【showapp】mht 文件的显示支持 1d @预测试方法
+
+	1. 上传 mht 文件
+	1. 可以查到内容
+	1. 可以 show，比较好看
+	1. 提供个测试做测试用例
+
+	SOLEA-3530 【tika】需要支持 outlook 的 ost 格式的入库支持 1d @预测试方法
+	1. 有几个 ost 文件，确认里面有几个 email
+	1. 上传，确认是这几个 email
+	1. 提供个测试做测试用例
+
+	
+SOLEA-3546 【南京 sj】处理一下南京局的几个问题 4h
+要 task 文档
+SOLEA-3527 【A 环境】更新邮件 bcp 数据的权限, 重新入图谱 4h
+MLP-1483 【gz nagios 告警】现场的 mlp 有一项 nagios 告警，修改 solrConfig.xml 导致的 2h
+SOLEA-3515 【汇总】solea-2.1.1 的剩余 bug 2h
+SOLEA-3522 【南京 sj】对接烽火的邮件数据 4h
+SOLEA-3315 【CI】做一些对所有的项目做自动化测试 pre-commit 检查						4h
+COMMON-6784 【guard】：检查java security 的 random 类型								2h
+
+
+3.
+SOLEA-3304 【sendFserver】压缩包解压发送的问题					--ok
+	\opt\solea-send-fserver\tmp\4ecb66c1-a309-4e31-87bc-9bf9cb161d6d\3_7b379d583efa47d9a594c74b821f8ea1
+4.SOLEA-3494 【tika-api】使用时的一些问题
+
+5.SOLEA-3515 【汇总】solea-2.1.1的剩余bug
+	测试测一下
+	tf-idf 
+		合一下代码：
+		http://git.lzy.com/lzy/solea/-/merge_requests/1962
+
+6.检查一下发送数据测试：
+部署：
+ASK [Download l_opencl_p_18.1.0.015.tgz] **************************************
+changed: [process2]
+fatal: [process1]: FAILED! => {"changed": false, "dest": "/opt/install/l_opencl_p_18.1.0.015.tgz", "msg": "Request failed: <urlopen error [Errno -2] Name or service not kno
+wn>", "state": "absent", "url": "http://share.lzy.com/share/%e4%ba%a7%e5%93%81%e5%8f%91%e5%b8%83/%e5%ae%89%e8%a3%85%e9%85%8d%e5%a5%97/install_support/solea/l_opencl_p_18.1.
+0.015.tgz"}
+
+	1.页面告警：
+	com.google.common.util.concurrent.UncheckedExecutionException: org.springframework.web.client.HttpServerErrorException: 502 Bad Gateway at com.google.common.cache.LocalCache$Segment.get(LocalCache.java:2050)
+
+	2. /opt/solea-tika-app/bin/solea_monitor_kafka_topic.sh
+	/usr/hdp/current/kafka-broker/bin/kafka-consumer-groups.sh --bootstrap-server solea-10-1-65-101:6667,solea-10-1-65-102:6667,solea-10-1-65-103:6667 --new-consumer --list
+	Exception in thread "main" joptsimple.UnrecognizedOptionException: new-consumer is not a recognized opti
+		
+	3.文本相似：
+		基本上文本重复率90% 以上才能检索出来结果， 如回复的邮件， 重复的文本。
+		
+	4.文件列表分页很慢，要5-10s， 47w文件
+
+	5.还有文件没有入库， 等待中？ 
+
+	6.文件未入库，删除不了
+	
+7.tika-api问题：				--ok
+	f=""
+	curl http://10.1.61.3:40317/tika/api/doParse -F "file=${f}" -F "parseTimeout=10" -X POST
+	
+	
+
+mlp远程调试的wiki更新  --ok
+http://wiki.lzy.com/millipede%E8%BF%9C%E7%A8%8B%E8%B0%83%E8%AF%95#preview  
+	
+
+
+20210119
+1.SOLEA-3530 【tika】需要支持 outlook 的 ost 格式的入库支持
+	先找一个ost文件
+	测试一下ost转pst/ 或者现在的pstlib是否支持读取ost
+	pst解压
+
+2.SOLEA-3546 【南京 sj】处理一下南京局的几个问题
+	准备一下， 要检查哪些问题？
+	tasks
+	
+3.	SOLEA-3494 【 tika-api 】使用时的一些问题
+		演示一下
+		
+4.SOLEA-3515 【汇总】solea-2.1.1 的剩余 bug
+	patch测试一下
+
+5.fileserver2， 抽视频截图：
+	ceph://solea_20201214/1fb97f70-19a0-4431-bb13-b19ef9bf5d69
+	
+	http://10.1.47.22:15003/fileserver2/api/v1/getFile?url=ceph://solea_20210118/644635c1-b1b8-40db-a925-cc5e43244503
+	
+	测试一下接口：
+		http://10.1.61.3:15003/fileserver2/api/v1/getFile?url=ceph://solea_20210118/644635c1-b1b8-40db-a925-cc5e43244503
+	viewFile:
+	http://10.1.61.3:15003/fileserver2/api/v1/viewFile?url=http://10.1.61.3:15003/fileserver2/api/v1/getFile?url=ceph://solea_20210118/644635c1-b1b8-40db-a925-cc5e43244503&type=video
+	
+	视频截图：
+	http://10.1.61.3:15003/fileserver2/api/v1/videoCapture?url=http://10.1.61.3:15003/fileserver2/api/v1/getFile?url=ceph://solea_20210118/644635c1-b1b8-40db-a925-cc5e43244503
+	
+todo:
+合一下代码：
+http://git.lzy.com/lzy/solea/-/merge_requests/1962
+	
+加个md5
+
+SOLEA-3558 【视频ocr】抽取视频截图做ocr
+	
+20210120
+patch加一个md5		--ok
+
+演示jira tika-api		--ok
+
+shfmt_v3.2.0_windows_amd64.exe
+
+1.SOLEA-3530 【tika】需要支持 outlook 的 ost 格式的入库支持	--ok, 明天测试一下
+		造一个ost文件  --ok
+		contentType?
+			"content_type":"application/vnd.ms-outlook-pst",
+			pst的： application/vnd.ms-outlook-pst
+			
+			contentType是一样的，现在的库是否支持？
+		
+			有些subject提取不出来，转一下试试？
+				compile group: 'com.aspose', name: 'aspose-email', version: '20.10', ext: 'pom'
+			界面加上ost的选择
+				
+2.SOLEA-3529 【showapp】mht 文件的显示支持						--明天测试一下
+ceph://solea_20210120/c22453a3-363d-499c-9c28-ae4d7e1ed5b1
+ceph://solea_20210120/f3deaf70-90bd-4c68-96df-629f04af1b26
+ceph://solea_20210120/5c29378a-1393-4ad0-92af-6227a12f266b
+
+
+http://10.1.61.2:15003/solea-showapp/file/show?showAll=true&url=http://10.1.61.2:15003/solea-fserver2/api/v1/getFile?url=ceph://solea_20210120/5c29378a-1393-4ad0-92af-6227a12f266b
+
+http://10.1.61.2:15003/solea-showapp/file/show?showAll=true&url=http://10.1.61.2:15003/solea-fserver2/api/v1/getFile?url=ceph://solea_20210120/f3deaf70-90bd-4c68-96df-629f04af1b26
+
+http://10.1.61.2:15003/solea-showapp/file/show?showAll=true&url=http://10.1.61.2:15003/solea-fserver2/api/v1/getFile?url=ceph://solea_20210120/c22453a3-363d-499c-9c28-ae4d7e1ed5b1
+
+3.SOLEA-3527 【A 环境】 更新邮件 bcp 数据的权限, 重新入图谱
+		晚上更新
+			晚上好像要团建，明天晚上更新了 。。。
+	
+4.COMMON-6784 【guard】：检查java security的 random 类型
+	jinfo试试？		--不行
+	
+	-Djava.security.egd=file:///dev/urandom"
+	
+	在哪里读取的文件：
+		java.security
+			securerandom.source
+			
+		String property = Security.getProperty("securerandom.source");
+
+放一下patch				--ok
+\\10.1.11.5\temp\wt\patch\2.1.2
+放到：
+\\10.1.11.5\share\产品发布\安装包\ Solea \ solea-2.1.2
+	
+
+20210121
+再测试一下：
+	SOLEA-3530 【tika】需要支持 outlook 的 ost 格式的入库支持			--ok
+	
+showapp 的问题：
+http://10.1.50.18:15003/solea/fileDetail/index?docId=4e4e98e1-fda3-478d-93d6-bc0280329664&collectionPrefix=case_solea
+
+2021-01-21 13:38:02.108  INFO 126447 --- [http-nio-auto-1-exec-1] c.l.s.s.converter.email.EmailConverter   : start to get email info.
+2021-01-21 13:38:02.109 ERROR 126447 --- [http-nio-auto-1-exec-1] c.l.s.s.c.email.EmailVelocityController  : parseToXHTML error.
+
+javax.mail.internet.ParseException: Unbalanced quoted string
+        at javax.mail.internet.HeaderTokenizer.collectString(HeaderTokenizer.java:411)
+        at javax.mail.internet.HeaderTokenizer.getNext(HeaderTokenizer.java:343)
+        at javax.mail.internet.HeaderTokenizer.next(HeaderTokenizer.java:245)
+        at javax.mail.internet.HeaderTokenizer.next(HeaderTokenizer.java:204)
+        at javax.mail.internet.ParameterList.<init>(ParameterList.java:258)
+        at javax.mail.internet.ContentDisposition.<init>(ContentDisposition.java:100)
+        at javax.mail.internet.MimeBodyPart.getFileName(MimeBodyPart.java:1136)
+        at javax.mail.internet.MimeBodyPart.getFileName(MimeBodyPart.java:513)
+        at com.lzy.solea.showapp.converter.email.EmailConverter.extractInfo(EmailConverter.java:257)
+        at com.lzy.solea.showapp.converter.email.EmailConverter.getEmailInfo(EmailConverter.java:111)
+        at com.lzy.solea.showapp.controller.email.EmailVelocityController.showEmail(EmailVelocityController.java:61)
+        at sun.reflect.GeneratedMethodAccessor92.invoke(Unknown Source)
+        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+        at java.lang.reflect.Method.invoke(Method.java:498)
+	
+	附件名不对？乱码			--ok
+	// 邮件设置
+    System.setProperty("mail.mime.encodefilename", "true"); // 这个会正确设置附件的名字 编解码
+	
+	SOLEA-3529 【showapp】mht 文件的显示支持
+		测试用例
+		
+		
+			邮件账号不对
+	
+王 涛 </o=first organization/ou=exchange administrative group/cn=recipients/cn=0003bffd3717541d>,>
+		
+		收件人：
+			recipient.getSmtpAddress()
+			    public String getSmtpAddress() {
+        // If the recipient address type is SMTP,
+        // we can simply return the recipient address.
+        final String addressType = this.getEmailAddressType();
+        if (addressType != null && addressType.equalsIgnoreCase("smtp")) {
+            final String addr = this.getEmailAddress();
+            if (addr != null && addr.length() != 0) {
+                return addr;
+            }
+        }
+        // Otherwise, we have to hope the SMTP address is
+        // present as the PidTagPrimarySmtpAddress property.
+        return this.getString(0x39FE);
+    }
+	
+
+			
+
+1.SOLEA-3522 【南京 sj】对接烽火的邮件数据			--ok
+	机器规划
+	
+	南京sj机器规划.xlsx
+	
+
+2.MLP-1483 【gz nagios 告警】现场的 mlp 有一项 nagios 告警，修改 solrConfig.xml导致的		--ok
+
+	先复现一下：
+		1.更新collection:news_solea_ collection的配置文件
+			/opt/solr/server/scripts/cloud-scripts/zkcli.sh -zkhost 127.0.0.1:9983 -cmd getfile /configs/news_solea_data/solrconfig.xml /root/solrconfig.xml
+			
+			简单修改一下：
+			cutfields max_size=102400000
+			
+			/opt/solr/server/scripts/cloud-scripts/zkcli.sh -zkhost 127.0.0.1:9983 -cmd putfile /configs/news_solea_data/solrconfig.xml /root/solrconfig.xml
+
+			出现告警：			--ok
+			zk file news_solea_data/solrconfig.xml and /opt/millipede-solr/millipede/configsets/template_data/conf/solrconfig.xml are inconsistent. please check news_solea_data/solrconfig.xml!
+			
+			解决：
+				/opt/millipede-solr/millipede/configsets/template_data/conf/solrconfig.xml
+			
+			zk的统一跟/opt/millipede-solr/millipede/configsets/template_data/conf/solrconfig.xml diff
+			
+http://wiki.lzy.com/mlp%E5%A6%82%E4%BD%95%E6%9B%B4%E6%96%B0collection%E7%9A%84%E9%85%8D%E7%BD%AEsolrconfig.xml
+
+如何更新solrconfig.xml文件和出现jira中描述的告警应该怎么解决。
+			
+3.SOLEA-3527 【A 环境】更新邮件 bcp 数据的权限, 重新入图谱
+
+	是否有必要升级
+	a环境图谱版本？是否有条件升级？
+
+
+验证下solr bad文件的问题
+更新：
+/opt/millipede-solr/millipede/lib/solr-millipede-2.7.1-r1.jar
+从50.18/ 60.10的jar
+
+showapp, 字符串太长超出框了
+详情页面两个滚动条
+	
+
+20210122
+1.SOLEA-3527 【A 环境】更新邮件 bcp 数据的权限, 重新入图谱  --ok
+	数据入库		
+		
+	
+	
+2.广州出差，整理一下
+	所有问题
+	要带的东西
+		电脑
+	
+SOLEA-3564 【广州出差】对接旷视接口， 升级新闻网站和其他问题处理
+
+SOLEA-3392 【新闻网站】html不要放置solr，从ceph中进行获取		--ok
+	怎么安装？
+SOLEA-3516  【新闻推荐】保存用户浏览记录，根据最近浏览记录推荐“可能喜欢看”的新闻		--ok
+	怎么安装?
+
+主要工作：
+1.新闻网站更新， 用户喜好推荐和推荐相似新闻。（现场跟客户沟通再调整新闻网站页面）
+2.对接旷视视频接口
+3.协助规划部调研
+
+其他问题处理：
+SOLEA-3519 【广州翻译问题】上传文件，详情页面没有译文展示
+SOLEA-3268 【web】广州发现的分页查询问题，搜索结果页点击“末页”，跳转结果是空的（基本确定是重复数据问题）
+SOLEA-3271 【使用统计】广州问题，“当前活跃用户”和“今日活跃用户”都为0
+SOLEA-3495 【gz现场问题】云度显示的通联关系数量，跟右边通联的邮件数量不一致，家里是否有这个问题？
+MLP-1483 【gz nagios 告警】现场的 mlp 有一项 nagios 告警，修改 solrConfig.xml导致的
+	
+	
+3.新闻网站是否可以优化一下
+
+	1.上面没有数据？ 切换按照时间推荐
+	2.
+	
+	
+首页：
+	1.图片去掉或者隐藏掉， 后面有图片再加上
+	2.风格参考:google
+	
+详情页：
+	1.标题换成， 加粗黑体字
+	2.显示内容的框窄一些
+	3.风格参考百度。
+
+http://10.1.131.12:15003/translator/translator-demo/index.html
+http://10.1.131.12/:15003/translator/recognize/index.html
+	
+	
+	
+问题：
+ceph-api 起不来？
+[root@solea-10-1-61-3 ceph-api]# bash /opt/fileserver-2-boot-2.1.3-SNAPSHOT/ceph-api-2.1.3-dev/bin/ceph_api_start.sh
+[root@solea-10-1-61-3 ceph-api]# bash -x /opt/fileserver-2-boot-2.1.3-SNAPSHOT/ceph-api-2.1.3-dev/bin/ceph_api_start.sh
++ PRG=/opt/fileserver-2-boot-2.1.3-SNAPSHOT/ceph-api-2.1.3-dev/bin/ceph_api_start.sh
++ '[' -h /opt/fileserver-2-boot-2.1.3-SNAPSHOT/ceph-api-2.1.3-dev/bin/ceph_api_start.sh ']'
+++ dirname /opt/fileserver-2-boot-2.1.3-SNAPSHOT/ceph-api-2.1.3-dev/bin/ceph_api_start.sh
++ PRGDIR=/opt/fileserver-2-boot-2.1.3-SNAPSHOT/ceph-api-2.1.3-dev/bin
++ cd /opt/fileserver-2-boot-2.1.3-SNAPSHOT/ceph-api-2.1.3-dev/bin/..
+++ pwd
++ MY_PROGRAM_HOME=/opt/fileserver-2-boot-2.1.3-SNAPSHOT/ceph-api-2.1.3-dev
++ cd -
++ log_file=/opt/fileserver-2-boot-2.1.3-SNAPSHOT/ceph-api-2.1.3-dev/logs/ceph_api.log
++ exec
+[root@solea-10-1-61-3 ceph-api]# tail -f /opt/fileserver-2-boot-2.1.3-SNAPSHOT/ceph-api-2.1.3-dev/logs/ceph_api.log
+  File "/opt/fileserver-2-boot-2.1.3-SNAPSHOT/ceph-api-2.1.3-dev/lib/django/conf/__init__.py", line 43, in _setup
+    self._wrapped = Settings(settings_module)
+  File "/opt/fileserver-2-boot-2.1.3-SNAPSHOT/ceph-api-2.1.3-dev/lib/django/conf/__init__.py", line 106, in __init__
+    mod = importlib.import_module(self.SETTINGS_MODULE)
+  File "/opt/rh/rh-python36/root/usr/lib64/python3.6/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 994, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 971, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 953, in _find_and_load_unlocked
+ModuleNotFoundError: No module named 'main.settings'
+	
+需要延期的：			--ok
+COMMON-6784 【guard】：检查java security 的 random 类型
+SOLEA-3522 【南京sj】对接烽火的邮件数据
+	下周应该导完， 通知
+SOLEA-3519 【广州翻译问题】上传文件，详情页面没有译文展示
+SOLEA-3312 【广州】广州的一些问题和需求-20201230
+SOLEA-2866 【翻译】合肥xxx张校校发现的问题，日语没有进行翻译
+SOLEA-3495 【gz现场问题】云度显示的通联关系数量，跟右边通联的邮件数量不一致，家里是否有这个问题？
+
+
+########################
+20210130
+1.出差整理一下				--ok
+	问题和jira
+需求和问题：
+	视频抓拍：
+		1.查询离线资源接口时， 对方接口有时返回空， 要等几秒甚至几十秒才有结果			@旷视
+		2.人脸视频的效果不太好， 需要旷视调一下系统参数。保证识别的效果 				@旷视
+													旷视视频问题已经反馈给客户和对方去处理
+	
+	lzy:
+		1.加载批次列表报错， 偶发的：Uncaught TypeError: Cannot readproperty 'parentNode' of null
+		2.新闻网站的分词服务和wiki百科增加开关配置，现场没有装这个服务。
+		3.forkparse关闭后， 新闻数据的text没有提取出来
+		4.有一个网站的新闻数据的格式全是乱的：网站：am730
+		5.mlt的问题， 现场是8.2的solr, 查全率比家里低， 返回格式不一样，并且只能返回id? 全文可能要出个版本
+		6.新闻网站标签问题， 有些分类不准确， 关键字跟实体识别需要加强
+	
+	需求：
+		1.云度的整体页面风格参考841去调整优化
+		2.文件上传界面，批次加载太慢， 需要优化
+		3.支持批量上传，能够拖动多个目录或文件夹上传
+		4.文件上传框增加预览按钮， 可以预览和选择本地的文件。
+	
+
+	
+2.代码合一下
+
+
+3.报销
+
+
+
+	
+本周工作：
+total: 4d 4h
+SOLEA-3529 【showapp】mht 文件的显示支持 											1d @预测试方法
+SOLEA-3530 【tika】需要支持 outlook 的 ost 格式的入库支持 							1d @预测试方法	--ok
+SOLEA-3546 【南京 sj】处理一下南京局的几个问题 										4h				--ok
+要 task 文档
+SOLEA-3527 【A 环境】更新邮件 bcp 数据的权限, 重新入图谱 							4h
+MLP-1483 【gz nagios 告警】现场的 mlp 有一项 nagios 告警，修改 solrConfig.xml导致的 2h				--ok
+SOLEA-3515 【汇总】solea-2.1.1 的剩余 bug 											2h				--ok
+SOLEA-3522 【南京 sj】对接烽火的邮件数据 											4h				--ok
+SOLEA-3315 【CI】做一些对所有的项目做自动化测试 pre-commit 检查						4h				
+COMMON-6784 【guard】：检查java security 的 random 类型								2h				
+
+TODO:
+ git-check 装一下
+ 
+YWang(王燕) 13:37:04
+## pre commit 安装计划
+两周内，所有的 pm 和组长安装完成 到 20201226
+一个月内，所有的人安装完成 到 20201116
+http://wiki.lzy.com/%E5%9C%A8git%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%81%9Ahooks%EF%BC%88git-hooks%EF%BC%89
+
+月度培训，zip解压的
+
+月度培训：
+ COMMON-6763 【guard kill 进程问题】原来10进程，修改配置成6进程，然后reaload再kill-all,原来的4进程还存活？没有杀
+
+
+
+
+

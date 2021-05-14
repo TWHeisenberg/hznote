@@ -1,0 +1,1966 @@
+记录：
+46.12是solea的web,showApp和数据库, 
+46.13是solea的后台这些七七八八的
+jgcai(蔡建国) 2019-07-31 11:59:44
+solr在46.29
+arm：10.1.132.78 root/arm654321
+gradlew:
+gradlew -Pprod bootDistTar test / gradlew -Pprod clean bootDistTar
+推荐书籍：
+http://wiki.lzy.com/%E6%96%B0%E5%91%98%E5%B7%A5%E5%85%A5%E8%81%8C%E5%BF%85%E7%9C%8B
+
+10.1.12.4 share 123456
+10.1.11.5 user 123456
+# solea 1.9 solea-1.9 B环境：
+连接：l
+10.2.30.4 root/123456	高级》隧道：10.1.50.18 gw/123456
+prometheus#####
+:15018
+
+c环境分配：
+http://wiki.lzy.com/%E7%A0%94%E5%8F%91%E6%B5%8B%E8%AF%95%E7%8E%AF%E5%A2%83%28C%E7%8E%AF%E5%A2%83%EF%BC%89ip%E5%88%86%E9%85%8D?highlight=%2810.1.58.1%29
+
+消费情况：
+/usr/hdp/current/kafka-broker/bin/kafka-consumer-groups.sh  --bootstrap-server 10.1.46.32:6667 --describe --group solea-tika
+
+
+远程调试forkparse:
+-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8021
+
+清除kafka数据：
+清除kafka数据  --ok
+		  kafka 清掉数据
+ZK_HOSTS="10.1.46.32:2181"
+		  /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper ${ZK_HOSTS} --topic  solea_fileserver  --alter --config  retention.ms=10 
+/usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper ${ZK_HOSTS} --topic solea_fileserver --alter --config cleanup.policy=delete
+		  
+		  查看等到log大小为0
+		  ll /opt/kafka-logs/solea_fileserver-*
+		  
+		  kafka还原设置
+		  /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --zookeeper ${ZK_HOSTS} --topic solea_fileserver  --alter --config  retention.ms=604800000 
+		
+	  清空solr数据	--ok
+		  python /opt/millipede-solr/management/bin/solr_collection.py delete-collection solea_
+
+		  创建collection:
+cd /opt/solea-release-2.0.0-r1/solr
+python /opt/millipede-solr/management/bin/solr_collection.py create-collection \
+ --auto-numshard  --replication-factor 1 --route-name implicit --auto-create-replication=2 \
+ --schema-file /opt/solea_schema/schema.xml  solea_
+
+ /opt/solea-release-2.0.3-r1/solr/conf/schema.xml  solea_
+ 
+ /usr/hdp/current/kafka-broker/bin/kafka-topics.sh  --zookeeper $ZK_HOSTS  --topic solea_fileserver  --describe
+ 
+听包：
+tcpdump -i any tcp port  15003 -w /root/4.pcap
+
+http and ip.src==10.1.30.4 and ip.dst==10.1.30.4
+ 
+
+liyulong:
+lovexiafe1314
+ 
+ 
+source /opt/solea-tika-app/bin/solea_tika_profile.sh
+export SOLEA_TIKA_APP_OPTS="$SOLEA_TIKA_APP_OPTS -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8019"
+
+cd /opt/solea-tika-app
+bash /opt/solea-tika-app/bin/solea-tika-app start-tika-api \
+ --app.id=api
+ 
+curl http://10.1.46.32:8018/tika/api/doParse  -F "file=@/opt/solea-tika-external-service/test-data/test_ocr.jpg" -d "config=@{\"translateEnable\":\"true\",\"ocrEnable\":\"true\"}" -X POST
+ 
+ 
+source /opt/solea-tika-app/bin/solea_tika_profile.sh
+export SOLEA_TIKA_APP_OPTS="$SOLEA_TIKA_APP_OPTS -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8019"
+	 
+ bash /opt/solea-tika-app/bin/solea-tika-app run-tika \
+ --app.id=xxx.test --application.tika.file.debug=false \
+ --application.kafka.topic=solea_fileserver \
+ --application.solr.collection=solea_redirect_collection
+ 
+远程调试forkparse:
+-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8021
+
+netstat -nap | grep 1096
+ 
+ solea数据库：
+ 10.1.46.31/solea/123456/ora11g
+ 
+
+
+A环境：
+http://10.1.12.4/ssh%20proxy#preview
+
+查询占用端口进程：
+netstat -nlp | grep :8080 | awk '{print $7}' |awk -F"/" '{ print $1 }'
+
+2020.03.02
+
+1.先按照原来anaconda的方式安装环境
+	使用nginx代理的方式访问分类服务
+
+	
+	
+2.gp机器
+	配置yum
+	nginx
+	通过代理访问
+	通过代理访问
+
+3.填jira:
+ docker安装分类服务的环境
+	
+	
+	cp /opt/content-analysis/etc/incron/* /etc/incron.d/
+	配置nginx
+	cp /opt/content-analysis/etc/nginx/* /etc/nginx/location.conf.d/
+	
+	配置guard:
+	cp /opt/content-analysis/etc/guard/content_analysis_server.xml ${LCM_GUARD_ROOT}/etc/guard/conf.d/
+	lcm_guard --kill-forever content-analysis-server
+	sleep 10
+	lcm_guard --reload
+	lcm_guard --kill guard_crond
+	lcm_guard --list
+	
+	访问：
+	curl 10.1.131.70:15003/content-analysis/index	--ok
+
+SOLEA-2552 【分类服务】使用docker安装分类服务的运行环境
+COMMON-5638 【分类服务】使用docker安装分类服务的运行环境
+	
+通过guard起不来？
+/usr/local/bin/python2.7 /root/lcm.guard-1.8.0-dev/bin/lcm_guard_runasdaemon.py --workpath=/opt/content-analysis lockrun -L /tmp/content_analysis_lockrun -- bash bin/content-analysis.sh
+	
+2020-03-02 22:46:31,850 WARNING location:[/root/lcm.guard-1.8.0-dev/tmp/lcm_guard.xml] name : [content-analysis-server].  : not running
+2020-03-02 22:46:31,850 INFO [location:[/root/lcm.guard-1.8.0-dev/tmp/lcm_guard.xml] name : [content-analysis-server]. ] runing [lockrun -L /tmp/content_analysis_lockrun -- bash /opt/content-analysis/bin/content-analysis.sh].
+2020-03-02 22:46:31,850 INFO [location:[/root/lcm.guard-1.8.0-dev/tmp/lcm_guard.xml] name : [content-analysis-server]. ] real runing [lockrun -L /tmp/content_analysis_lockrun -- bash /opt/content-analysis/bin/content-analysis.sh].
+2020-03-02 22:46:31,850 INFO run command args:[/usr/local/bin/python2.7 /root/lcm.guard-1.8.0-dev/bin/lcm_guard_runasdaemon.py --workpath=/opt/content-analysis lockrun -L /tmp/content_analysis_lockrun -- bash /opt/content-analysis/bin/content-analysis.sh]
+	
+
+环境变量导致的：
+/opt/content-analysis/bin/content-analysis.sh: line 39: exec: : not found
+which: no python3 in (/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin)
+	
+	
+4.编译报错：
+    [exec] [ERROR] Failed to execute goal on project solea-file-count: Could not resolve dependencies for project com.lzy.solea.tika:solea-file-count:jar:2.0.3-dev: Could not find artifact com.lzy.solea.tika:solea-tika-common:jar:2.0.3-SNAPSHOT in lzy (http://artifact.lzy.com/nexus/repository/lzy/) -> [Help 1]
+	
+	
+5.
+省厅：
+solea 1.1.8 一个文件下载不到
+从1.1.6升级过来的
+
+2020.03.03
+1.
+SOLEA-2522 【译文】没有解析出译文
+		--ok 现在可以正常解析
+
+2.SOLEA-2254 【tika】加密文件没有被识别成加密文件				--ok
+各个类型的加密文件都要有标识字段
+
+
+3.省厅fserver1下载不到文件：									--ok
+搜索一下
+grep -rn "Compressing to file /opt/sotre/20190104/01/04/*"
+	
+	
+2020.03.04
+1.
+给工程填一个jira：
+江苏网安升级：
+
+	1.联系一下江苏网安客户，是否愿意升级solea-1.1.8 到solea-2.x
+		对我们内部：
+			可以不用再维护solea-1.1.8的系统
+		给客户理由：
+			现在只有一台机器，发了8T的数据，安全性没有保证，一个机器坏了怎么？
+			老系统的兼容性不够好
+			新系统采用fileserver2更安全，数据有多备份
+	2.升级的话一台机器不够，能否加机器。
+		至少两台机器，三台最好，每台机器内存至少128g。
+	3.为了保证平滑升级，可以用新的机器去升级，老系统不要动，待升级ok后再切换新系统。
+
+2.viewFile内存问题：
+1.3284364
+
+jmap -dump:live,file=/opt/tmp/heapdump.bin 3284364
+
+
+3.
+安装30.234
+ansible-playbook -i environments/dev  site.yml --limit dns_servers  --tags "bind,common" -v
+
+TASK [common : start tengine] ***************************************************************************************************************************************************************************************************************
+fatal: [ca03.lob.bd.com]: FAILED! => {"changed": false, "failed": true, "msg": "Unable to start service nginx: Warning: nginx.service changed on disk. Run 'systemctl daemon-reload' to reload units.\nJob for nginx.service failed because the control process exited with error code. See \"systemctl status nginx.service\" and \"journalctl -xe\" for details.\n"}
+
+TASK [bind : Create forward lookup zone file] ***********************************************************************************************************************************************************************************************
+fatal: [ca03.lob.bd.com]: FAILED! => {"changed": true, "exit_status": 1, "failed": true, "msg": "failed to validate", "stderr": "", "stderr_lines": [], "stdout": "dns_rdata_fromtext: /root/.ansible/tmp/ansible-tmp-1583303393.68-249470211280969/source:20: near '-': extra input text\nzone solea.bd.com/IN: loading from master file /root/.ansible/tmp/ansible-tmp-1583303393.68-249470211280969/source failed: extra input text\nzone solea.bd.com/IN: not loaded due to errors.\n", "stdout_lines": ["dns_rdata_fromtext: /root/.ansible/tmp/ansible-tmp-1583303393.68-249470211280969/source:20: near '-': extra input text", "zone solea.bd.com/IN: loading from master file /root/.ansible/tmp/ansible-tmp-1583303393.68-249470211280969/source failed: extra input text", "zone solea.bd.com/IN: not loaded due to errors."]}
+
+
+
+ansible -i environments/dev all -m ping									--ok
+ansible-playbook -i environments/dev  site.yml  --tags "sshd_config" -v	--ok
+ansible -i environments/dev all -m ping									--ok
+
+ansible-playbook -i environments/dev site.yml --tags "common" -v		--ok
+
+cd /opt/solea-deploy
+ansible-playbook -i environments/dev site.yml --skip-tags "bind,common"  -v
+
+TASK [solea_userdb : Create oracle user] 
+"ORA-01034: ORACLE not available"
+
+启动oracle：
+ lsnrctl status
+ 
+无法创建归档日志， 没有权限？
+chown oracle oracle-archive-log
+ 
+
+继续：
+
+ansible-playbook -i environments/dev site.yml --skip-tags "bind,common"  -v --start-at-task "solea_userdb : Create oracle user" 
+
+继续：
+TASK [solea_auto_test : Create test_config_override.yml]
+ansible-playbook -i environments/dev site.yml --skip-tags "bind,common"  -v --start-at-task "solea_auto_test : Create test_config_override.yml" 
+
+修改一下内存：
+cd /opt/millipede-solr/millipede
+vim  /opt/millipede-solr/millipede/bin/solr-startup-script-8983.sh
+
+
+ansible -i environments/dev  all -a "lcm_guard  --kill-forever-all"
+sleep 10
+ansible -i environments/dev  all -a "lcm_guard --reload"
+
+ansible-playbook -i environments/dev all_reboot.yml -v
+
+安装分类服务：
+pip install setuptools --upgrade --ignore-installed setuptools
+pip install pip==19.3.1
+
+
+pip install setuptools==43.0.0 --ignore-installed
+pip install lxml==3.4.2 --ignore-installed
+cd /opt/content-analysis-dependency/
+pip install Keras-2.0.8-py2.py3-none-any.whl  --no-index --find-links=/opt/content-analysis-dependency --ignore-installed six
+pip install mask_rcnn_12rics-0.2.3-py3-none-any.whl  --no-index --find-links=/opt/content-analysis-dependency --ignore-installed six
+pip install opencv-python==4.1.1.26
+pip install django==2.0
+pip install sumy==0.8.0 --ignore-installed
+
+
+
+pip install lxml
+pip install sumy-0.8.0-py2.py3-none-any.whl  --no-index --find-links=/opt/content-analysis-dependency --ignore-installed
+  ERROR: Command errored out with exit status 1:
+     command: /root/anaconda3/bin/python -c 'import sys, setuptools, tokenize; sys.argv[0] = '"'"'/tmp/pip-install-47f7rv96/lxml/setup.py'"'"'; __file__='"'"'/tmp/pip-install-47f7rv96/lxml/setup.py'"'"';f=getattr(tokenize, '"'"'open'"'"', open)(__file__);code=f.read().replace('"'"'\r\n'"'"', '"'"'\n'"'"');f.close();exec(compile(code, __file__, '"'"'exec'"'"'))' egg_info --egg-base /tmp/pip-install-47f7rv96/lxml/pip-egg-info
+         cwd: /tmp/pip-install-47f7rv96/lxml/
+    Complete output (1 lines):
+    This lxml version requires Python 2.7, 3.5 or later.
+    ----------------------------------------
+ERROR: Command errored out with exit status 1: python setup.py egg_info Check the logs for full command output.
+
+
+图片分类：4-5秒
+
+
+4.viewFile内存问题：
+查看一下:
+jmap -dump:live,file=/opt/tmp/heapdump.bin 37320
+
+发生oom时生成dump文件
+-XX:+HeapDumpOnOutOfMemoryError
+
+-XX:HeapDumpPath
+指定生成dump文件目录
+
+用eclipse mat分析heap dump文件
+
+
+
+
+5.目录增量同步，目录绑定文件分类
+
+
+2020.03.05
+1.分类服务，cpu? 为什么没有出摘要跟分类？
+2020-03-05 04:58:27.422001: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.1 instructions, but these are available on your machine and could speed up CPU computations.
+2020-03-05 04:58:27.422043: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use SSE4.2 instructions, but these are available on your machine and could speed up CPU computations.
+2020-03-05 04:58:27.422065: W tensorflow/core/platform/cpu_feature_guard.cc:45] The TensorFlow library wasn't compiled to use AVX instructions, but these are available on your machine and could speed up CPU computations.
+提示cpu处理比较慢
+
+
+gpu报错：
+process error!!!!!!Tensor Tensor("mrcnn_detection/Reshape_1:0", shape=(1, 100, 6), dtype=float32) is not an element of this graph.
+
+2020-03-05 14:32:33.024835: W tensorflow/core/common_runtime/bfc_allocator.cc:211] Allocator (GPU_0_bfc) ran out of memory trying to allocate 3.28GiB. The caller indicates that this is not a failure, but may mean that there could be performance gains if more memory were available.
+
+程序死掉了？
+504 gate way timeout??
+修改下nginx timeout
+keepalive_timeout 0 0;
+
+
+
+
+
+
+
+2.检查nagios
+check_os告警：
+	skip check_iptables skip check_temperature skip check_resove_host check_tmp_file_num is error,tmp file more than 10000 
+testinfra is error,check use python bin/lcm_pytest.py check-env 
+TESTINFRA CRITICAL - 9 passed, 1 failed, 0 skipped in 1.47 seconds
+.......F.. [100%]
+=================================== FAILURES ===================================
+_________________________ test_systemd_service[local] __________________________
+host = <testinfra.host.Host object at 0x7fcfa3c8bd10>
+def test_systemd_service(host):\n if not os.path.exists("/etc/machine-id"):\n pytest.skip("skip not systemd")\n \n failed = systemctl_service_failed()\n> assert len(failed) == 0, \\nE AssertionError: systemd service ['named.service'] failed,check systemctl --failed --type=service\nE assert 1 == 0\nE + where 1 = len(['named.service'])
+check-env/test_systemd.py:34: AssertionError\n1 failed, 9 passed in 1.46 second
+
+
+/root/lcm.guard-1.8.0-dev/check-env
+
+check_mlp_cluster
+删除久的collection:
+python2 /opt/millipede-solr/management/bin/solr_collection.py delete-collection test_solea_c_
+python2 /opt/millipede-solr/management/bin/solr_collection.py delete-collection test01_
+python2 /opt/millipede-solr/management/bin/solr_collection.py delete-collection test_solr_docvalue_
+python2 /opt/millipede-solr/management/bin/solr_collection.py delete-collection crow_data_n0_
+python2 /opt/millipede-solr/management/bin/solr_collection.py delete-collection ext_solea_
+python2 /opt/millipede-solr/management/bin/solr_collection.py delete-collection test_p1_
+
+
+./millipede-solr-2.6.3-rb/millipede/configsets/test01_data
+./zookeeper-config-20191107/test01_data
+./zookeeper-config-20191107-backup/test01_data
+./millipede-solr-2.7.0-dev-201911072139/millipede/configsets/test01_data
+
+
+
+
+django 并发问题？
+
+tensorflow并发问题？
+
+3.
+省厅升级：
+1.先部署装好系统，然后发公共数据，同步再考虑
+JXu(徐吉) 17:06:01
+收到ga消息，由于用户原始数据涉密问题，需要协调，solea暂时先不需要去部署，等待对方消息
+
+
+2.数据对接
+
+4.A环境 fileserver2 的问题				--ok
+
+
+5.代码：
+
+
+2020.03.06
+1.分类服务，504？并发？
+Tensor mrcnn_detection/Reshape_1:0, specified in either feed_devices or fetch_devices was not found in the Graph.
+float() argument must be a string or a number, not 'JpegImageFile'
+
+
+ab测试下，好像不是tensorflow的问题
+ab -n 100000 -c 15 10.1.131.70:15003/content-analysis/index
+
+ab -n 10000 -c 15 http://10.1.131.70:15003/content-analysis/classify
+
+为了演示，先情况30.234重发：
+清空solr,kafka
+重发
+
+发送：
+cd /opt/test-data/20200303test/841/
+cp * /opt/solea-server-bcup/bcpdirs/gz_test/
+
+没有跟摘要分类：
+ 2_89_1567592315_029_00_470234.1.efo_933.pdf
+ 
+ text:
+ 
+ 
+ 2_74_1567652858_052_00_904727.zip
+ 2_89_1567592188_084_00_513671.efo_300.xls
+
+后台运行：
+ctrl + z
+查看任务
+jobs
+任务后台运行
+bg %1
+查看任务状态
+jobs
+忽略任务hup信号
+disown -h %1
+
+
+
+
+2.SOLEA-2538 统计非结构化数据的文件处理能力，提供技术指标
+新疆，河北，杭州，青岛，上海，家里
+
+3.SOLEA-2542 【solea】支持对目录的文件增量同步，并且一个目录对应一个category.id
+	两点：
+		数据增量同步，目录对应文件分类
+	分析：主要是文件增量同步，同步用户目录文件到sendFserver配置的扫描目录
+见图：
+文件增量同步.png
+
+sendFserver重发：
+SOLEA-2555
+【sendFserver2】bad文件重发机制重构
+
+测试方法：
+1.A环境查看图片和视频，可以正常预览
+2.多并发访问图片跟视频页面，fileserver2服务正常。
+
+相关影响：
+无
+
+
+演示一下：
+SOLEA-2541 【文本摘要、分类】solea中支持对文本进行摘要和分类
+
+
+2020.03.07
+
+1.查看分类服务运行情况
+
+
+2.
+这些文件为什么没有分类跟摘要结果：
+ 2_89_1567592315_029_00_470234.1.efo_933.pdf
+ 2_74_1567652858_052_00_904727.zip
+
+ 2_89_1567592188_084_00_513671.efo_300.xls
+ 智联招聘_obama_猎头职位：多游戏..._中文.doc
+2_74_1567591352_060_00_049822.zip
+2_89_1567644606_062_00_162000.efo_941.xls
+2_74_1567655680_070_00_208564.zip
+1_17_1567653716_037_00_215754.eml
+2_89_1567645097_067_00_601966.efo_740.xls
+841/130000-130000-1567647067-DATA_HTTPMULTI_16-108766/2_89_1567646972_061_00_766284.txt
+2_89_1567644374_031_00_675014.efo_910.zip
+
+
+
+1.限制下大小		--ok
+Request body exceeded settings.DATA_UPLOAD_MAX_MEMORY_SIZE.
+
+2.有些内容乱，没有返回摘要
+
+
+ 
+3.关键词统计文档，分类服务文档
+关键词统计		--ok
+分类：
+1.解压依赖到/opt/content-analysis-dependency
+cd /opt/content-analysis-dependency
+
+2.安装setup-tools和pip
+yum install unzip
+unzip setuptools-43.0.0.zip
+cd setuptools-43.0.0
+python setup.py install
+
+cd /opt/content-analysis-dependency
+tar -zxvf pip-19.3.1.tar.gz
+cd pip-19.3.1
+python setup.py install
+cd /opt/content-analysis-dependency
+pip install tensorflow-1.3.0-cp34-cp34m-manylinux1_x86_64.whl --no-index --find-links=/opt/content-analysis-dependency --ignore-installed
+pip install Keras-2.0.8-py2.py3-none-any.whl  --no-index --find-links=/opt/content-analysis-dependency --ignore-installed
+
+pip install mask_rcnn_12rics-0.2.3-py3-none-any.whl  --no-index --find-links=/opt/content-analysis-dependency --ignore-installed
+pip install Django-2.0-py3-none-any.whl  --no-index --find-links=/opt/content-analysis-dependency --ignore-installed
+pip install sumy-0.8.0-py2.py3-none-any.whl  --no-index --find-links=/opt/content-analysis-dependency --ignore-installed
+pip install jieba-0.42.1.tar.gz  --no-index  --find-links=/opt/content-analysis-dependency --ignore-installed
+pip install opencv_python-4.1.1.26-cp34-cp34m-manylinux1_x86_64.whl  --find-links=/opt/content-analysis-dependency --ignore-installed
+ 
+ 
+安装依赖替换下：
+\\10.1.11.5\temp\wt王涛
+to
+\\10.1.11.5\share\产品发布\安装配套\install_support\solea
+ 
+ 
+ 4.
+看一下excel
+
+	
+本周工作：
+	SOLEA-2541 【文本摘要、分类】solea中支持对文本进行摘要和分类                     1d
+	SOLEA-2542 【solea】支持对目录的文件增量同步，并且一个目录对应一个category.id    4h
+		本周先设计一下如何去做，考虑动态的目录跟动态的文件分类怎么去关联
+	SOLEA-2533【fserver2】viewfile并发量过大导致服务重启                             1d
+		先考虑一下
+		1.是否可以通过控制内存解决
+		2.安装两台fileserver2分解调用，一台上传下载，一台做预览
+	SOLEA-2538 统计非结构化数据的文件处理能力，提供技术指标                          1d
+	SOLEA-2522 【译文】没有解析出译文                                                4h
+	SOLEA-2254 【tika】加密文件没有被识别成加密文件                                  1d
+		各个类型的加密文件都要有标识字段
+
+		
+4.
+uploaderFile
+
+2020-03-03 15:21:48,661 [http-nio-8080-exec-4] ERROR [FileUploaderServlet] - URL genereated is empty.
+
+远程调试：
+CATALINA_OPTS="$CATALINA_OPTS -server -Xdebug-Xnoagent -Djava.compiler=None -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8011"
+
+上传成功：
+http://192.168.11.18:8080/fserver/file/20200303/15/43/b7e00dab-cbd3-4ee8-9386-4a062fc9fb95-33950-2.jpeg
+http://192.168.11.18:8080/fserver/file/20200303/15/46/43968ae6-c42a-427f-9f34-942909e8e1f5-33950-4.doc
+
+
+被清理掉了？
+/opt/apache-tomcat-9.0.31/temp/fserver-4114951942897991940.tmp
+		
+		
+
+		
+		
+		
+		
+		
+2020.03.09
+1.看下im数据的excel，下午两点半电话		--ok
+聊天.xlsx
+020-37282326
+
+考虑下部里的标准，找黄森要：
+im的标准
+
+	2.已读未读标识都是未读==查看状态
+
+	4.标记？哪些标记？
+		重要，垃圾
+
+	6.来源网元编号 == 运营商网元编号？
+	7.来源设备编码：数据来源设备编码
+	8.线索编号：线索 ID/查询标识 ，啥意思？
+	9.客户端名称：客户端应用名称 app_name
+	10.基站：基站信息
+	11.客户端区域？？服务器区域？？对应字段名称？
+	ip地址对应的区域，记录的是ip
+	
+	12.客户端端口：客户端端口地址
+
+	15.中标字段 是不是就是“线索中标字段”
+		会议
+	16.位置精确度？途径点位置精确度 还是 目的点位置精确度
+		应该属于 途径点位置精确度
+	17.设备编号信息来源
+		对应采集设备信息的
+
+		
+	21.国家名称，这个字段错了？地区名称？
+		移动国家(地区)码?
+		用户所属国家：：移动国家(地区)码（Mobile Country Code） / 是移动用户所属国家代号
+
+
+18.终端MAC来源:终端 MAC 来源
+19.终端IMSI来源:终端 IMSI 来源
+3.摘要为空？
+20.终端手机号来源
+5.应用名称？是service_name吧
+13.隧道类型	隧道客户端IP	隧道客户端ID	隧道服务端IP	隧道服务端ID	一端隧道ID	另一端隧道ID
+14.终端设备名称：终端设备名称
+
+
+确定一下im数据格式：
+1.格式是否固定？ 通讯录的格式是不是一样？
+	问下李工
+2.图片保存在哪里
+	保存在他们的文件系统个，通过url
+
+
+2.SOLEA-2560 【tika】http paser的信息呢？参数，url，cookie等		--ok
+	contentType 为application/http
+	提取出了meta，但是没有保存到solr
+	保存的话，以什么样的字段保存，841的？
+	是否都保存？
+	是否加到text？
+
+	
+	
+2020.03.10
+
+1.安装文档修改下		--ok
+打包的包名改成变量
+TODO: http://git.lzy.com/lzy/solea/merge_requests/1436
+
+
+2.bad文件重发机制
+
+
+3.
+SOLEA-2562 【tika】1_32_1567728913_057_00_885142.txt识别成http，里面的内容是乱码，为什么是txt
+contentTyp 应该为application/x-www-form-urlencoded
+如果没有对应的parse，走stream
+
+实际上是根据contentType去调用parser
+
+调用的是这urlencodedParse
+
+
+
+2020.03.11
+1.图片上传报错
+Maximum upload size exceeded; nested exception is java.lang.IllegalStateException: org.apache.tomcat.util.http.fileupload.FileUploadBase$FileSizeLimitExceededException: The field img exceeds its maximum permitted size of 1048576 bytes.
+
+修改：
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+
+
+2.bad文件重发
+写zip文件
+写bad文件，data + zip
+
+bad程序发送，解析压缩包
+      // rwd 先写内存，close时再写磁盘; rws直接写磁盘
+
+send 失败 》》 retry dir 》》 badFileHandler 发送失败 》》 bad
+	  
+	  
+3.
+http://git.lzy.com/lzy/solea/merge_requests/1438
+YWang(王燕) 11:35:07
+请修改
+
+4.
+文本分类报错？：ERROR:root:init fail 0.
+
+5.
+文本分类跟，摘要加
+
+
+2020.03.12
+1.bad文件重发机制重构			--ok
+	跑一下测试
+	
+2.vcf通讯录文件解析
+
+
+
+3.提交到rb,修改图片分类跟文本分类字段		--ok
+
+http://git.lzy.com/lzy/solea/merge_requests/1457
+
+4.img_dev没有入		--ok
+不支持？
+<dynamicField name="*_mt_i_s_dv"  type="text_general"  indexed="true"  stored="true" multiValued="true" docValues="true"/>
+不支持docValues
+
+字段改成ms
+
+5.show app oom			--ok
+修改内存
+
+
+6.
+文本分类报错：
+
+  File "/root/anaconda3/lib/python3.4/site-packages/keras/utils/generic_utils.py", line 139, in deserialize_keras_object
+    list(custom_objects.items())))
+  File "/root/anaconda3/lib/python3.4/site-packages/keras/models.py", line 1208, in from_config
+    if 'class_name' not in config[0] or config[0]['class_name'] == 'Merge':
+
+gpu:
+
+p>>> print(keras.__version__)
+2.3.1
+
+ca02:
+
+print(keras.__version__)
+2.0.8
+
+
+升级一下
+pip install Keras-2.3.1-py2.py3-none-any.whl
+
+pip install Keras-2.3.1-py2.py3-none-any.whl --no-index --find-links=/opt/content-analysis-dependency --ignore-installed
+
+No module named 'tensorflow.python.eager'
+
+升级对应的tensorflow:
+tensorflow             1.14.0
+
+pip install tensorflow-1.14.0-cp34-cp34m-manylinux1_x86_64.whl --no-index --find-links=/opt/content-analysis-dependency --ignore-installed
+
+
+报错：
+  distutils.errors.CompileError: command 'gcc' failed with exit status 1
+
+  ----------------------------------------
+  ERROR: Failed building wheel for grpcio
+
+
+gcc: error trying to exec 'cc1plus': execvp: No such file or directory
+
+ERROR: Command errored out with exit status 1: /root/anaconda3/bin/python -u -c 'import sys, setuptools, tokenize; sys.argv[0] = '"'"'/tmp/pip-install-pjuz90qh/grpcio/setup.py'"'"'; __file__='"'"'/tmp/pip-install-pjuz90qh/grpcio/setup.py'"'"';f=getattr(tokenize, '"'"'open'"'"', open)(__file__);code=f.read().replace('"'"'\r\n'"'"', '"'"'\n'"'"');f.close();exec(compile(code, __file__, '"'"'exec'"'"'))' install --record /tmp/pip-record-dnx7w6jv/install-record.txt --single-version-externally-managed --compile Check the logs for full command output.
+
+yum install libffi-devel python-devel openssl-devel -y 	---不行
+
+gcc: error trying to exec 'cc1plus': execvp: No such file or directory
+
+
+yum install gcc-c++
+			--ok
+
+
+2020.03.13
+1.修改文档
+
+		1.安装依赖包，改成tar.gz，安装更新下		--ok
+		2.分类服务 跳转不对，安装机器说明		--ok
+		3.分类服务配置说明
+		4.关键词统计 TODO 自动部署
+
+
+2.SOLEA-2566 【tika】tika支持对vcf(通讯录文件)解析
+vcard
+name:雪雪	tel:13955431111	addresse:	email:	
+name:小鹏	tel:15956271111	addresse:	email:	
+name:李兵	tel:13912941111	addresse:	email:	
+name:圆通小哥	tel:13646831111	addresse:	email:	
+name:燕子	tel:13215541111	addresse:	email:	
+name:文	tel:158 5634 1111	addresse:	email:	
+
+
+
+
+3.演示：
+
+			1.
+			SOLEA-2542 【solea】支持对目录的文件增量同步，并且一个目录对应一个category.id
+			input:
+			/opt/rsync/home/
+			target:
+			/opt/solea-server-bcup/bcpdirs
+
+			手动同步：
+			cd /opt/solea-tools/preprocess/interface/xinjiang
+			bash -x bin/solea_rsync_to_input.sh
+			 bash -x bin/solea_rsync_to_buffer.sh
+			 
+			查看同步结果
+			
+			每个目录都对应自定义的meta配置
+			cd /opt/solea-send-fserver2/config/custom
+			
+			2.
+			SOLEA-2555 【sendFserver2】bad文件重发机制重构
+				发送失败到retry目录
+				再次失败到bad目录
+				bad_20200313142528_eaea44cf-c1e5-484c-875c-42996061f605.zip
+			
+			 
+			3.
+			SOLEA-2560 【tika】http paser的信息呢？参数，url，cookie等
+				1_32_1567728913_057_00_885142.txt
+			
+			4.
+			SOLEA-2562 【tika】x识别成http，里面的内容是乱码，为什么是txt
+			
+			
+			841.json --> 841_config.json 
+				{
+					filetype: 841 or raw or lzy 
+					meta: []
+					prarma:{
+						solr
+						sdf 
+					
+					}
+				}
+				json format 
+				
+				default_config.josn
+					[]
+				
+			841
+			raw 
+			lzy 文件就是zip 问题
+			
+			
+			bad .file 
+				config
+			
+			
+			
+			gz ---? 			
+			
+			
+
+
+关键词没有统计?
+手动触发统计：
+call lcm_gen_merge_data_tasks();
+
+
+
+2020.03.14
+1.VcardParser提交代码		--ok
+name tel 
+其他没有的字段就不加
+showapp也这样展示
+
+
+http://127.0.0.1:15003/solea-showapp/file/show?url=http://10.1.46.31:15003/solea-fserver2/api/v1/getFile?url=ceph://solea_20200314/cf332bf4-5786-4b38-82b9-100c826d9016&contentType=text/x-vcard
+
+
+
+2.bad文件
+一个进程
+
+默认三个目录，分别对应三中类型，raw, 841 ,zip 
+
+每个目录的meta:
+[{meta:""},{parameter:""},{fileType:""}]
+
+zip进程处理：
+bad文件
+gz或者其他文件
+
+如果是bad就不读dirMeta,因为已经有了
+其他需要读
+
+
+3.分类依赖更新下		--ok
+\\10.1.11.5\temp\wt王涛
+
+\\10.1.11.5\share\产品发布\安装配套\install_support\solea
+
+合并：
+http://git.lzy.com/lzy/solea/merge_requests/1467
+
+4.关键词统计		--ok
+
+5.填两个jira:
+1.lyl gz文件
+
+
+2.关键词统计ftpupload自动部署
+
+
+
+## 本周工作：
+1.SOLEA-2562 【tika】1_32_1567728913_057_00_885142.txt识别成http，里面的内容是乱码，为什么是txt		--4h
+2.SOLEA-2560 【tika】http paser的信息呢？参数，url，cookie等										--4h
+3.SOLEA-2542 【solea】支持对目录的文件增量同步，并且一个目录对应一个category.id					--4h
+4.SOLEA-2555 【sendFserver2】bad文件重发机制重构													--2d
+5.SOLEA-2566 【tika】tika支持对vcf(通讯录文件)解析													1d 4h
+
+
+2020.03.16
+
+2.SOLEA-2596 【关键词统计ftp自动部署】关键词ftpupload的进程配置加入自动部署		--ok
+
+3.图片分类，文本分类，摘要默认关闭		--ok
+
+4.查一下	65.102 -104
+			有什么问题？？
+			check_guard
+				bash /opt/solea-send-fserver2/retry/clean_tmp_file.sh': 1.0 告警
+					修改下定时清理脚本
+				bash /opt/solea-tools/preprocess/interface/xinjiang/bin/solea_rsync_to_input.sh': 0.46
+					rsync: link_stat "/opt/upload" failed: No such file or directory (2)
+					创建一下
+
+
+6.图片分类，文本分类，摘要默认关闭		--ok
+7. content-analysis stopcommand			--ok
+merge request:
+http://git.lzy.com/lzy/solea/merge_requests/1478		--ok
+
+
+<ConfReloadCmd>kill -HUP $PIDS</ConfReloadCmd>
+<StopCmd TimeOut="15" ForceKill="true">kill -HUP $LCM_GUARD_MONITOR_PIDS</StopCmd>
+
+
+ps -ef | grep /opt/content-analysis/lib/manage.py | grep -v grep | awk '{print $2}' | xargs kill -9
+
+
+为什么会启动两个进程?
+[root@solea-10-1-65-102 conf.d]# ps -ef | grep manage.py
+root     1269760 1269748 12 14:21 ?        00:00:00 /root/anaconda3/bin/python3 /opt/content-analysis/lib/manage.py runserver 0.0.0.0:48575
+root     1269882 1269760 99 14:21 ?        00:00:04 /root/anaconda3/bin/python3 /opt/content-analysis/lib/manage.py runserver 0.0.0.0:48575
+root     1269967 1091988  0 14:21 pts/4    00:00:00 grep --color=auto manage.py
+
+django 设置自动加载配置的进程，可以关掉：--noreload			--ok
+
+
+8.codereview 修改：
+rb合并到master后再改？
+
+
+
+other:
+文本分类：
+classification_ms_i_s_dv:*
+图片分类：
+img_classifiers_ms_i_s_dv:*
+
+python 
+import traceback
+traceback.print_exc()
+
+
+报错：
+process error!!!!!!Tensor Tensor("mrcnn_detection/Reshape_1:0", shape=(1, 100, 6), dtype=float32) is not an element of this graph.
+
+File "/root/anaconda3/lib/python3.4/site-packages/tensorflow/python/framework/ops.py", line 3656, in _create_op_helper
+    for key, value in self._attr_scope_map.items():
+RuntimeError: dictionary changed size during iteration
+
+
+Segmentation fault (core dumped)
+
+2020.03.17
+1.sonar检查不过，解决一下		--ok
+
+2.关键词统计还是没有		--ok
+ vim /opt/solea-tika-app/etc/stat/solea_stat_upload_server.config
+ 配置没有修改
+
+
+3.盖章分类 
+
+两个问题：
+1.之前5个分类，迭代次数到90轮了，现在新加一个盖章分类，之前的是否要重新训练
+
+2.刚开始搜集了五百张图片训练，训练到一半后来又加入五百张，是否有影响
+
+3.新增一个分类是否对之前的结果有影响？比如红头文件
+
+
+
+
+
+4.看一下图片分类的问题
+有几个报错：
+1.
+process error!!!!!!Tensor Tensor("mrcnn_detection/Reshape_1:0", shape=(1, 100, 6), dtype=float32) is not an element of this graph.
+2.
+core dump
+
+
+5.
+/path/python -m pip install xxx
+
+/root/anaconda3/bin/python3
+/root/anaconda3/bin/python3 -m pip install tensorflow-1.14.0-cp34-cp34m-manylinux1_x86_64.whl --no-index --find-links=/opt/content-analysis-dependency --ignore-installed
+6.提交一下merge
+http://git.lzy.com/lzy/solea/merge_requests/1493
+
+
+
+
+2020.03.18
+1.seal图片标注		--ok
+
+
+2.模型跑起来		--ok
+
+3.提交一下merge
+http://git.lzy.com/lzy/solea/merge_requests/1493		--ok
+
+
+5.规划一下广东机器部署
+					1. 安装所有的操作系统
+					2. 分配ip什么的
+
+					安装过程：
+						7台 安装buffer
+						安装docker-common
+							可以用几台？
+							全部用gateway来访问
+								配置hcl
+						安装 onlyoffice
+							安装多台
+						安装翻译,ocr 
+						安装solea
+							手工安装分类服务 
+							
+					对接数据，处理，给客户演示 
+
+					开发：
+						是否要安装一个gitlab
+							？用docker来安装
+						gitlab-runner？
+							？
+
+					问题：
+						如何分配资源
+
+
+
+					86台机器
+					buffer机器					*7
+					gateway服务机器				*1
+					开发服务器：				*1
+					web机器						*1
+					翻译ocr机器					*10
+					solr:						*20
+					其他机器全部安装tika 		*46
+					   其中部分tika机器混装：
+					   # ceph+fileserver2*10（对内，不给客户看）
+					  外部服务：*15(混装tika)
+					  分类服务：*15(混装tika)
+
+
+
+
+
+
+6.sendFserver2文档修改		--ok
+
+
+
+
+8.河北bad文件
+
+
+
+2020.03.19
+1.图片盖章分类
+
+
+
+							1.搜集图片
+					对图片规定下名称
+
+							2.标记图片
+					windows安装anaconda 使用labelImg 进行标注
+
+					Open the Anaconda Prompt and go to the labelImg directory
+
+					conda install pyqt=5
+					pyrcc5 -o libs/resources.py resources.qrc
+					python labelImg.py
+					python labelImg.py [IMAGE_PATH] [PRE-DEFINED CLASS FILE]
+					D:\Program Files\Anaconda3>python E:\label-img\labelImg.py
+
+					训练集跟测试集比例 8:2
+
+							3.开始训练
+					报错：
+					AttributeError: 'Model' object has no attribute 'metrics_tensors'
+					keras版本过高：
+					方法1.降低keras版本2.2.5以下，要高于2.0.8
+					方法2.
+					vim /root/anaconda3/lib/python3.4/site-packages/mrcnn/model.py : 2162
+					加上：
+					 self.keras_model.metrics_tensors = []
+
+					 
+					 没有模型输出：
+					 /opt/od/save-models
+					 ？？
+					 
+					回调函数输出中间模型：
+					vim mask-rcnn-train.py
+
+					model_name = 'model.{epoch:03d}.h5'
+					filepath = os.path.join('/opt/lzy-model/checkpoint', model_name)
+					custom_callbacks=[keras.callbacks.ModelCheckpoint(filepath,
+																verbose=0, save_weights_only=True)]
+																
+					model.train(train_set, test_set, learning_rate=config.LEARNING_RATE, epochs=125, layers='all',custom_callbacks=custom_callbacks)
+					 
+					 ImportError: libXext.so.6: cannot open shared object file: No such file or directory
+					 
+					 yum install libXext libSM libXrender
+
+					 
+					输出模型加载报错:
+					init error!!!!!Layer #391 (named "mrcnn_bbox_fc"), weight <tf.Variable 'mrcnn_bbox_fc/kernel:0' shape=(1024, 24) dtype=float32> has shape (1024, 24), but the saved weight has shape (1024, 28).
+
+							rcnn.load_weights(model_file, by_name=True, exclude=["mrcnn_class_logits","mrcnn_bbox_fc","mrcnn_bbox","mrcnn_mask"])
+
+
+							4.查看效果/测试模型
+
+
+报错：
+predict img fail.'NoneType' object has no attribute 'read'.
+							
+							
+2.统计tika处理能力的邮件给工程发一份，c环境的配置修改
+
+		BOZhao(赵波) 10:03:36
+		昨天那个邮件solea处理能力统计基本都是限制于翻译ocr吧。而且也没有指出翻译ocr的服务器配置数量。
+		SBLing(凌世播) 10:04:26
+		ocr和翻译一样
+		TWang(王涛) 10:04:29
+		是的，我补充下翻译ocr机器的配置
+		BOZhao(赵波) 10:06:10
+		一般ocr和翻译的服务数量配置不一样。翻译会多一点。
+		BOZhao(赵波) 10:08:24
+		而且河北好像是限制了几个语种的。不然性能不够。
+		TWang(王涛) 10:09:04
+		这个我再给现场的人确定一下
+
+
+3.修改一下：
+codereview
+http://git.lzy.com/lzy/solea/merge_requests/1466/commits		--ok
+http://git.lzy.com/lzy/solea/merge_requests/1438		--ok
+
+
+
+4.自动部署也改一下：			--ok
+config-override.properties
+
+5.为什么识别成图片：
+ppt_encrypt.pptx
+
+
+2020.03.20
+1.安装的问题修改下
+	  NAGIOS: solea_stat_bcp_uploader have not match pid		--ok
+	  		名称： 太小了？
+			自动部署没有成功？
+			
+      content-analysis-server 名称
+				用_
+			 <Match>bin/content-analysis.sh</Match>
+			 	错误
+classify_content_server
+
+关键词统计dev同步到prod
+
+
+修改：
+/opt/solea-tika-app/etc/stat/solea_stat_upload_server.config
+加上双引号
+
+
+2.图片分类问题
+	gpu安装
+	打包
+
+3.
+文本分类，没有结果？
+classification_ms_i_s_dv:*
+
+文本摘要，没有结果？
+
+图片分类报错：
+	图片不完整
+识别成gun?
+mask-rcnn-predict.py
+ /root/anaconda3/bin/python3 mask-rcnn-predict-directory.py --i /opt/content-analysis/test_img --m /opt/content-analysis/data/mask_rcnn_solea_dl_cfg.h5 --o /opt/content-analysis/output
+ 
+ /root/anaconda3/bin/python3 mask-rcnn-predict-directory.py --i /opt/content-analysis/test_img --m /opt/content-analysis/mask_rcnn_solea_dl_cfg.h5 --o /opt/content-analysis/output
+
+
+ 试试最新模型：
+ \\10.1.11.5\temp\gwn
+ 
+ 
+ 新训练的模型不对？？
+
+安装gpu tensorflow
+pip install tensorflow_gpu-1.14.0-cp34-cp34m-manylinux1_x86_64.whl --no-index --find-links=/opt/content-analysis-dependency --ignore-installed
+
+训练报错：
+
+2020-03-24 22:03:25.898790: E tensorflow/stream_executor/cuda/cuda_dnn.cc:329] Could not create cudnn handle: CUDNN_STATUS_INTERNAL_ERROR
+2020-03-24 22:03:25.921680: E tensorflow/stream_executor/cuda/cuda_dnn.cc:329] Could not create cudnn handle: CUDNN_STATUS_INTERNAL_ERROR
+
+tensorflow.python.framework.errors_impl.UnknownError: 2 root error(s) found.
+  (0) Unknown: Failed to get convolution algorithm. This is probably because cuDNN failed to initialize, so try looking to see if a warning log message was printed above.
+         [[{{node conv1/convolution}}]]
+         [[ROI/GatherV2/_5319]]
+  (1) Unknown: Failed to get convolution algorithm. This is probably because cuDNN failed to initialize, so try looking to see if a warning log message was printed above.
+         [[{{node conv1/convolution}}]]
+0 successful operations.
+0 derived errors ignored.
+
+
+看一下使用的设备是cpu还是gpu：
+from tensorflow.python.client import device_lib
+print(device_lib.list_local_devices())
+ 
+ nter_op_parallelism_threads = cpu_num, intra_op_parallelism_threads = cpu_num, log_device_placement=True
+ 
+查看gpu
+ nvidia-smi
+ 
+ 
+ 广东
+ 76台机器
+ 
+4.
+SBLing(凌世播) 13:55:20
+	   solea-send-fserver2.log
+			 		文件名称问题，请修改一下，这个项目的所有的
+SBLing(凌世播) 13:55:24
+INFO:root:process over. process img cost time 4.524879693984985 [s]
+.py", line 35, in inner
+    response = get_response(request)
+  File "/root/anaconda3/lib/python3.4/site-packages/django/core/handlers/base.py", line 128, in _get_response
+    response = self.process_exception_by_middleware(e, request)
+  File "/root/anaconda3/lib/python3.4/site-packages/django/core/handlers/base.py", line 126, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/opt/content-analysis-2.0.4-dev/lib/main/predict_resnet.py", line 
+SBLing(凌世播) 13:55:24
+38, in predict
+    json_result = parse_result(result)
+  File "/opt/content-analysis-2.0.4-dev/lib/main/predict_resnet.py", line 107, in parse_result
+    rois = result['rois']
+
+		
+		/opt/content-analysis-2.0.4-dev/logs
+				为什么不是log，没有做循环日志吗？
+
+2020.03.23
+1.SOLEA-2615 【send-fileserver2】发送文件时出错，导致程序不再消费数据
+
+param优先读取传进来的，然后才是dirConf
+
+报错：
+E:\\opt\\solea-server-bcup\\bcpdirs\\841\\2_35_1567590266_081_00_785588.gz","key":"filename"}
+
+20200323161135_eaa8f21d-5fc2-4d41-b608-ed9bb7655eaf.gz
+
+为什么
+ZipEntry zipEntry = zipIutputStream.getNextEntry();
+null?
+
+先看看好的：
+crc:CRC32@2600
+
+
+
+bad:
+
+ZipEntry zipEntry = zipIutputStream.getNextEntry();
+
+        if (get32(tmpbuf, 0) != LOCSIG) {
+            return null;
+        }
+		
+    private ZipEntry readLOC() throws IOException {
+        try {
+            readFully(tmpbuf, 0, LOCHDR);
+        } catch (EOFException e) {
+            return null;
+        }
+        if (get32(tmpbuf, 0) != LOCSIG) {
+            return null;
+        }
+get32 返回null
+LOCSIG 表示什么？
+是否跟
+zipOutputStream.setLevel(0);
+有关系
+
+ /**
+     * Compression method for the deflate algorithm (the only one currently
+     * supported).
+     */
+    public static final int DEFLATED = 8;
+
+    /**
+     * Compression level for no compression.
+     */
+    public static final int NO_COMPRESSION = 0;
+
+    /**
+     * Compression level for fastest compression.
+     */
+    public static final int BEST_SPEED = 1;
+
+    /**
+     * Compression level for best compression.
+     */
+    public static final int BEST_COMPRESSION = 9;
+
+    /**
+     * Default compression level.
+     */
+    public static final int DEFAULT_COMPRESSION = -1;
+
+
+
+2.SOLEA-2593 【图片分类】：支持盖章类型文件的查询
+模型误差率大？
+	1.训练代码有问题？
+	2.训练环境有问题？现在版本跟之前训练版本不一样
+pip install tensorflow_gpu-1.3.0-cp34-cp34m-manylinux1_x86_64.whl  --no-index --find-links=/opt/content-analysis-dependency --ignore-installed
+
+pip install Keras-2.0.8-py2.py3-none-any.whl  --no-index --find-links=/opt/content-analysis-dependency --ignore-installed
+
+查看日志：
+keras-2.0.8:
+Using TensorFlow backend.
+/root/anaconda3/lib/python3.4/site-packages/tensorflow/python/ops/gradients_impl.py:95: UserWarning: Converting sparse IndexedSlices to a dense Tensor of unknown shape. This may consume a large amount of memory.
+  "Converting sparse IndexedSlices to a dense Tensor of unknown shape. "
+/root/anaconda3/lib/python3.4/site-packages/keras/engine/training.py:1987: UserWarning: Using a generator with `use_multiprocessing=True` and multiple workers may duplicate your data. Please consider using the`keras.utils.Sequence class.
+  UserWarning('Using a generator with `use_multiprocessing=True`'
+Epoch 1/125
+  6/131 [>.............................] - ETA: 10226s - loss: 4.9393 - rpn_class_loss: 0.0037 - rpn_bbox_loss: 0.2674 - mrcnn_class_loss: 1.6824 - mrcnn_bbox_loss: 1.5316 - mrcnn_mask_loss: 1.4543
+  
+  
+限制下图片分类使用cpu个数
+import multiprocessing
+multiprocessing.cpu_count()
+  
+
+keras-2.3.1:
+/root/anaconda3/lib/python3.4/site-packages/keras/engine/training_generator.py:49: UserWarning: Using a generator with `use_multiprocessing=True` and multiple workers may duplicate your data. Please consider using the `keras.utils.Sequence class.
+  UserWarning('Using a generator with `use_multiprocessing=True`'
+Epoch 1/125
+
+  1/131 [..............................] - ETA: 1:18:14 - loss: 5.3329
+  2/131 [..............................] - ETA: 1:08:46 - loss: 5.1296
+  3/131 [..............................] - ETA: 1:05:10 - loss: 4.8562
+  4/131 [..............................] - ETA: 1:03:17 - loss: 4.5520
+  5/131 [>.............................] - ETA: 1:01:49 - loss: 4.2628
+  6/131 [>.............................] - ETA: 1:00:39 - loss: 4.1599
+
+  
+  
+  对比下加上盖章分类后训练一轮的结果，误差率
+
+
+	3.keras的代码是否被修改过？
+
+SBLing(凌世播) 15:14:09
+		问题：
+				/opt/content-analysis/data 不要放这里，放 /opt/content-analysis-data
+SBLing(凌世播) 15:14:12
+@王涛
+	
+3.借一台笔记本							--ok
+编号		日期		开机电源		work1		bitlocker
+ZC-060055	2020/3/2/	123lzy1456		PassWord@2020#$	Nj#2020@0303pSw
+
+
+
+
+
+
+
+2020.03.24
+1.sendFserver bad zip的问题
+readLOC
+
+    /**
+     * Fetches unsigned 32-bit value from byte array at specified offset.
+     * The bytes are assumed to be in Intel (little-endian) byte order.
+     */
+    public static final long get32(byte b[], int off) {
+        return (get16(b, off) | ((long)get16(b, off+2) << 16)) & 0xffffffffL;
+    }
+
+static long LOCSIG = 0x04034b50L;   // "PK\003\004"
+
+生成一个zip:
+E:\work\logbook\2020.03\sendFserver2\zip
+
+
+/opt/solea-gz-custom/input
+
+
+找到bad文件：
+2ad38d48-434c-4e4a-9b83-097040393509.zip
+\opt\solea-server-bcup\bcpdirs\lzyzip\20200324\18\16\lzyzip-bad\data
+
+填一个jira，通过命令行控制抛出异常
+
+
+2.SOLEA-2614 安装问题-20200321-王涛
+
+1.													--ok
+				keyword match
+				 2020-03-20 16:27:10.151 ERROR 1077457 --- [main] c.l.s.t.a.batch.KeywordsMatchProcessor : parse keywordsGroups from {
+				 } fail:
+				 org.codehaus.jettison.json.JSONException: JSONObject["result"] is not a JSONArray.
+				 at org.codehaus.jettison.json.JSONObject.getJSONArray(JSONObject.java:440) ~[jettison-1.2.jar!/:1.2]
+				 at com.lzy.solea.tika.app.batch.KeywordsMatchProcessor.prepareKeywordsAndRules(KeywordsMatchProcessor.java:208) [classes!/:na]
+				 at com.lzy.solea.tika.app.batch.KeywordsMatchProcessor.init(KeywordsMatchProcessor.java:133) [classes!/:na]
+				 ？？
+2.																	--ok
+				 /opt/content-analysis-2.0.4-dev/logs
+				 为什么不是log，没有做循环日志吗？
+				 out呢？ 如何处理
+3.
+				 send filserver2
+				 如果有文件，就不要休息
+4.
+				 安装完成后，要有一个确认
+				 2个curl，确认可以用
+5.
+				 content analysis
+				 solea-send-fserver2.log
+				 文件名称问题，请修改一下，这个项目的所有的
+6.
+				 solea_stat_bcp_uploader True start pid=[]
+				 太小了
+7.
+				安装文档
+				 准备好模型文件和安装依赖，分别从安装配套中获取获取：content-analysis-dependency.tar(依赖包),content-analysis-models.tar(模型),依赖文件统一展开到/opt/content-analysis-dependency目录
+				 工程化
+				 有歧义，给出命令
+				total 3378472
+				-rw-rw-rw- 1 root root 6 Mar 20 18:51 application.port
+				drwxr-xr-x 2 root root 135 Mar 19 14:10 bin
+				-r-x------ 1 root root 939 Mar 19 14:10 config.sh
+				-rw------- 1 root root 3459534848 Mar 20 18:51 core.1177820 --有core？
+				drwxr-xr-x 2 root root 170 Mar 20 15:10 data
+				 就是图片多，处理多
+
+
+3.模型问题
+图片要重新标注一下，可能相互影响？
+红头文件中含有盖章，盖章中哟红头文件，但是没有标注
+证件中也会有盖章				--ok
+
+
+去掉：
+    FPN_CLASSIF_FC_LAYERS_SIZE = 512
+加上：
+#model.load_weights('mask_rcnn_coco.h5', by_name=True, exclude=["mrcnn_class_logits", "mrcnn_bbox_fc",  "mrcnn_bbox", "mrcnn_mask"])
+
+2020.03.25
+1.sendFserver bad文件的问题							--ok
+	2ad38d48-434c-4e4a-9b83-097040393509.zip
+	
+url:ceph://solea_20200325/ac379383-eb77-439d-92bf-044021cbce9f
+
+{"tikaOptions":"{\"text_summary_enable\":false,\"text_classify_enable\":false,\"image_classify_enable\":false,\"tika_ocr_enable\":false,\"tika_decypt_enable\":false,\"tika_translate_enable\":false}","dataSize":"142762","id":"99557e6c-9a30-40a0-a6a5-c2c2531c0fcd","url":"ceph://ext_solea_20200115/99557e6c-9a30-40a0-a6a5-c2c2531c0fcd"}
+
+false:
+ceph://solea_20200325/8d97f45a-a1e9-4f67-8ab9-5b8fa808c232
+
+true:
+ceph://solea_20200325/185204f4-50ea-4965-9d32-110dfd326859
+
+
+2.模型试一下
+/root/anaconda3/bin/python3 mask-rcnn-predict-directory.py --i /opt/img-test/imgs --m /opt/lzy-model/savemodels/mask_rcnn_solea_dl_cfg_125.h5 --o /opt/img-test/output
+
+优化训练一下
+
+
+3.SOLEA-2614 安装问题-20200321-王涛
+1.													--ok
+				keyword match
+				 2020-03-20 16:27:10.151 ERROR 1077457 --- [main] c.l.s.t.a.batch.KeywordsMatchProcessor : parse keywordsGroups from {
+				 } fail:
+				 org.codehaus.jettison.json.JSONException: JSONObject["result"] is not a JSONArray.
+				 at org.codehaus.jettison.json.JSONObject.getJSONArray(JSONObject.java:440) ~[jettison-1.2.jar!/:1.2]
+				 at com.lzy.solea.tika.app.batch.KeywordsMatchProcessor.prepareKeywordsAndRules(KeywordsMatchProcessor.java:208) [classes!/:na]
+				 at com.lzy.solea.tika.app.batch.KeywordsMatchProcessor.init(KeywordsMatchProcessor.java:133) [classes!/:na]
+				 ？？
+2.																	--ok
+				 /opt/content-analysis-2.0.4-dev/logs
+				 为什么不是log，没有做循环日志吗？
+				 out呢？ 如何处理
+3.
+				 send filserver2			--ok
+				 如果有文件，就不要休息
+4.
+				 安装完成后，要有一个确认
+				 2个curl，确认可以用
+图片分类：
+curl http://127.0.0.1:15003/content-analysis/img_predict -F "img=@/opt/content-analysis/data/seal.jpg" 
+{"predicts": [{"classifier": "seal", "roi": "[490 243 584 345]", "similarity": 1.0}, {"classifier": "seal", "roi": "[ 25 364  70 424]", "similarity": 1.0}]}
+文本摘要：
+curl http://127.0.0.1:15003/content-analysis/summary -F "content=测试接口是否正常,测试接口是否正常。"
+
+文本分类：
+curl http://127.0.0.1:15003/content-analysis/classify -F "content=测试接口是否正常,测试接口是否正常。"
+5.
+				 content analysis
+				 solea-send-fserver2.log
+				 文件名称问题，请修改一下，这个项目的所有的
+				 修改为solea_send_fserver2
+6.
+				 solea_stat_bcp_uploader True start pid=[]		--ok
+				 太小了
+
+				名称:solea_data_bcp_uploader
+7.
+				安装文档				--ok
+				 准备好模型文件和安装依赖，分别从安装配套中获取获取：content-analysis-dependency.tar(依赖包),content-analysis-models.tar(模型),依赖文件统一展开到/opt/content-analysis-dependency目录
+				 工程化
+				 有歧义，给出命令
+				total 3378472
+				-rw-rw-rw- 1 root root 6 Mar 20 18:51 application.port
+				drwxr-xr-x 2 root root 135 Mar 19 14:10 bin
+				-r-x------ 1 root root 939 Mar 19 14:10 config.sh
+				-rw------- 1 root root 3459534848 Mar 20 18:51 core.1177820 --有core？
+				drwxr-xr-x 2 root root 170 Mar 20 15:10 data
+				 就是图片多，处理多
+
+
+4.SOLEA-2622 【send-fileserver2】后台要区分每一个文件（加disable做哪些）
+
+
+5.SOLEA-2616 【出差】【solea】广州全文安装
+准备安装包
+开发环境搭建
+
+
+6.
+SBLing(凌世播) 11:32:30
+	开发：
+		gitlab --ok
+		 	docker save -o gitlab-ce.tar gitlab/gitlab-ce:12.8.7-ce.0
+		nexus --ok
+			docker save  sonatype/nexus3:3.21.1 | gzip -c >  nexus3.tar.gz 
+		docker compose --ok
+			E:\work\self\worklogs\论之语_202003\home\202003\data\dev-use-docker
+		导入nexus的东西 --ok
+			E:\work\svns\Common\dev_tools\nexus\update-data
+	onlyoffice --ok
+		可能等一下范磊磊
+	doc-common --ok
+	docker-common --ok
+	simba： --ok
+
+
+2020.03.26
+1.重新测试下模型
+194/200 [============================>.] - ETA: 1s - loss: 0.0385
+195/200 [============================>.] - ETA: 1s - loss: 0.0384
+196/200 [============================>.] - ETA: 1s - loss: 0.0383
+197/200 [============================>.] - ETA: 0s - loss: 0.0383
+198/200 [============================>.] - ETA: 0s - loss: 0.0382
+199/200 [============================>.] - ETA: 0s - loss: 0.0381
+200/200 [==============================] - 70s 349ms/step - loss: 0.0380 - val_loss: 1.5120
+
+mask_rcnn_solea_dl_cfg_551.h5
+
+/root/anaconda3/bin/python3 mask-rcnn-predict-directory.py --i /opt/content-analysis/data/all --m /opt/content-analysis/data/mask_rcnn_solea_dl_cfg.h5 --o /opt/content-analysis/data
+
+
+
+2.SOLEA-2614 安装问题-20200321-王涛		--ok
+				 content analysis
+				 solea-send-fserver2.log
+				 文件名称问题，请修改一下，这个项目的所有的
+				 修改为solea_send_fserver2
+				 
+服务名称：
+solea_content_analysis
+
+  File "/root/anaconda3/lib/python3.4/site-packages/matplotlib/backends/qt_compat.py", line 91, in <module>
+    from PyQt4 import QtCore, QtGui
+ImportError: libXext.so.6: cannot open shared object file: No such file or directory
+
+libXext.so.6
+
+yum install libXext
+yum install libSM
+
+ File "/root/anaconda3/lib/python3.4/site-packages/matplotlib/backends/qt_compat.py", line 91, in <module>
+    from PyQt4 import QtCore, QtGui
+
+
+3.SOLEA-2616 【出差】【solea】广州全文安装
+
+4.A环境演示图片：
+/root/anaconda3/bin/python3 mask-rcnn-predict-directory.py --i /opt/img-test/imgs --m /opt/content-analysis/data/mask_rcnn_solea_dl_cfg.h5 --o /opt/img-test/output-old
+
+
+2020.03.27
+1.测试下模型
+/root/anaconda3/bin/python3 mask-rcnn-predict-directory.py --i /opt/img-test/imgs --m /opt/lzy-model/models-20200326/mask_rcnn_solea_dl_cfg_487.h5 --o /opt/lzy-model/predict-output/20200327
+
+TWang(王涛) 11:51:36
+之前人容易识别成card，现在可以识别成人了
+TWang(王涛) 11:51:46
+但是card跟gun还是有一定误差
+TWang(王涛) 11:52:14
+总体效果比昨天好些了
+WNGao(高伟南) 11:58:47
+昨天放的bad今天都是无结果吧
+TWang(王涛) 12:01:52
+部分还是识别错误
+
+2.开发环境搭建
+
+
+
+
+
+3.c环境测试结果：
+ocalhost. This could mean that the variable was uninitialized. Not found: Container localhost does not exist. (Could not find resource: localhost/dense_1/bias)
+         [[{{node dense_1/BiasAdd/ReadVariableOp}}]].
+
+curl http://127.0.0.1:15003/content-analysis/classify -F "content=测试接口是否正常,测试接口是否正常。"
+
+consule:
+http://10.1.50.18:8500/ui/dc1/services/solea_analysis
+
+
+4.
+WNGao(高伟南) 16:22:09
+186和187轮的结果等下可以试一下，两个误差都比较小
+
+
+
+5.演示下
+
+
+SOLEA-2614 安装问题-20200321-王涛
+
+				1.													--ok
+								keyword match
+								 2020-03-20 16:27:10.151 ERROR 1077457 --- [main] c.l.s.t.a.batch.KeywordsMatchProcessor : parse keywordsGroups from {
+								 } fail:
+								 org.codehaus.jettison.json.JSONException: JSONObject["result"] is not a JSONArray.
+								 at org.codehaus.jettison.json.JSONObject.getJSONArray(JSONObject.java:440) ~[jettison-1.2.jar!/:1.2]
+								 at com.lzy.solea.tika.app.batch.KeywordsMatchProcessor.prepareKeywordsAndRules(KeywordsMatchProcessor.java:208) [classes!/:na]
+								 at com.lzy.solea.tika.app.batch.KeywordsMatchProcessor.init(KeywordsMatchProcessor.java:133) [classes!/:na]
+								 ？？
+								 
+								 cai 改
+				2.																	--ok
+								 /opt/content-analysis-2.0.4-dev/logs
+								 为什么不是log，没有做循环日志吗？
+								 out呢？ 如何处理
+								 
+				/opt/content-analysis/logs
+								少了一个logratore 
+									guard启动，stdout和error，
+									incron
+										out
+				3.
+								 send filserver2			--ok
+								 如果有文件，就不要休息
+				4.
+								 安装完成后，要有一个确认
+								 2个curl，确认可以用
+				图片分类：
+				curl http://127.0.0.1:15003/content-analysis/img_predict -F "img=@/opt/content-analysis/data/seal.jpg" 
+				{"predicts": [{"classifier": "seal", "roi": "[490 243 584 345]", "similarity": 1.0}, {"classifier": "seal", "roi": "[ 25 364  70 424]", "similarity": 1.0}]}
+				文本摘要：
+				curl http://127.0.0.1:15003/content-analysis/summary -F "content=测试接口是否正常,测试接口是否正常。"
+
+				文本分类：
+				curl http://127.0.0.1:15003/content-analysis/classify -F "content=测试接口是否正常,测试接口是否正常。"
+				5.
+								 content analysis
+								 solea-send-fserver2.log
+								 文件名称问题，请修改一下，这个项目的所有的
+								 修改为solea_send_fserver2
+								 content_analysis.sh
+				6.
+								 solea_stat_bcp_uploader True start pid=[]		--ok
+								 太小了
+								 
+
+								名称:solea_data_bcp_uploader
+				7.
+								安装文档				--ok
+								 准备好模型文件和安装依赖，分别从安装配套中获取获取：content-analysis-dependency.tar(依赖包),content-analysis-models.tar(模型),依赖文件统一展开到/opt/content-analysis-dependency目录
+								 工程化
+								 有歧义，给出命令
+
+
+SOLEA-2593 【图片分类】：支持盖章类型文件的查询
+
+img_classifiers_ms_i_s_dv:seal
+
+SOLEA-2622 【send-fileserver2】后台要区分每一个文件（加disable做哪些）
+
+
+2020.03.28
+1.最新模型
+/root/anaconda3/bin/python3 mask-rcnn-predict-directory.py --i /opt/img-test/imgs --m /opt/lzy-model/models-20200328/mask_rcnn_solea_dl_cfg_836.h5 --o /opt/lzy-model/predict-output/20200328
+
+
+2.出差准备
+
+环境搭建：
+
+Could not get resource 'http://maven.lzy.com:8081/nexus/content/groups/lzy/org/ansj/tree_split/1.4/tree_split-1.4.jar'.
+
+http://artifact.lzy.com/nexus/repository/lzy/ 
+修改：
+
+
+安装包合并下
+\\10.1.11.5\temp
+
+拉分支？
+飞机票买了再拉
+
+出差checklist：
+ # 出差前：
+ ## 与组长、PM、市场负责人确认
+ ## 发送邮件
+ ## 填写出差jira（以【出差】为开头，验证人为刘冉）		--ok
+ ### 本次出差的主要工作内容：
+ ## 钉钉申请“出差”
+ ## （市外出差）领取《论之语研发部客户现场工作检查清单》、《研发部现场数据处理checklist》、《论###之语研发部现场工作确认单》
+ ## 疫情期间，提前准备好以下证明（不管客户有没有要求，前4项必须准备）
+ ### 南京宁归来/其他健康码
+ ### 14天行踪查询结果
+ ### 人员复工证明
+ ### 公司复工证明
+ ### 其他客户指定要求办理的证明
+ # 出差期间：
+ ## 每天发回工作日志给楚雪
+ # 出差归来：
+ ## 回复出差邮件
+ ## 将工作完成情况提交到jira
+ ### 工作完成情况：
+ ## 提交《论之语研发部客户现场工作检查清单》、《研发部现场数据处理checklist》、《论之语研发部现场工作确认单》
+ ## 更新项目工程文档
+ ## 现场自动部署文档有更新的情况下， 要带回自动部署文档，交给PM，由PM提交到SVN
+ ## 出差报销单备注jira号并确认已关闭
+
+3.分类服务文档
+	cudda?
+ 
+4.
+CRCui(崔荣存) 13:06:10
+王涛和播总，你们去现场还要给我一些本周工作的安排和下周计划之类的东西
+SBLing(凌世播) 13:30:01
+OK
+ 
+本周工作：
+SOLEA-2614 安装问题-20200321-王涛										1d
+SOLEA-2615 【send-fileserver2】发送文件时出错，导致程序不再消费数据		4h
+SOLEA-2616 【出差】【solea】广州全文安装								2d
+SOLEA-2622 【send-fileserver2】后台要区分每一个文件（加disable做哪些）	1d
+SOLEA-2593 【图片分类】：支持盖章类型文件的查询							4h
+
+
+				SOLEA-2617 【solea】后台要区分每一个文件（加disable做哪些）
+				开会自己的数据如何对接
+		  准备广州出差    
+		  	SOLEA-2616 【出差】【solea】广州全文安装
+		  		准备环境
+		  A环境安装
+		  	  onnlyoffice
+			  content-analysis
+			  演示数据
+		  改进：
+		  	  加密，内容分析安装文档要有检查 
+			  文件命名规定 
+			  send fileserver2 
+			  		如果有文件，不要sleep
+					现在20G，要发2个小时
+		 问题：
+    		SOLEA-2615【send-fileserver2】发送文件时出错，导致程序不再消费数据
+
+
+本周工作：
+1.SOLEA-2593 【图片分类】：支持盖章类型文件的查询		3d
+2.SOLEA-2596 【关键词统计ftp自动部署】关键词ftpupload的进程配置加入自动部署		4h
+3.查一下56.102-1.4 主要是分类的服务
+4.准备升级A环境
+	演示用例，图片，文本分类
+
+2020.03.30
+1.SOLEA-2616 【出差】【solea】广州全文安装
+	看看准备的有没有漏掉？
+	人员复工证明？
+	u盘				--ok
+	光盘包			--ok
+	发给崔哥工作计划	--ok
+		1.安装系统，solea,simba，翻译ocr服务等
+		2.数据对接
+		3.查看数据发送情况，检查系统功能
+		4.演示系统
+
+simba-docker onlyoffice-docker更新
+更新下：
+	docker-common-docker-0.0.1-dev.tar		--ok
+	simba-docker-2.1.0-dev.tar				--ok
+	onlyoffice-docker-5.4.2.46-p1.tar		--ok
+
+2.
+A环境数据发送情况		--ok
+图片分类标签修改一下
+没有配置错
+
+
+4.
+本周工作安排：
+            王涛： 无jira
+                广州：lzyzip等要调用一个接口，上传文件（meta和data）再处理
+                solea-tika 的成功或者失败回调
+
+            SOLEA-2609 【content-analysis】需要使用python工程改进一下
+                python的dist是什么？
+                我们程序的依赖      
+                王涛
+           
+5.COMMON-5705 【java common】java common出一个版本
+
+
+1.		bo：
+		拉rb分支：java-common-1.4.10-rb		--ok
+		jira添加版本号：java-common-1.4.11		--ok
+		导出表结构		--ok
+		修改权限,锁住这个分支		--ok
+		添加每日构造		--ok
+		清理编译环境		--ok
+
+		rb，master分支版本号修改		--ok
+			master:
+				http://git.lzy.com/lzy/java-common/merge_requests/73
+			rb:
+				http://git.lzy.com/lzy/java-common/merge_requests/74
+		版本测试jira:														--ok
+				COMMON-5719 【版本测试】java-common-1.4.10出版本测试
+CZhou(周超（2-78）) 14:21:29
+如果用例有修改的话，给我反馈一份，我更新下
+
+		邮件通知rb分支建立		--ok
+		diff
+		修改rb release note
+		修改master release note
+
+		rb分支做的修改
+			配置检查
+			diff和修改自动部署模板prod-template和dev。确保没有漏掉新增的配置。
+			配置检查二
+			diff和修改自动部署模板prod-template和dev和上一个版本的比较。 确保修改的正确，并且加点注释，如果没有的话
+			强行release
+			在每日构造中强行release一下该分支，要保证release成功
+
+			查一下SNAPSHOT，看看是否有问题
+		7. 清理编译环境 【必做，安全问题】
+			7.1 确认本项目所依赖的其他版本是正式版本
+			7.2 删除 nuxus的snapshot的目录--找相关人员删除
+			7.3 删除 builder服务器10.1.11.6，buildbot-linux-slave-centos7，10.1.12.6 上当前项目的.m2目录(/root/.m2) --找相关人员删除
+			centos7和windows（10.1.12.6）每周六上午会定期清理
+			7.4 删除SNAPSHOT。 目的是为了让release版本所依赖的JAR全是正式版本
+			7.5 删除所有的pypi的所有的dev版本，可能要修改依赖的版本号 --找相关人员修改
+
+6.SOLEA-2641 【图片分类】准备每个分类的测试集，验证每次训练的模型结果		--ok
+	测试集放在哪里？共享目录？
+	\\10.1.11.5\share\项目相关\solea
+	模型文件放在那里？共享目录？
+	
+ /root/anaconda3/bin/python3 mask-rcnn-predict-directory.py --i /opt/content-analysis/input --m /opt/lzy-model/models-20200328/mask_rcnn_solea_dl_cfg_836.h5 --o /opt/content-analysis/output
+
+\\10.1.11.5\temp\wt王涛
+ 放到：
+ \\10.1.11.5\share\项目相关\solea
+
+
+3.【send-filesesrver2】增加一个命令行，可以让sendFserver定时或定量抛出异常
+
+
+###########################
+2020.03.31
+1.
+u盘					--ok
+准备好安装包		--ok
+solea安装包
+	拉分支			--ok
+	导出项目
+	http://wiki.lzy.com/%E5%A6%82%E4%BD%95%E5%90%8C%E6%AD%A5%E5%85%AC%E5%8F%B8%E5%92%8C%E7%8E%B0%E5%9C%BA%E7%9A%84Git
+
+git checkout -b solea-gz-20200331 remotes/origin/solea-gz-20200331
+git bundle create solea-gz-20200331.bundle solea-gz-20200331
+#做一个tag记录一下，可以用有意义的名称，如last_shanghai_20180101_bundle
+git tag -f solea-gz-20200331_bundle solea-gz-20200331
+
+
+# 分支应该是现场没有的，TITAN_2.0.0_SH0120 和 家里创建的分支名相同
+# git clone -b [bundle中想要clone出来的分支名] [bundle文件] [想要clone出的文件夹名]
+git clone -b solea-gz-20200331 solea-gz-20200331.bundle   solea-gz-20200331
+
+git checkout -b  solea-gz-20200331-dev
+
+
+
+	
+机票		--ok
+
+
+2.SOLEA-2627 【send-filesesrver2】增加一个命令行，可以让sendFserver定时或定量抛出异常		--ok
+
+		1.已经安装好solea-send-fserver2
+		2.通过命令行启动solea-send-fserver2:
+		cd /opt/solea-send-fserver2
+		java -jar lib/solea-send-fserver2-2.0.4-SNAPSHOT.jar --regularFail=10
+
+		其中10表示每隔10s程序会抛出异常，如果正在发送文件，会导致失败，产生bad文件
+		到bad目录确认bad文件产生：/opt/solea-server-bcup/bad
+		3.确定产生异常后，程序不会死掉，后面的文件可以继续发送
+
+		TODO:添加测试用例
+
+
+3.SOLEA-2645 【sendFserver】后台对接web发送数据
+	李玉龙的方案？
+	tika 从客户的文件系统中取？
+
+\\10.1.11.5\temp\wt王涛
+放到：
+\\10.1.11.5\share\产品发布\安装配套\install_support\solea
+	
+4.jira				--ok
+COMMON-5705 【java common】java common出一个版本
+SOLEA-2609 【content-analysis】需要使用python工程改进一下
+	
+	
+	
+	
+## 本周工作：
+1.SOLEA-2616 【出差】【solea】广州全文安装												2h
+2.SOLEA-2627 【send-filesesrver2】增加一个命令行，可以让sendFserver定时或定量抛出异常	2h
+3.COMMON-5705 【java common】java common出一个版本										4h
+4.SOLEA-2609 【content-analysis】需要使用python工程改进一下								2d
+5.SOLEA-2641 【图片分类】准备每个分类的测试集，验证每次训练的模型结果					4h
+6.SOLEA-2645 【sendFserver】后台对接web发送数据											1d
+
+
+TODO
+1.学习一下dolphin
+
+
+3. exec 和 ·· ？？？
+
+
+7.
+SOLEA-2538 统计非结构化数据的文件处理能力，提供技术指标
+发个邮件给市场部，规划部，提醒下
+
+	SOLEA-2058 【tika】 是否可以用cgroups来显示进程资源
+	看了看
+	
+8.gpu机器安装
+
+9.
+simba装web机器，用docker装？
+
+10.广州二次分析去掉
+
+
+11.
+问一下广东
+gpu型号
