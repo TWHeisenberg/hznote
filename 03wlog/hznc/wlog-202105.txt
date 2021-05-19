@@ -1271,6 +1271,17 @@ if:
 	echo "list" | hbase shell # 是否能列出来
 	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas # 节点数至少5个， Dead Region Servers
 	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+	检查进程， 下面一个都不能少：
+		
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
 
 	
 2.检查程序运行和发送情况
@@ -1281,6 +1292,8 @@ if:
 	进程：GetMarketDataAndStore		8:50
 	     GuPiaoReduce（RunDataMerge?）	9:25
 	     
+3.检查界面，行情软件
+	启动：hbase-daemon.sh start thrift2
 ```
 
 
@@ -1323,6 +1336,386 @@ public void loadTableCache() throws IOException {
     tables.put(TABLE_DAY_ONE, connection.getTable(TableName.valueOf(TABLE_DAY_ONE)));
   }
 ```
+
+09:29 分的数据, 没有归到 09:30?
+
+1.8.7-p357 :003 > get "hznc_mkdata:tickdata","IC05_1620955740_0"
+COLUMN                                                       CELL
+ cf_data:01cSymbol                                           timestamp=1620955802908, value=IC05
+ cf_data:02dbClosePrice                                      timestamp=1620955802908, value=6448.8
+ cf_data:03dbHeightPrice                                     timestamp=1620955802908, value=6448.8
+ cf_data:04dbLowPrice                                        timestamp=1620955802908, value=6448.8
+ cf_data:05dbOpenPrice                                       timestamp=1620955802908, value=6448.8
+
+开盘价：6448.8
+
+
+
+界面查询不到数据了？
+
+​	9090端口连不上了，看看进程：thrift2挂掉了。
+
+​		启动：hbase-daemon.sh start thrift2
+
+​	为什么挂掉？
+
+​		
+
+```
+
+2021-05-14 11:51:48,237 ERROR [pool-2-thread-12739] server.TThreadPoolServer: Thrift error occurred during processing of message.
+org.apache.thrift.protocol.TProtocolException: Bad version in readMessageBegin
+        at org.apache.thrift.protocol.TBinaryProtocol.readMessageBegin(TBinaryProtocol.java:223)
+        at org.apache.thrift.TBaseProcessor.process(TBaseProcessor.java:27)
+        at org.apache.thrift.server.TThreadPoolServer$WorkerProcess.run(TThreadPoolServer.java:286)
+        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+        at java.lang.Thread.run(Thread.java:748)
+2021年 05月 14日 星期五 13:19:08 CST Starting thrift2 on master
+```
+
+scan "hznc_mkdata:1mindata",{STARTROW => "IC05_1620954000", ENDROW => "IC05_1620977400"}
+
+
+
+商品期货缺数据？		--ok
+
+11:15 - 14:27
+
+今天工作：
+
+2021-05-14
+
+1.股指实时k线程序线上测试
+
+2.hbase 服务故障处理
+
+## 20210517
+
+1.每天上班要做的				--ok
+
+```
+1.检查下hadoop集群, hbase集群			
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址： # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+	检查进程， 下面一个都不能少：
+		
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  
+	进程：RunOnlyGuzhi		9:20
+    	  
+10.10.10.102 administrator/Admin711406 
+	进程：GetMarketDataAndStore		8:50
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+3.检查界面，行情软件
+	启动：hbase-daemon.sh start thrift2
+```
+
+
+
+2.商品数据实时k线程序
+		卡死的问题，修复更新			--ok
+
+​		夜盘, 用夜盘的商品数据测试
+
+​				开盘时间由9：:30变为9：00
+
+​	不同合约有不同的交易时间， （实际根据交易所不同来的）：
+
+```
+"trade_time_code":[[TS,TF,T,IF,IH,IC]
+,[bb,fb,jd,lh,RI,LR,AP,WH,PM,RS,JR,SF,SM,CJ,UR,wr]
+,[b,p,y,l,v,a,c,cs,pp,i,m,j,jm,rr,eb,eg,pg,CY,OI,SR,FG,TA,RM,ZC,CF,MA,SA,PF,rb,hc,bu,ru,sp,fu,lu,nr]
+,[al,pb,sn,zn,cu,ni,ss,bc]
+,[au,ag,sc]]
+
+	// 股指期货区间起始时间和结束时间
+	m_begin_times[0].push_back(standard_to_stamp_today("09:30:00"));
+	m_begin_times[0].push_back(standard_to_stamp_today("13:00:00"));
+
+	m_end_times[0].push_back(standard_to_stamp_today("11:30:00"));
+	m_end_times[0].push_back(standard_to_stamp_today("15:00:00"));
+
+	// 商品期货区间起始时间和结束时间
+	m_begin_times[1].push_back(standard_to_stamp_today("09:00:00"));
+	m_begin_times[1].push_back(standard_to_stamp_today("10:30:00"));
+	m_begin_times[1].push_back(standard_to_stamp_today("13:30:00"));
+
+	m_end_times[1].push_back(standard_to_stamp_today("10:15:00"));
+	m_end_times[1].push_back(standard_to_stamp_today("11:30:00"));
+	m_end_times[1].push_back(standard_to_stamp_today("15:00:00"));
+
+	m_begin_times[2].push_back(standard_to_stamp_today("09:00:00"));
+	m_begin_times[2].push_back(standard_to_stamp_today("10:30:00"));
+	m_begin_times[2].push_back(standard_to_stamp_today("13:30:00"));
+	m_begin_times[2].push_back(standard_to_stamp_today("21:00:00"));
+
+	m_end_times[2].push_back(standard_to_stamp_today("10:15:00"));
+	m_end_times[2].push_back(standard_to_stamp_today("11:30:00"));
+	m_end_times[2].push_back(standard_to_stamp_today("15:00:00"));
+	m_end_times[2].push_back(standard_to_stamp_today("23:00:00"));
+
+	m_begin_times[3].push_back(standard_to_stamp_today("09:00:00"));
+	m_begin_times[3].push_back(standard_to_stamp_today("10:30:00"));
+	m_begin_times[3].push_back(standard_to_stamp_today("13:30:00"));
+	m_begin_times[3].push_back(standard_to_stamp_today("21:00:00"));
+
+	m_end_times[3].push_back(standard_to_stamp_today("10:15:00"));
+	m_end_times[3].push_back(standard_to_stamp_today("11:30:00"));
+	m_end_times[3].push_back(standard_to_stamp_today("15:00:00"));
+	m_end_times[3].push_back(standard_to_stamp_today("01:00:00"));
+
+	m_begin_times[4].push_back(standard_to_stamp_today("09:00:00"));
+	m_begin_times[4].push_back(standard_to_stamp_today("10:30:00"));
+	m_begin_times[4].push_back(standard_to_stamp_today("13:30:00"));
+	m_begin_times[4].push_back(standard_to_stamp_today("21:00:00"));
+
+	m_end_times[4].push_back(standard_to_stamp_today("10:15:00"));
+	m_end_times[4].push_back(standard_to_stamp_today("11:30:00"));
+	m_end_times[4].push_back(standard_to_stamp_today("15:00:00"));
+	m_end_times[4].push_back(standard_to_stamp_today("02:30:00"));
+	
+```
+
+维护一个映射表
+
+
+
+​		大数据延迟的问题， 增加缓存
+
+```
+日志有报错？
+2021-05-17 13:15:01 INFO  [mergeAndstore-kline-0] - store kline IH05_1621228495 to hznc_mkdata:5sdata ok
+2021-05-17 13:15:01 ERROR [mergeAndstore-kline-1] - org.apache.hadoop.hbase.regionserver.NoSuchColumnFamilyException: org.apache.hadoop.hbase.regionserver.NoSuchColumnFamilyException: Column family table does not exist in region hbase:meta,,1.1588230740 in table 'hbase:meta', {TABLE_ATTRIBUTES => {IS_META => 'true', coprocessor$1 => '|org.apache.hadoop.hbase.coprocessor.MultiRowMutationEndpoint|536870911|'}, {NAME => 'info', BLOOMFILTER => 'NONE', VERSIONS => '10', IN_MEMORY => 'true', KEEP_DELETED_CELLS => 'FALSE', DATA_BLOCK_ENCODING => 'NONE', TTL => 'FOREVER', COMPRESSION => 'NONE', CACHE_DATA_IN_L1 => 'true', MIN_VERSIONS => '0', BLOCKCACHE => 'true', BLOCKSIZE => '8192', REPLICATION_SCOPE => '0'}
+	at org.apache.hadoop.hbase.regionserver.HRegion.checkFamily(HRegion.java:7972)
+	at org.apache.hadoop.hbase.regionserver.HRegion.get(HRegion.java:6994)
+	at org.apache.hadoop.hbase.regionserver.RSRpcServices.get(RSRpcServices.java:2110)
+	at org.apache.hadoop.hbase.protobuf.generated.ClientProtos$ClientService$2.callBlockingMethod(ClientProtos.java:34946)
+	at org.apache.hadoop.hbase.ipc.RpcServer.call(RpcServer.java:2339)
+	at org.apache.hadoop.hbase.ipc.CallRunner.run(CallRunner.java:123)
+	at org.apache.hadoop.hbase.ipc.RpcExecutor$Handler.run(RpcExecutor.java:188)
+	at org.apache.hadoop.hbase.ipc.RpcExecutor$Handler.run(RpcExecutor.java:168)
+```
+
+
+
+## 20210518
+
+1.每天上班要做的				--ok
+
+```
+1.检查下hadoop集群, hbase集群			
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址： # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+	检查进程， 下面一个都不能少：
+		
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  
+	进程：RunOnlyGuzhi		9:20
+    	  
+10.10.10.102 administrator/Admin711406 
+	进程：GetMarketDataAndStore		8:50
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+3.检查界面，行情软件
+	启动：hbase-daemon.sh start thrift2
+```
+
+
+
+2.商品实时k线
+
+​	每种合约有不同的交易时间			--ok
+
+​	static变量, 多线程会有问题		--ok
+
+​	休市15分钟，导致30分钟以上周期有错位，测试下			--ok
+
+​		AU02
+
+scan "hznc_mkdata:1sdata", {STARTROW => "au2202_1618531200", ENDROW => "au2202_1618556400"} 
+
+打印出来看看：
+
+bash list_delete_rowkey.sh "hznc_mkdata:1sdata" "au2202_1618531200" "au2202_1618556400" au2202_1s.txt
+
+scan "hznc_mkdata:1sdata", {STARTROW => "au2202_1618531200", ENDROW => "au2202_1618556400"} 
+
+​	夜盘
+
+​		问题：
+
+​		nextBeginTime = nextDayBegin + param->duration[1].begin;
+
+```
+是否要区分日盘跟夜盘
+private void loadToMap(JSONArray tradeCodeArry, TDurationStruct[] tDurations, Map<String, TDurationStruct[]> map) {
+    // 还要区分出日盘跟夜盘的区间
+    List<TDurationStruct> nightDuratons = Lists.newArrayList();
+    List<TDurationStruct> dayDuratons = Lists.newArrayList();
+    for(TDurationStruct duration : tDurations){
+      if(duration.begin >= KPARAM_TIME_T2100 && duration.end <= KPARAM_TIME_T0300){
+        // 夜盘时间
+        nightDuratons.add(duration);
+      }else{
+        dayDuratons.add(duration);
+      }
+    }
+
+    int night = 1, day = 0;
+    for(int i=0;i<tradeCodeArry.size();i++){
+      String tradeCode = tradeCodeArry.getString(i);
+
+      // 还要区分出日盘和夜盘的区间
+      map.put(tradeCode+"_"+night, nightDuratons.toArray(new TDurationStruct[nightDuratons.size()]));
+      map.put(tradeCode+"_"+day, dayDuratons.toArray(new TDurationStruct[dayDuratons.size()]));
+    }
+  }
+```
+
+
+
+pack: 1618549207
+
+
+
+    int beginOffset = 0;
+    if (param->isNight)
+        beginOffset = _60min * 4;
+
+
+​	大数据延迟的问题
+
+​	
+
+今日工作：
+
+20210518
+
+继续开发商品实时k线的程序，测试夜盘情况
+
+##########################
+
+## 20210519
+
+1.每天上班要做的					--ok
+
+```
+1.检查下hadoop集群, hbase集群			
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+	检查进程， 下面一个都不能少：
+		
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  
+	进程：RunOnlyGuzhi		9:20
+    	  
+10.10.10.102 administrator/Admin711406 
+	进程：GetMarketDataAndStore		8:50
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+3.检查界面，行情软件
+	启动：hbase-daemon.sh start thrift2
+```
+
+
+
+2. 商品实时k线升级
+
+	夜盘和日周期k线测试		2h
+		对比下是不是代码改错了？  getKNightDay改错了	--ok
+			小时的k线好像不对，少了？		--ok,走到日线函数里去了
+		运行时间应该是一整天的， 从晚上八点-次日16：00    休眠时间16:00 - 20:00		--ok
+		au2202 合约代码转换？
+	大数据延迟的问题		1h
+		秒级别的都用缓存， 
+		一个put多大？ 用 ObjectSizeCalculator.getObjectSize()计算
+			puts * 1000: 2696296, 平均：2700 byte
+			CKdata: 760 byte
+		增加程序运行内存		--ok, 测试只能1g, 线上4g-8g
+		找不到code: eb,PK 加一下
+	参考	期货交易时间：
+	http://www.qhsxf.com/%E6%9C%9F%E8%B4%A7%E4%BA%A4%E6%98%93%E6%97%B6%E9%97%B4.html
+	
+	是否过滤ic, ih, if		--ok
+	丢数据了？IF05_1621387800		--ok 有的
+	get "hznc_mkdata:tickdata", "IF05_1621387800_0"
+	
+	测试一天的数据量, 好像还是有延迟？ 测试不发hbase,是否会延迟
+	加快mvn 单元测试，可以多线程：
+	mvn -T 2 clean install
+	
+	todo:
+	日线生成好像还有些问题
+	周线跟月线, 法定节假日
+	有时间再整理重构代码	1h
+	
+	2021/05/19 16:44:40 INFO  [ReadOnlyZKClient-192.168.198.101:2181@0x004f1a55] - Session: 0x1798283b8a70035 closed
+	2021/05/19 16:44:40 INFO  [ReadOnlyZKClient-192.168.198.101:2181@0x004f1a55-EventThread] - EventThread shut down for session: 0x1798283b8a70035
+
+
+
+明天再测试下性能， 数据正确性
+
+​	
+
+```
+今天工作：
+
+20210519
+
+继续开发商品实时k线程序，功能基本完成。
+
+​	明天主要再测下性能
+```
+
+
+
+代码格式化看看		--ok
+
+mvn fmt:format
+
+
 
 3.lc插件安装
 
