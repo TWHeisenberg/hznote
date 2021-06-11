@@ -1,0 +1,1680 @@
+## tips
+
+释放buffer/cache的内存：
+
+```
+释放缓存区内存的方法
+sync# 将内存中数据同步到磁盘
+
+ a）清理pagecache（页面缓存）
+
+# echo 1 > /proc/sys/vm/drop_caches     或者 # sysctl -w vm.drop_caches=1
+
+　 b）清理dentries（目录缓存）和inodes
+# echo 2 > /proc/sys/vm/drop_caches     或者 # sysctl -w vm.drop_caches=2
+　 c）清理pagecache、dentries和inodes
+
+# echo 3 > /proc/sys/vm/drop_caches     或者 # sysctl -w vm.drop_caches=3
+
+# 如何限制buffer/cache的占用？
+```
+
+注意：
+
+夜盘数据比较特殊,  比如 2021-04-01 21:00:00 ~ 2021-04-02 00:00:00 的数据, 其实是 2021-03-31 21:00:00 ~ 2021-04-01 00:00:00 的数据.  即夜盘一整天的开盘时间是 昨天 21:00
+
+maven 官方下载地址：
+
+https://archive.apache.org/dist/maven/maven-3/
+
+服务器地址：
+
+```
+10.10.10.104   administrator  Admin123
+10.10.10.102 administrator  Admin711406
+```
+
+
+
+这个SVN地址是你的私人地址，你可以提交任何临时代码。
+：https://10.10.10.102/svn/private_source/wangtao
+账户名和密码是名字全拼。
+
+项目 SVN 地址:
+https://10.10.10.102/svn/量化系统/nc_tree_parse/nc_algo
+
+confluence 地址：http://10.10.0.47:8090/
+
+​	ftp:list_delete_rowkey.shb
+
+	   历史股指期权 和 商品期权 数据的下载地址 ：
+	   域名：tik-ftp.citicsf.com 端口：8371
+	   电信IP：58.33.80.163     端口：8371
+	   联通IP：140.206.97.123 端口：8371
+	   李佳桧/83g3Mh7m
+
+​	历史数据：
+
+​		50ETF期权数据
+​		CFFEX股指期货
+​		DCE大连商品
+​		CZC3郑州商品
+​		SHFE上海商品
+
+钉钉邮箱：wangdao6551@dingtalk.com
+
+能诚账号：u00479密码：1
+
+jira账号：u00479/123456
+
+jira   ip地址更换成：http://10.10.0.47:8080/
+
+svn账号和密码：liuzhenjiang/liuzhenjiang
+
+hbase:
+	hadoop-daemon.sh start datanode
+	hbase-daemon.sh start regionserver
+	tail  -n -500 /usr/local/hbase/logs/hbase-hadoop-regionserver-slave4.log
+
+sql server:
+		properties.setProperty("user", "R16");
+		properties.setProperty("password", "R16_0625");
+
+现有集群规模：共有七台机器，老机房两台，新机房五台。
+
+老机房两台：
+
+​     主机名：keep-0        IP：10.10.10.110    nc_007用户登录密码：nc_007
+
+主机名：keep-1        IP：10.10.10.111       nc_008用户登录密码：nc_008
+
+ ![image-20210510085345685](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20210510085345685.png)
+
+新机房五台：
+
+​     主机名：master      IP：10.10.0.254        root用户登录密码：1
+
+主机名：slave1        IP：10.10.0.119        root用户登录密码：1
+
+主机名：slave2        IP：10.10.0.54        root用户登录密码：1
+
+主机名：slave3        IP：10.10.0.253        hadoop用户登录密码：1
+
+主机名：slave4        IP：10.10.0.252        hadoop用户登录密码：1
+
+ 
+
+集群配置：
+
+​     三台zookeeper，七台HDFS（master，slave1，上运行namenode，七台DataNode）
+
+​     Master，slave3作为HBASE的HMaster节点，除master节点之外，六台起HRegionserver服务，HMaster节点需要另起ThriftServer服务来提供读取数据服务。集群启动步骤见《集群各项服务启动命令.txt》文件
+
+Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas
+
+HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview
+
+
+
+git key: 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
+
+
+
+## 每天做的
+
+```
+1.检查下hadoop集群, hbase集群
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  
+	进程：RunOnlyGuzhi，
+    	  
+10.10.10.102 administrator/Admin711406  
+	进程：GetMarketDataAndStore
+	     GuPiaoReduce（RunDataMerge?）
+```
+
+
+
+###################
+
+## 20210601
+
+1.每天上班要做的	
+
+```
+1.检查下hadoop集群, hbase集群				--ok
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			8.3 TB (17.72%)
+			35.72 TB (76.22%)
+	检查进程， 下面一个都不能少：
+		
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+10.10.10.102 administrator/Admin711406 
+	进程：
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+3.检查界面，行情软件			--ok
+	# 如果有问题，启动：hbase-daemon.sh start thrift2
+		地址已经在使用：
+
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+问一下数据库监控
+
+			
+			tick数据到58秒，1s数据到53秒？两个问题：
+				1.一个补数据没有生效，endTs应该是后一天的				--ok,已经修复，明天再验证下
+				2.5 3秒后的数据是早上8点推过来的，数据源有问题。
+			
+			
+			有延迟？
+			2021-05-28 09:55:47 INFO  [pool-1-thread-10] - id=1, table=hznc_mkdata:2sdata, attempt=6/16, failureCount=12ops, last exception=org.apache.hadoop.hbase.exceptions.RegionMovedException: Region moved to: hostname=master port=60020 startCode=1620695541020. As of locationSeqNum=8744807. on keep-1,60020,1620609114035, tracking started null, retrying after=2008ms, operationsToReplay=12
+			
+			exception=org.apache.hadoop.hbase.exceptions.RegionOpeningException: org.apache.hadoop.hbase.exceptions.RegionOpeningException: Region hznc_mkdata:1sdata,fu08_1615959832,1621346558611.dfff89a834f62426a1fef4aa1c1ff9e0. is opening on slave3,60020,1619400396937
+	at org.apache.hadoop.hbase.regionserver.HRegionServer.getRegionByEncodedName(HRegionServer.java:2972)
+	at org.apache.hadoop.hbase.regionserver.RSRpcServices.getRegion(RSRpcServices.java:1140)
+	at org.apache.hadoop.hbase.regionserver.RSRpcServices.multi(RSRpcServices.java:2197)
+	at 
+	
+	region达到一定的大小开始分裂，分裂成两个region,hbaes有自动的regionBalance功能，这个过程会移动region导致region的下线和重新上线
+	1.解决办法就是可以预分区，预分region
+	2.关闭自动的split和rebanlace,在没有数据的时候去检测有超过20g的就split
+	
+	
+	查看硬盘有没有做raid
+	cat /proc/mdstat
+	对master节点来说，使用raid主要是为了保护关键性的文件系统数据，通常的配置是raid1+0或者raid0+1
+	
+	
+```
+
+
+
+2.继续股指历史数据补录
+
+​	进程oom的问题
+
+ [hconnection-0x1b03244-metaLookup-shared--pool3-t31] - Call exception, tries=10, retries=16, started=47592 ms ago, cancelled=false, msg=Call to vm01/192.168.198.101:16201 failed on connection exception: org.apache.hbase.thirdparty.io.netty.channel.AbstractChannel$AnnotatedConnectException: Connection refused: no further information: vm01/192.168.198.101:16201, details=row 'hznc_mkdata:2sdata,IF1503_1420508812,99999999999999' on table 'hbase:meta' at region=hbase:meta,,1.1588230740, hostname=vm01,16201,1622451944197, seqNum=-1, see https://s.apache.org/timeout
+
+
+
+​	单元测试改成离线的也能正常运行
+
+​	支持继续发送
+
+hbase 不断自动的split?
+
+因为过大的内存会导致GC时间过长（GC方式从CMS改为G1后可以增大该值，机器内存足够的情况下可以翻倍甚至更大）。 ((RS Xmx) *hbase.regionserver.global.memstore.size) / (hbase.hregion.memstore.flush.size *(# column families))。      *
+
+* 即16G*0.45/128M=64个
+
+
+
+
+
+补数据：
+
+get "hznc_mkdata:tickdata", "IC06_1622528746_0"
+
+
+
+20210601 14:26:00 没有补数据？
+
+
+
+一些表设置了TTL？ 整理下
+
+用新的表测试？
+
+create 'hznc_mkdata','cf_data'
+
+
+
+create "hznc_mkdata:tickdata_his", {NAME => "cf_data", VERSIONS => 1, COMPRESSION => "snappy", BLOCKCACHE => "TRUE"}
+
+create "hznc_mkdata:ddata_his", {NAME => "cf_data", VERSIONS => 1, COMPRESSION => "snappy", BLOCKCACHE => "TRUE"}
+
+
+
+## 20210602
+
+1.每天上班要做的	
+
+```
+1.检查下hadoop集群, hbase集群				--ok
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			8.3 TB (17.72%)
+			35.72 TB (76.22%)
+	检查进程， 下面一个都不能少：
+		
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+10.10.10.102 administrator/Admin711406 
+	进程：
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+3.检查界面，行情软件			--ok
+	# 如果有问题，启动：hbase-daemon.sh start thrift2
+		地址已经在使用：
+
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+问一下数据库监控
+
+			
+			tick数据到58秒，1s数据到53秒？两个问题：
+				1.一个补数据没有生效，endTs应该是后一天的				--ok,已经修复，明天再验证下
+				2.5 3秒后的数据是早上8点推过来的，数据源有问题。
+			
+			
+			有延迟？
+			2021-05-28 09:55:47 INFO  [pool-1-thread-10] - id=1, table=hznc_mkdata:2sdata, attempt=6/16, failureCount=12ops, last exception=org.apache.hadoop.hbase.exceptions.RegionMovedException: Region moved to: hostname=master port=60020 startCode=1620695541020. As of locationSeqNum=8744807. on keep-1,60020,1620609114035, tracking started null, retrying after=2008ms, operationsToReplay=12
+			
+			exception=org.apache.hadoop.hbase.exceptions.RegionOpeningException: org.apache.hadoop.hbase.exceptions.RegionOpeningException: Region hznc_mkdata:1sdata,fu08_1615959832,1621346558611.dfff89a834f62426a1fef4aa1c1ff9e0. is opening on slave3,60020,1619400396937
+	at org.apache.hadoop.hbase.regionserver.HRegionServer.getRegionByEncodedName(HRegionServer.java:2972)
+	at org.apache.hadoop.hbase.regionserver.RSRpcServices.getRegion(RSRpcServices.java:1140)
+	at org.apache.hadoop.hbase.regionserver.RSRpcServices.multi(RSRpcServices.java:2197)
+	at 
+	
+	region达到一定的大小开始分裂，分裂成两个region,hbaes有自动的regionBalance功能，这个过程会移动region导致region的下线和重新上线
+	1.解决办法就是可以预分区，预分region
+	2.关闭自动的split和rebanlace,在没有数据的时候去检测有超过20g的就split
+	
+	
+	查看硬盘有没有做raid
+	cat /proc/mdstat
+	对master节点来说，使用raid主要是为了保护关键性的文件系统数据，通常的配置是raid1+0或者raid0+1
+	
+	
+	toSqlserver程序
+```
+
+
+
+补数据程序做个版本
+
+​	参考文档《数据修订和核对流程.md》
+
+​	检查各个子进程		--ok
+
+​			todo: datasource, 先用日志观察
+
+  1.修订的程序不要在本地运行了，升级到线上服务器，在线上的服务器进行补录
+
+  2. 代码分支管理：
+
+       	建两个分支，dev分支和master分支。开发在dev分支上，开发完成测试通过合并到master
+
+     ​	master运行稳定一周后，打一个tag， 升级版本。
+
+3.实时k线，包含15:00的？  --好像是客户端的问题？
+
+​	scan "hznc_mkdata:5mindata", {STARTROW => "IF2106_1622595600", ENDROW => "IF2106_1622619000"}
+
+
+
+2.继续历史股指补录
+
+​		
+
+3.TTL的问题
+
+​		
+
+4.数据补录的问题
+
+​		1.数据发重复了？		--没有，看错了
+
+​		2.k线合并有问题，价格不对
+
+​		3.数据发不进去？ 时间戳不对还是刷新缓存
+
+```
+if (HISTORY_SPIF_HBASE.equals(runMode) && false) {
+  put.addColumn(
+      family, qualifier, ts, // 历史数据时间戳用历史的，方便删除
+      value);
+```
+
+
+
+​		4.java64 加载不了native库？		--使用32位java
+
+​		5.历年的休假时间
+
+```
+数据补录的会议：
+1.跟中信确认下生成时间
+
+2.策略部，后面找一下是否可以包含成交量为0的数据
+
+3.昨日收盘价格用程序去读
+
+
+数据核对：
+查询tick的数据跟源文件中对比一致，可以程序去对比
+
+每个合约不同交易时间，k线个数不一样，可以动态的去对比
+
+
+开发补数据完通知到测试，测试通知到策略部
+
+补录数据反馈要及时
+
+自动化完成之前每日收盘开发跟测试验证数据
+
+后面自动化：
+补数据时，客户端可以提示数据异常，正在补录。
+
+王涛：
+程序兼容两种格式
+补录程序部署到线上
+分支标准化
+补数据的流程化
+
+吴凯伦：
+程序稳定性，测试
+导出格式固定
+
+```
+
+
+
+
+
+今天工作：
+
+20210602
+
+补录程序的问题修改，合并k线测试
+
+补数据流程文档
+
+
+
+## 20210603
+
+1.每天上班要做的	
+
+```
+1.检查下hadoop集群, hbase集群				--ok
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			8.3 TB (17.72%)
+			35.72 TB (76.22%)
+	检查进程， 下面一个都不能少：
+		
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+10.10.10.102 administrator/Admin711406 
+	进程：
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+3.检查界面，行情软件			--ok
+	# 如果有问题，启动：hbase-daemon.sh start thrift2
+		地址已经在使用：
+
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+问一下数据库监控
+
+			
+			tick数据到58秒，1s数据到53秒？两个问题：
+				1.一个补数据没有生效，endTs应该是后一天的				--ok,已经修复，明天再验证下
+				2.5 3秒后的数据是早上8点推过来的，数据源有问题。
+			
+			
+			有延迟？			
+			exception=org.apache.hadoop.hbase.exceptions.RegionOpeningException: 
+	
+	region达到一定的大小开始分裂，分裂成两个region,hbaes有自动的regionBalance功能，这个过程会移动region导致region的下线和重新上线
+	1.解决办法就是可以预分区，预分region
+	2.关闭自动的split和rebanlace,在没有数据的时候去检测有超过20g的就split
+	
+	
+	查看硬盘有没有做raid
+	cat /proc/mdstat
+	对master节点来说，使用raid主要是为了保护关键性的文件系统数据，通常的配置是raid1+0或者raid0+1
+	
+
+	toSqlserver程序
+```
+
+​	regionServer释放内存？
+
+释放buffer/cache		--ok
+
+如何限制buffer/cache 的占用？
+
+AP220没有9:00跟9:01的k线？1min
+
+scan "hznc_mkdata:1mindata", {STARTROW => "AP2201_1622682000", ENDROW => "AP2201_1622682180"}
+
+
+
+查一下早上8点-8点半的
+
+scan 'hznc_mkdata:1sdata', {TIMERANGE => [1622678400000, 1622680800000]}
+
+
+
+可能要把8：55之前的数据屏蔽掉		--ok
+
+2021-06-03 08:00:02 INFO  [store-tick] - store tick: FG106_1622732393_0 ok, count: 6725
+2021-06-03 08:00:03 INFO  [store-tick] - store tick: au2202_1622658600_1 ok, count: 6726
+
+
+
+2.补录程序修改：
+
+​	1.带时间戳发不进去？调试一下		--ok，去掉，不使用时间戳了
+
+​	2.补录程序发布版本更新上线
+
+​			自动查询前一天的收盘价		--ok
+
+​			优化保证稳定不死
+
+​					calendar.setTime(new Date(ts)) -> calendar.setTimeImillis(ts);
+
+​					updateKline 去掉clone方法
+
+​					string[] splits = line.split(",") 改成直接统计了
+
+​			历年的休假时间，节假日时间，从国务院官网爬取的：			--ok
+
+​					https://github.com/NateScarlet/holiday-cn/blob/master
+
+​			jna是否可以固定线程
+
+​		可能要把8：55之前的数据屏蔽掉		--ok
+
+盘后检查数据的程序，k线		--ok
+
+​	3.本地运行		--ok
+
+
+
+TTL修改，先找一个表测试		--ok
+
+hznc_mkdata:1sdata：   无
+
+​		'hznc_mkdata:2sdata', {NAME => 'cf_data', TTL => '2592000 SECONDS (30 DAYS)'}
+
+​		'hznc_mkdata:3sdata', {NAME => 'cf_data', TTL => '2592000 SECONDS (30 DAYS)'}
+
+​		hznc_mkdata:5sdata', {NAME => 'cf_data', TTL => '3888000 SECONDS (45 DAYS)'}
+
+​		'hznc_mkdata:10sdata', {NAME => 'cf_data', TTL => '5184000 SECONDS (60 DAYS)'}
+
+​		'hznc_mkdata:15sdata', {NAME => 'cf_data', TTL => '5184000 SECONDS (60 DAYS)'}
+
+​		'hznc_mkdata:30sdata', {NAME => 'cf_data', TTL => '7776000 SECONDS (90 DAYS)'}
+
+​		'hznc_mkdata:1mindata', {NAME => 'cf_data'}		无
+
+​		'hznc_mkdata:5mindata', {NAME => 'cf_data'} 	无
+
+​		'hznc_mkdata:15mindata', {NAME => 'cf_data'}	无
+
+​		'hznc_mkdata:30mindata', {NAME => 'cf_data'}	无
+
+​		'hznc_mkdata:60mindata', {NAME => 'cf_data'}	无
+
+​		'hznc_mkdata:ddata', {NAME => 'cf_data'}	无
+
+hznc_mkdata:tickdata  365天
+
+如果修改也比较简单，但要再盘后修改，因为要先disable掉表：
+
+
+
+​	describe "hznc_mkdata:ticidata" # 查看确认下表结构
+
+​	disable 'hznc_mkdata:tickdata' # 先禁用表
+
+​	alter 'hznc_mkdata:tickdata' , {NAME=>'cf_data',TTL=>'2147483647', COMPRESSION => "snappy"}  # 不删除,使用压缩
+
+​	enable 'hznc_mkdata:tickdata'  # 恢复表
+
+
+
+disable 'test_xiao' # 先禁用表
+
+​	alter 'test_xiao' , {NAME=>'test_xiao',TTL=>'2147483647', COMPRESSION => "snappy"}  # 不删除,使用压缩
+
+​	enable 'test_xiao'  # 恢复表
+
+
+
+
+
+今日工作：
+
+20210603
+
+离线补录程序的修改和完善：
+
+​	统计和支持加载历年的节假日日期
+
+​	开发简单的程序自动检查盘后实时数据
+
+
+
+
+
+###################
+
+## 20210604
+
+1.每天上班要做的	
+
+```
+1.检查下hadoop集群, hbase集群	
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			8.54 TB (18.22%)
+			35.48 TB (75.72%)
+	检查进程， 下面一个都不能少：
+		
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+10.10.10.102 administrator/Admin711406 
+	进程：
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+3.检查界面，行情软件			--ok
+	# 如果有问题，启动：hbase-daemon.sh start thrift2
+		地址已经在使用：
+
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+问一下数据库监控
+
+			
+			tick数据到58秒，1s数据到53秒？两个问题：
+				1.一个补数据没有生效，endTs应该是后一天的				--ok,已经修复，明天再验证下
+				2.5 3秒后的数据是早上8点推过来的，数据源有问题。
+			
+			
+			有延迟？			
+			exception=org.apache.hadoop.hbase.exceptions.RegionOpeningException: 
+	
+	region达到一定的大小开始分裂，分裂成两个region,hbaes有自动的regionBalance功能，这个过程会移动region导致region的下线和重新上线
+	1.解决办法就是可以预分区，预分region
+	2.关闭自动的split和rebanlace,在没有数据的时候去检测有超过20g的就split
+	
+	
+	查看硬盘有没有做raid
+	cat /proc/mdstat
+	对master节点来说，使用raid主要是为了保护关键性的文件系统数据，通常的配置是raid1+0或者raid0+1
+	
+
+	toSqlserver程序
+```
+
+
+
+2.继续开发历史数据补录程序
+
+​	日志按照天输出		--ok
+
+​			log4j:WARN No such property [datePattern] in org.apache.log4j.RollingFileAppender. 不支持属性datePattern
+
+​			log4j.appender.main=org.apache.log4j.DailyRollingFileAppender  不支持属性maxFile
+
+​	补录程序稳定不死
+
+​			Exception in thread "main" java.lang.IllegalStateException: Queue full
+
+​			jprofile 调一下
+
+​				最大内存：512M
+
+​		线程卡住了?
+
+​		
+
+``` s
+if (tickData.Volume < 0 || tickData.Amount < 0) {
+  return;
+}
+是负的？
+```
+
+
+
+```
+2021/06/04 11:27:06 INFO  [store-tick] - store tick: IF1502_1422845600_0 ok, count: 131203
+2021/06/04 11:27:06 INFO  [store-tick] - store tick: IF1502_1422845600_1 ok, count: 131204
+```
+
+
+
+​	离线数据的单元测试		--ok
+
+
+
+
+
+###################
+
+## 20210605
+
+1.历史数据补录
+
+​		线程卡死的问题，看看是不是linkedBlockingqueue导致的
+
+​			poll方法？
+
+java.lang.NullPointerException
+	at com.hznc.datacenter.task.MergeAndStore.updateKParam(MergeAndStore.java:179)
+	at com.hznc.datacenter.task.MergeAndStore.getParam(MergeAndStore.java:165)
+	at com.hznc.datacenter.task.MergeAndStore.mergeAndStoreKline(MergeAndStore.java:152)
+	at com.hznc.datacenter.task.MergeAndStore.run(MergeAndStore.java:110)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+
+
+线程死掉了，死掉怎么不说？			--ok
+
+
+
+发送起来：
+
+8.47 TB (18.08%)，  35.55 TB (75.87%)
+
+
+
+```
+kCycle  1420394399 应该是：
+```
+
+：1420394400 -1
+
+
+
+###################
+
+## 20210607
+
+1.每天上班要做的	
+
+```
+1.检查下hadoop集群, hbase集群	
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			8.57 TB (18.28%)
+			35.45 TB (75.66%)
+	检查进程， 下面一个都不能少：
+		
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+10.10.10.102 administrator/Admin711406 
+	进程：
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+3.检查界面，行情软件			--ok
+	# 如果有问题，启动：hbase-daemon.sh start thrift2
+
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+
+			有延迟？			
+			exception=org.apache.hadoop.hbase.exceptions.RegionOpeningException: 
+	
+	region达到一定的大小开始分裂，分裂成两个region,hbaes有自动的regionBalance功能，这个过程会移动region导致region的下线和重新上线
+	1.解决办法就是可以预分区，预分region
+	2.关闭自动的split和rebanlace,在没有数据的时候去检测有超过20g的就split
+	
+	
+	查看硬盘有没有做raid
+	cat /proc/mdstat
+	对master节点来说，使用raid主要是为了保护关键性的文件系统数据，通常的配置是raid1+0或者raid0+1
+	
+
+	toSqlserver程序
+```
+
+
+
+
+
+2.离线数据补录
+
+​		TF这些是否要发？		--ok, 发送
+
+​		部署到线上环境			--ok
+
+​		检查下，日志中的报错，是否可以优化
+
+​			又是这个问题：
+
+		2021/06/07 09:11:50 WARN  [Default-IPC-NioEventLoopGroup-1-8] - A task raised an exception. Task: org.apache.hadoop.hbase.ipc.NettyRpcConnection$6$1@18a34f1
+		java.lang.OutOfMemoryError: Java heap space
+	
+	​					2021/06/07 09:11:50 WARN  [Default-IPC-NioEventLoopGroup-1-6] - Unexpected exception in the selector loop.
+	​					java.lang.OutOfMemoryError: Java heap space
+	
+	​					waiting for 1000  actions to finish on table
+	
+	表在split时引起的？
+	每次写的批量太大引起的？ 计算puts的大小：
+		2737776 byte  2.6MB
+	默认的pool大小？
+	
+	    ThreadPoolExecutor tpe = new ThreadPoolExecutor(
+	        coreThreads,   // 256, 如果是获取meta表128
+	        maxThreads,    // 256, 如果是获取meta表128
+	        keepAliveTime, // 60
+	        TimeUnit.SECONDS,
+	        workQueue, // LinkedBlockingQueue
+	        Threads.newDaemonThreadFactory(toString() + nameHint));
+	    tpe.allowCoreThreadTimeOut(true);
+	    使用默认的，测试一下
+
+
+​	    
+​	    检查实时数据：
+​	    ic: 			策略：25891       数据中心：25888	监控中心：25888
+​	    ih: 			策略：25087       数据中心：25084	监控中心：25084
+​	    if:				策略：27769       数据中心：27766	监控中心：27766
+
+
+​			
+
+​		实时k线重启一下		--ok
+
+​		补录一下周五的日k		--ok
+
+
+
+3.继续安装hive
+
+​	安装mysql
+
+
+
+动态规划
+
+
+
+
+
+今日工作：
+
+20210607
+
+1.历史股指数据补录
+
+​	已经发完2015-2016年的数据
+
+2.盘后补录程序线上部署		--ok
+
+
+
+###################
+
+## 20210608
+
+1.每天上班要做的	
+
+```
+1.检查下hadoop集群, hbase集群	
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			8.68 TB (18.53%)
+			35.34 TB (75.42%)
+	检查进程， 下面一个都不能少：
+		
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+10.10.10.102 administrator/Admin711406 
+	进程：
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+3.检查界面，行情软件			--ok
+	# 如果有问题，启动：hbase-daemon.sh start thrift2
+
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+
+			有延迟？			
+			exception=org.apache.hadoop.hbase.exceptions.RegionOpeningException: 
+	
+	region达到一定的大小开始分裂，分裂成两个region,hbaes有自动的regionBalance功能，这个过程会移动region导致region的下线和重新上线
+	1.解决办法就是可以预分区，预分region
+	2.关闭自动的split和rebanlace,在没有数据的时候去检测有超过20g的就split
+	
+	
+	查看硬盘有没有做raid
+	cat /proc/mdstat
+	对master节点来说，使用raid主要是为了保护关键性的文件系统数据，通常的配置是raid1+0或者raid0+1
+	
+
+	toSqlserver程序
+```
+
+
+
+2.股指历史数据继续发送
+
+​	2015		--ok
+
+​	2016		--ok
+
+​	2017	--ok
+
+​	2018	--ok
+
+​	2019
+
+​	2020
+
+​			IO2002-C-3550 这个合约？先去掉， 后面有需要再发
+
+​	在线上环境运行了，本地太占资源
+
+​	写个删除的程序， 输入合约代码 + 开始时间 + 结束时间
+
+​		1.从文件查找列出所有要删的合约代码， 要删除的表，tick + 日k线
+
+​		2.scan查询要删除的行（没有from:dc属性的）
+
+​		2020-2021.5.12
+
+3. 6.4日，周五的夜盘数据切换到6.7日，周一的夜盘了？		--ok, 时间戳直接使用utime字段，不用交易日取日期
+
+​	日期使用的是这个字段： byte[] TradingDay = new byte[8]; // 交易日    工作日
+
+
+
+4.补一下商品数据：			--ok
+
+c2109，jm2109 , j2109 , ZC109 , i2109
+
+6月3号21点到6月7号21点
+
+1622725200 - 1623070800
+
+5.升级程序				--ok
+
+​	晚上观察一下
+
+
+
+2021-06-08 14:10:00    1623132600
+
+2021-06-08 14:15:00
+
+hbase 手动维护compaction?
+
+
+
+ c2109_1623078000_0                                          column=cf_data:from, timestamp=1622818805177, value=dc
+11248 row(s) in 26.0450 seconds
+
+
+
+今日工作：
+
+20210608
+
+1.股指历史数据继续发送
+
+​			2017-2018已经发完成
+
+2.修复夜盘数据时间错乱的问题
+
+3.商品数据补录
+
+
+
+## 20210609
+
+1.每天上班要做的	
+
+```
+1.检查下hadoop集群, hbase集群	
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			8.68 TB (18.53%)
+			35.34 TB (75.42%)
+	检查进程， 下面一个都不能少：
+		
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+10.10.10.102 administrator/Admin711406 
+	进程：
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+3.检查界面，行情软件			--ok
+	# 如果有问题，启动：hbase-daemon.sh start thrift2
+
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+
+			有延迟？			
+			exception=org.apache.hadoop.hbase.exceptions.RegionOpeningException: 
+	
+	region达到一定的大小开始分裂，分裂成两个region,hbaes有自动的regionBalance功能，这个过程会移动region导致region的下线和重新上线
+	1.解决办法就是可以预分区，预分region
+	2.关闭自动的split和rebanlace,在没有数据的时候去检测有超过20g的就split
+	
+	
+	查看硬盘有没有做raid
+	cat /proc/mdstat
+	对master节点来说，使用raid主要是为了保护关键性的文件系统数据，通常的配置是raid1+0或者raid0+1
+	
+
+	toSqlserver程序
+	
+	行情界面查询的数据跟hbase不一致？
+	
+	大商所的时间有问题			--不用处理了，肖兵那边处理
+		判断当前日期跟tick日期
+	
+	程序卡死的问题？     开会的时候程序卡死了？  好像还是有脏数据推过来
+		过滤到8:59
+
+```
+
+
+
+
+
+1.程序卡死的问题？		--ok
+
+​		开会的时候程序卡死了？  好像还是有脏数据推过来, 过滤掉59分
+
+
+
+3.写个程序删除旧数据
+
+​		盘后, 等客户端切换成全称后再删除吧
+
+​		tick数据没有生成？？？ 应该是只有19年的
+
+​				storeTickEnable=false
+
+
+
+​		清除6.9 21-23的数据			--ok
+
+​				批次修改成500好像更加稳定？
+
+​		继续补录21年的数据
+
+​				
+
+```
+报错：
+2021/06/09 15:26:33 INFO  [pool-1-thread-3] - id=1, table=hznc_mkdata:tickdata, attempt=11/16, failureCount=1000ops, last exception=org.apache.hadoop.hbase.RegionTooBusyException: org.apache.hadoop.hbase.RegionTooBusyException: Above memstore limit, regionName=hznc_mkdata:tickdata,IF1903_1537250654_0,1623223472026.b00302f355fec13c4895006572066f10., server=slave3,60020,1619400396937, memstoreSize=269743272, blockingMemStoreSize=268435456
+        at org.apache.hadoop.hbase.regionserver.HRegion.checkResources(HRegion.java:3784)
+        at org.apache.hadoop.hbase.regionserver.HRegion.batchMutate(HRegion.java:2967)
+        at org.apache.hadoop.hbase.regionserver.HRegion.batchMutate(HRegion.java:2918)
+        at org.apache.hadoop.hbase.regionserver.RSRpcServices.doBatchOp(RSRpcServices.java:823)
+        at org.apache.hadoop.hbase.regionserver.RSRpcServices.doNonAtomicRegionMutation(RSRpcServices.java:785)
+        at org.apache.hadoop.hbase.regionserver.RSRpcServices.multi(RSRpcServices.java:2239)
+        at org.apache.hadoop.hbase.protobuf.generated.ClientProtos$ClientService$2.callBlockingMethod(ClientProtos.java:34958)
+        at org.apache.hadoop.hbase.ipc.RpcServer.call(RpcServer.java:2339)
+        at org.apache.hadoop.hbase.ipc.CallRunner.run(CallRunner.java:123)
+        at org.apache.hadoop.hbase.ipc.RpcExecutor$Handler.run(RpcExecutor.java:188)
+        at org.apache.hadoop.hbase.ipc.RpcExecutor$Handler.run(RpcExecutor.java:168)
+ on slave3,60020,1619400396937, tracking started null, retrying after=10081ms, operationsToReplay=1000
+```
+
+
+
+4.主力切换规则
+
+​	先看看如何生成
+
+
+
+5.简单使用hive,创建hive 和hbase的表关联		--ok
+
+​	学习hive常用的语句，哪些会触发mr任务
+
+WARNING: Hive-on-MR is deprecated in Hive 2 and may not be available in the future versions. Consider using a different execution engine (i.e. spark, tez) or using Hive 1.X releases.
+
+
+
+今天工作：
+
+20210609
+
+1.股指历史数据补录
+
+​		2015年-2020年的股指数据已补完
+
+2.修复大商所夜盘商品数据时间错乱的问题
+
+3.期货主力合约计算程序 ， 还在设计中
+
+
+
+## 20210610
+
+1.每天上班要做的	
+
+```
+1.检查下hadoop集群, hbase集群	
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			8.72 TB (18.62%)
+			35.29 TB (75.32%)
+	检查进程， 下面一个都不能少：
+		
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  		--ok
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+10.10.10.102 administrator/Admin711406 
+	进程：
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+3.检查界面，行情软件
+	# 如果有问题，启动：hbase-daemon.sh start thrift2
+
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+```
+
+
+
+2.期货主力规则切换算法开发
+
+
+
+3.程序早上没有重启，开盘有问题？
+
+​		还是要早晚重启？不然不太稳定
+
+
+
+4.检查下数据，股指历史数据补录的
+
+​		实时发送，批次改成100看是否有延迟, 还是有1-2分钟的延迟
+
+​		修改成500应该没有问题
+
+
+
+今日工作：
+
+20210610
+
+期货主力规则切换算法开发
+
+实时期货数据检查		--ok
+
+
+
+5.
+
+String, StringBuffer和StringBuilder
+
+> ```java
+> public final class String
+>     implements java.io.Serializable, Comparable<String>, CharSequence { // final修饰，表示不可继承
+>     /** The value is used for character storage. */
+>     private final char value[]; // 存储字符，final修饰，一旦赋值就不能重新引用对象
+> 
+>     /** Cache the hash code for the string */
+>     private int hash; // Default to 0
+> 
+>     /**
+>     String 是一个特殊的类：
+>     1.使用“+” 拼接字符串时，jvm在编译时进行优化，如果是字符串常量拼接，编译后直接是拼接后的结果，如：
+>     String value = "hello" + "world"; 编译后：String value = "helloworld";
+>     如果不是常量拼接，编译后会转换成StringBuilder进行拼接：
+>     String value = "count" + i; 编译后：String value = new StringBuilder("count").append(i);
+>     
+>     2. 如果直接String value = "helloworld";方式创建字符串，编译期间JVM就会到字符串常量池检查是否有字符串对象，没有就创建放到常量池，然后返回。
+>     而    String value = new String("helloworld"); 编译期间检查字符串常量池中是否有“helloworld”，没有就创建。运行期间直接在堆中创建对象，然后返回堆中对象的引用。所以可能创建一个对象也可能两个。
+>     
+>     3.字符串常量池
+>     jdk1.8前后有区别， 1.8之前常量池在永久代(permGen),1.8及之后再堆内存中。
+>     顺便提一下，1.8之后永久代被元空间替代，跟堆内存在一起。
+>     4.intern方法
+>         intern方法的注释已经很好的说明了intern方法的执行逻辑：When the intern method is invoked, if the pool already contains a string equal to this object as determined by the equals method, then the string from the pool is returned. Otherwise, this object is added to the pool and a reference to this object is returned。All literal strings and string-valued constant expressions are interned。
+>     简单翻译一下就是分以下三个情况：
+>     1.执行intern方法时，如果字符串常量池中已经包含执行intern方法的String对象，则直接返回字符串常量池中的String对象；
+>     2.执行intern方法时，如果字符串常量池中不包含执行intern方法的String对象，则先将该String对象添加到字符串常量池中，然后将字符串常量池中的String对象返回；
+>     3.字符串字面常量（literal strings，如"a"，"b"）和字符串常量表达式（string-valued constant expressions，如"a" + "b"）也都要放到字符串常量池中。
+>     随着虚拟机结构的调整，intern执行的结果在情况2下有些差异。Jdk1.6中的字符串常量池是放在永久代（Perm）区中的，永久代（Perm）区和正常的 JAVA堆（Heap ）区域是完全分开的。上面说过literal strings 和 string-valued constant expressions会直接在字符串常量池中生成，而 new 出来的 String 对象是放在 JAVA Heap区域。而Jdk1.8取消了永久代（Perm），字符串常量池就从 Perm 区移到正常的Java Heap 区域了。由于上面的调整，导致intern方法执行结果在jdk1.6和1.8下存在差异。
+>     }
+> 
+>     private static void callInternMethodStringPoolNotExist() {
+>         String value = String.valueOf('a');
+>         String valueIntern = value.intern();
+>         System.out.println(value == valueIntern);
+>     }
+>     Jdk1.8版本下，执行结果打印true。执行过程如下：
+>     1.String value = String.valueOf('a')，'a'是primitive type，数据直接存储在栈上。然后再创建一个新的String对象value，value的内容为"a"，执行完常量池中并没有值为"a"的对象；（注意：如果直接String value = new String("c");执行首先检查常量池有没有，没有就创建，然后堆中创建一个对象）
+>     2.执行String valueIntern = value.intern()，此时常量池里中还没有字符串"a"对象了，而Jdk1.8字符串常量池就在堆区，可以直接拿到value的引用，放到常量池中，然后返回value的引用，赋值给valueIntern；
+>     3.System.out.println(value == valueIntern)，打印true，因为value和valueIntern都指向value的引用。*/
+>     
+>    
+>    
+> StringBuilder:
+> public final class StringBuilder  extends AbstractStringBuilder    implements java.io.Serializable, CharSequence
+> // 因为string是不可变的，所以提供可变的StringBuilder,来操作字符串
+> public StringBuilder() { super(16);} // 默认的capacity是16
+>     
+> public StringBuilder(String str) { super(str.length() + 16);   append(str);} //始终保持16长度的空余 
+>     
+>  append方法：
+>      public AbstractStringBuilder append(String str) {
+>         if (str == null)
+>             return appendNull();
+>         int len = str.length();
+>      	// 如果容量不够则创建足够容量的字符数组，然后通过System.arraycopy的方式填充
+>         ensureCapacityInternal(count + len); 
+>         str.getChars(0, len, value, count);
+>         count += len;
+>         return this;
+>     }
+>     
+> StringBuffer:
+> public final class StringBuffer    extends AbstractStringBuilder    implements java.io.Serializable, CharSequence
+> // 跟StringBuilder一样都继承自AbstractStringBuilder类，但对几乎所有方法都进行重新加上了synchronized修饰方法
+>         
+> ```
+
+
+
+​	threadLocal 和ineritableThreadLocal
+
+
+
+```java
+    public void set(T value) {
+        Thread t = Thread.currentThread();
+        // 每个线程内维护ThreadLocalMap的成员变量，key是当前ThreadLocal对象
+        ThreadLocalMap map = getMap(t); // return t.threadLocals
+        if (map != null)
+            // 当前的threadLocal对象为key,保存到线程的成员变量ThreadLocalMap中去
+            map.set(this, value);
+        else
+            createMap(t, value); // t.threadLocals = new ThreadLocalMap(this, firstValue);
+    }   
+
+
+public T get() {
+        Thread t = Thread.currentThread();
+        // 每个线程内维护ThreadLocalMap的成员变量，key是当前ThreadLocal对象
+        ThreadLocalMap map = getMap(t); // return t.threadLocals
+        if (map != null) {
+            /**
+            To help deal with very large and long-lived usages, the hash table entries use WeakReferences for keys
+            */
+            ThreadLocalMap.Entry e = map.getEntry(this); // Entry是一个弱应用
+            if (e != null) {
+                @SuppressWarnings("unchecked")
+                T result = (T)e.value;
+                return result;
+            }
+        }
+        return setInitialValue(); // 初始化<Thread.currentThread(), null>，然后返回value: null
+    }
+
+
+      private Entry getEntry(ThreadLocal<?> key) {
+          // 用当前threadLocal对象的hashcode和table进行取模计算下标
+            int i = key.threadLocalHashCode & (table.length - 1);
+            Entry e = table[i];
+            if (e != null && e.get() == key)
+                return e;
+            else
+                return getEntryAfterMiss(key, i, e); // 发生hash碰撞后，并不是以链表形式去保存和取，而是取下标的后一位：nextIndex(i, len)
+        }
+
+public class InheritableThreadLocal<T> extends ThreadLocal<T> {}// 子线程可继承的ThreadLocal
+    
+//  Thread的init方法中：
+  this.inheritableThreadLocals = ThreadLocal.createInheritedMap(parent.inheritableThreadLocals);
+// 再看看createInheritedMap：
+return new ThreadLocalMap(parentMap);
+
+// 实现可继承ThreadLocalMap的构造方法
+  private ThreadLocalMap(ThreadLocalMap parentMap) {
+      		// 根据父类ThreadLocalMap初始化子类的Table,就是一个Entry数组
+            Entry[] parentTable = parentMap.table;
+            int len = parentTable.length;
+            setThreshold(len);
+            table = new Entry[len];
+
+            for (int j = 0; j < len; j++) {
+                Entry e = parentTable[j];
+                if (e != null) {
+                    @SuppressWarnings("unchecked")
+                    ThreadLocal<Object> key = (ThreadLocal<Object>) e.get();
+                    if (key != null) {
+                        Object value = key.childValue(e.value); // return value; 这个key实际是InheritableThreadLocal, 实现了childValue,而ThreadLocal没有实现的。
+                        Entry c = new Entry(key, value);
+                        int h = key.threadLocalHashCode & (len - 1);
+                        while (table[h] != null)
+                            h = nextIndex(h, len);
+                        table[h] = c;
+                        size++;
+                    }
+                }
+            }
+        }
+
+```
+
+
+
+LinkedBlockingQueue
+
+
+
+###################
+
+## 20210611
+
+1.每天上班要做的	
+
+```
+1.检查下hadoop集群, hbase集群				--ok
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			8.72 TB (18.62%)
+			35.29 TB (75.32%)
+	检查进程， 下面一个都不能少：
+		
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  		--ok
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+10.10.10.102 administrator/Admin711406 
+	进程：
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+3.检查界面，行情软件
+	# 如果有问题，启动：hbase-daemon.sh start thrift2
+
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+```
+
+
+
+
+
+2.期货主力规则切换算法开发
+
+​		是每一个交易日都生成记录还是一段时间？
+
+建一个新的表：
+
+```
+USE [Public1]
+GO
+
+/****** Object:  Table [dbo].[T152_151LOG]    Script Date: 2021/6/11 11:25:20 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+SET ANSI_PADDING ON
+GO
+
+CREATE TABLE [dbo].[futures_main_contract](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[contract_code] [char](10)  NOT NULL,
+	[future_variety] [char](10)  NOT NULL,
+	[start_date] [datetime]  NOT NULL,
+	[end_date] [datetime]  NOT NULL,
+	[update_tme] [smalldatetime] NOT NULL,
+  PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+
+SET ANSI_PADDING OFF
+GO
+
+
+# 查询
+
+select 
+id,
+contract_code,
+future_variety,
+start_date,
+end_date,
+update_time
+from dbo.futures_main_contract where future_variety = 'IC' AND '2021-06-11' >= start_date AND '2021-06-11' <= end_date;
+
+
+```
+
+3.程序早上没有重启，开盘有问题？		-- 继续观察测试
+
+​		还是要早晚重启？不然不太稳定，还是解决稳定性的问题，继续观察
+
+
+
+4.检查下数据，股指历史数据补录的		--OK
+
+​		实时发送，批次改成100看是否有延迟, 还是有1-2分钟的延迟
+
+​		修改成500应该没有问题
+
+​		21年的可以发起来
+
+
+
+hashMap 和hashSet
+
+
+
+
+
+todo:
+
+
+    hbase优化：
+    1.生产环境下关闭自动触发Major Compaction功能，改为手动在业务低峰期触发。
+    一般生产环境下为了避免影响读写请求，会禁用自动触发major compaction。
+    2.使用数据块编码
+
+
+补k线程序有个小bug,kbug:11:29:59 , tick:13:00:01,那就会漏掉13:00:00的k线
+
+
+
+
+
+学习搭建和使用hive
+
+hbase 版本：1.3.1
+
+hadoop版本：2.7.3
+
+
+
+
+
+3.归并排序？
+
+​	Blockingqueue
+
+
+
+todo:
+
+nagios
+
+新的项目架构：
+
+​	kafka + redis + flink + hbase
+
+学习：
+
+​	hive + spark + hadoop
+
+源码：
+
+​	kafka, hbase
+
+SPI ,serviceLoader
+
+hbase性能测试，吞吐量如何？
+
+用flink去实现k线合并的程序
+
+装一套hive,跟hbase集成
+
+装一套监控的系统
+
+看看：
+
+开仓，平仓
+
+盘面资金
+
+大单数据
+
+北向资金
+
+策略
+
+主力合约Tick数据
+
+股指
+
+期权
+
+股票的开盘时间
+
+主连
+
+股票
+
+
+
+代码问题：
+
+​	日志问题，直接System.println.out
+
+​	配置文件，ip端口直接写死的
+
+​	打出来的jar包是用eclipse导出来的，应该用mvn install
+
+​	依赖的jar包直接提交了
+
+​	代码格式化问题，格式太乱，大量重复代码，没有用到的变量。
+
+​	单元测试
+
+
+
+## TODO
+
+
+
+LinkedBlockingQueue 线程安全
+
+算法和计算机原理
+
+flink
+
+clickhouse
+
+mysql
+
+数据仓库
+
+
+
+
+
+
+
+
+​	

@@ -1621,8 +1621,6 @@ pack: 1618549207
 
 继续开发商品实时k线的程序，测试夜盘情况
 
-##########################
-
 ## 20210519
 
 1.每天上班要做的					--ok
@@ -1672,7 +1670,7 @@ jps
 		一个put多大？ 用 ObjectSizeCalculator.getObjectSize()计算
 			puts * 1000: 2696296, 平均：2700 byte
 			CKdata: 760 byte
-		增加程序运行内存		--ok, 测试只能1g, 线上4g-8g
+		增加程序运行内存		--ok, 测试只能1G, 线上4G-8G
 		找不到code: eb,PK 加一下
 	参考	期货交易时间：
 	http://www.qhsxf.com/%E6%9C%9F%E8%B4%A7%E4%BA%A4%E6%98%93%E6%97%B6%E9%97%B4.html
@@ -1715,23 +1713,1109 @@ jps
 
 mvn fmt:format
 
+## 20210520
+
+1.每天上班要做的	
+
+```
+1.检查下hadoop集群, hbase集群			
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+	检查进程， 下面一个都不能少：
+		
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  
+	进程：RunOnlyGuzhi		9:20
+    	  
+10.10.10.102 administrator/Admin711406 
+	进程：GetMarketDataAndStore		8:50
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+3.检查界面，行情软件
+	启动：hbase-daemon.sh start thrift2
+```
+
+2.实时k线升级
+	测试大数据延迟的问题
+		本地测试两个程序，一个发hbase,一个不发，看看主要是不是发hbase慢
+		如果还是来不及怎么办？， 考虑将hbase存储改成异步的
+
+​		分钟以上的周期还不能用批量保存？ 延迟会很高
+
+scan "hznc_mkdata:1sdata", {STARTROW => "au02_1621468800", ENDROW => "au02_1621495800"}
+
+scan "hznc_mkdata:1sdata", {STARTROW => "IC05_1621468800", ENDROW => "IC05_1621495800"}
+
+1621468800
 
 
-3.lc插件安装
+
+好像window对进程做了限制，单个进程不能超过多少内存。		
+
+​	bcdedit /set increaseuserva 4096，4096就是4096MB		--没用
+
+​		就设置为1g吧，看是否够用		--ok
+
+​	设置定时任务，每天晚上八点启动，周五，周六，周天不启动
+
+问题：
+
+​		周五，周六，周天程序不停
+
+​		主力代码更新
+
+	回话超时？
+		
+		2021-05-20 09:00:07 INFO  [ReadOnlyZKClient-192.168.198.101:2181@0x00a1a8d5] - Initiating client connection, connectString=192.168.198.101:2181 sessionTimeout=90000 watcher=org.apache.hadoop.hbase.zoo
+	keeper.ReadOnlyZKClient$$Lambda$6/15506156@19afb8e
+	2021-05-20 09:00:07 INFO  [ReadOnlyZKClient-192.168.198.101:2181@0x00a1a8d5-SendThread(192.168.198.1
+	01:2181)] - Opening socket connection to server 192.168.198.101/192.168.198.101:2181. Will not attem
+	pt to authenticate using SASL (unknown error)
+	2021-05-20 09:00:07 INFO  [ReadOnlyZKClient-192.168.198.101:2181@0x00a1a8d5-SendThread(192.168.198.1
+	01:2181)] - Socket connection established to 192.168.198.101/192.168.198.101:2181, initiating sessio
+	n
+	2021-05-20 09:00:07 INFO  [ReadOnlyZKClient-192.168.198.101:2181@0x00a1a8d5-SendThread(192.168.198.1
+	01:2181)] - Session establishment complete on server 192.168.198.101/192.168.198.101:2181, sessionid
+	 = 0x179873a6750001a, negotiated timeout = 40000
+	2021-05-20 09:01:08 INFO  [ReadOnlyZKClient-192.168.198.101:2181@0x00a1a8d5] - Session: 0x179873a675
+	0001a closed
+	2021-05-20 09:01:08 INFO  [ReadOnlyZKClient-192.168.198.101:2181@0x00a1a8d5-EventThread] - EventThre
+	ad shut down for session: 0x179873a6750001a
+	
+	waiting for 10000 actions to finish on table
 
 
+今天工作：
+
+20210520
+
+1.修改和测试期货实时k线程序
+
+2.期货实时k线程序线上升级		--ok
+
+​		明天观察下运行情况
+
+
+
+3.lc插件安装		--ok
+
+​		
+
+## 20210521
+
+1.每天上班要做的	
+
+```
+1.检查下hadoop集群, hbase集群			
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+	检查进程， 下面一个都不能少：
+		
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  
+	进程：RunOnlyGuzhi		9:20
+    	  
+10.10.10.102 administrator/Admin711406 
+	进程：GetMarketDataAndStore		8:50
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+3.检查界面，行情软件
+	启动：hbase-daemon.sh start thrift2
+```
+
+
+
+问题：
+
+au06		tick数据有问题？
+
+get "hznc_mkdata:tickdata", "au06_1621558879_0"
+
+get "hznc_mkdata:tickdata", "au06_1621558879_1"
+
+scan "hznc_mkdata:1sdata", {STARTROW => "au06_1621558879", ENDROW => "au06_1621566000"}
+
+{STARTROW => "au06_1621558879", ENDROW => "au06_1621566000"}
+
+1621566000
+
+
+
+日志太多了	--ok
+
+
+
+主连代码没有生成，每天九点更新下			--ok
+
+
+
+ic06 7点钟的过滤掉， 先手动删除掉？ 20210521 7:05:17			--ok
+
+ic if ih
+
+scan "hznc_mkdata:tickdata", {STARTROW => "IC06_1621526400_0", ENDROW => "IC06_1621558800_1"}
+
+
+
+```
+2021-05-20 22:41:55 INFO  [store-tick] - filter tick, closed:a03_1621608114_0
+2021-05-20 22:41:55 INFO  [store-tick] - filter tick, closed:b07_1621608114_0
+2021-05-20 22:41:55 INFO  [store-tick] - filter tick, closed:c09_1621608114_0
+2021-05-20 22:41:55 INFO  [store-tick] - filter tick, closed:c11_1621608114_1
+2021-05-20 22:41:55 INFO  [store-tick] - filter tick, closed:c01_1621608114_1
+2021-05-20 22:41:55 INFO  [store-tick] - filter tick, closed:cs11_1621608114_1
+2021-05-20 22:41:55 INFO  [store-tick] - filter tick, closed:eb12_1621608114_1
+2021-05-20 22:41:55 INFO  [store-tick] - filter tick, closed:eb11_1621608114_1
+2021-05-20 22:41:55 INFO  [store-tick] - filter tick, closed:eb10_1621608114_1
+
+2021-05-21 07:18:26 INFO  [store-tick] - filter tick, closed:sc08_1621521820_2
+2021-05-21 07:18:26 INFO  [store-tick] - filter tick, closed:sc09_1621521820_-1		--ok
+```
+
+
+
+java.util.concurrent.RejectedExecutionException: Task java.util.concurrent.FutureTask@ea1adb rejected from       --ok  java.util.concurrent.ThreadPoolExecutor@15c7ebe[Running, pool size = 10, active threads = 10, queued tasks = 0, completed tasks = 42583]
+	at java.util.concurrent.ThreadPoolExecutor$AbortPolicy.rejectedExecution(Unknown Source)
+
+
+
+测试一下周五到下周一的数据， 跨周的		--ok
+
+Expected :33300
+Actual   :26675
+
+
+
+3.5夜盘跟3.8日盘
+
+scan "hznc_mkdata:1sdata", {STARTROW => "ag04_1614776400", ENDROW => "ag04_1615186800"}
+
+bash list_delete_rowkey.sh "hznc_mkdata:1sdata" "ag04_1614776400" "ag04_1615186800" ag04_1s.txt
+
+20210305 23:59:59
+20210308 09:00:00
+
+缺少： 如果第二天是周末或者节假日不需要补		--ok
+
+20210305 21:28:59
+
+20210305 21:28:54
+
+20210305 21:28:51
+
+20210305 21:28:52   1614950932
+
+从20210305 21:28:52 开始调试：
+
+1614950930
+
+
+
+scan "hznc_mkdata:1sdata", {STARTROW => "IC05_1621558800", ENDROW => "IC05_1621580400"}
+
+昨天的：
+
+scan "hznc_mkdata:1sdata", {STARTROW => "IC05_1621645200", ENDROW => "IC05_1621666800"}
+
+
+
+工作计划：
+
+本周工作：
+
+​	1.股指实时k线程序开发：
+
+​				整合商品和股指数据处理
+
+​				夜盘数据的测试
+
+​				大数据量的延迟测试
+
+
+
+下周计划：
+
+​	股指期货历史数据补录
+
+总结：
+
+​		本周程序主要几个优化：
+
+​			1.交易时间丰富多变，期货数据有包括夜盘的五种交易时间，根据每种合约代码获取对应的交易时间，进行过滤和休盘后的补k操作
+
+​			2.支持夜盘数据
+
+​			3.大数据延迟测试，原来程序存在延迟问题，通过多线程和加缓存的方式暂时解决了延迟问题，但后面如果有更多的数据介入，要考虑多机多进程实现。
+
+​			4.定时的查询更新主力代码
+
+
+
+本周工作：
+
+​	实时k线程序开发和上级：支持商品期货的实时处理
+
+下周工作：
+
+​		历史股指期货数据补录
+
+
+
+##########################
+
+## 20210524
+
+1.每天上班要做的	
+
+```
+1.检查下hadoop集群, hbase集群			
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+	检查进程， 下面一个都不能少：
+		
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  
+	进程：RunOnlyGuzhi		9:20
+    	  
+10.10.10.102 administrator/Admin711406 
+	进程：GetMarketDataAndStore		8:50 @ 废弃，不用了
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+3.检查界面，行情软件
+	# 如果有问题，启动：hbase-daemon.sh start thrift2
+```
+
+
+
+2.升级一k线程序
+
+​			上午观察半天		--ok
+
+​			数据量
+
+​				scan "hznc_mkdata:tickdata", {STARTROW => "IC05_1621818000_0", ENDROW => "IC05_1621841400_3"}
+
+​			夜盘
+
+​			主连数据没有更新？
+
+​			rejectException, 达到最大的线程数量了		--ok
+
+​					提高线程池数量，max: 24
+
+​					拒绝策略，等一下
+
+​					workQueue,换成blockingQueue
+
+3.历史数据补录
+
+​		code 是否要保留21， 22的长度，如果要，实时已经入的是否需要修正
+
+​		历史数据删除?
+
+​		主连数据？
+
+​		是否需要备份， 觉得没有必要：
+
+​			1.先在本地测试，发一年的数据
+
+​			2.线上环境，先补一个月的数据，一个月一个月的进行补录
+
+​			3.补录周期， tick, 1s, 2s... 到天的周期
+
+
+
+合约名称修改的问题：
+
+​	1.怎么做兼容， 简称和全称，确定后补录数据也要按照规则
+
+​			rowkey?  是否要变？
 
 4.git仓库
 
-​	总结
+​	笔记
 
 ​	脑图
 
 
 
+5.后面阶段的计划：
+
+股指历史数据补录 》 商品历史数据补录》期权的历史数据补录
+
+考虑写个服务对外提供hbase的查询服务。
+
+​		今日工作：
+
+​				20210525
+
+​				1.实时k线程序夜盘退出的问题修复
+
+​				2.历史数据补录程序开发
+
+
+
+## 20210525
+
+1.每天上班要做的	
+
+```
+1.检查下hadoop集群, hbase集群			
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+	检查进程， 下面一个都不能少：
+		
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+10.10.10.102 administrator/Admin711406 
+	进程：GetMarketDataAndStore		8:50 @废弃，不用了
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+3.检查界面，行情软件			--重启一下
+	# 如果有问题，启动：hbase-daemon.sh start thrift2
+		地址已经在使用：
+
+2021-04-26 09:05:04,005 INFO  [main] http.HttpServer: HttpServer.start() threw a non Bind IOException
+java.net.BindException: Port in use: 0.0.0.0:9095
+        at org.apache.hadoop.hbase.http.HttpServer.openListeners(HttpServer.java:1017)
+        at org.apache.hadoop.hbase.http.HttpServer.start(HttpServer.java:953)
+        at org.apache.hadoop.hbase.http.InfoServer.start(InfoServer.java:91)
+        at org.apache.hadoop.hbase.thrift2.ThriftServer.main(ThriftServer.java:512)
+Caused by: java.net.BindException: 地址已在使用
+
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+问一下数据库监控
+```
+
+
+
+scan "hznc_mkdata:1sdata", {STARTROW => "rb06_1621904400", ENDROW => "rb06_1621906200"}， 没有生成5分钟k线			--ok
+
+​		看看日志， mergeAndStore 线程卡了？ 没有输出。发现有脏数据进来，七点钟进来一些时间戳是十点的数据，应该屏蔽掉的。
+
+​		
+
+wgcloud
+
+
+
+大量的timewait?
+
+​		netstat -n | awk '/^tcp/ {++S[$NF]} END {for(a in S) print a, S[a]}' 
+
+buff/cache占用太多
+
+​		做一个检查，大数据运维监控平台？
+
+​					Grafana + prom
+
+
+
+2.合约全名称修改兼容的问题
+
+​			rowkey过滤器扫描，行不行
+
+​			数据保存两份？
+
+​		要改哪些程序？
+
+​			其他应该不需要修改，只有实时k线程序。
+
+data_center_run.bat  启动两个进程
+
+​	升级		--ok
+
+​			
+
+```
+102上的程序：
+定时任务名：GupiaoDayData   
+运行程序：D:\TimeTask\mergeEveryday\RunMED.bat    
+实现功能：每天收盘后从MySql中读取股票日线数据导入Hbase
+			hznc_data:weekdata
+
+
+定时任务名：RunToSqlServerAndZhuLian			也要升级
+运行程序：D:\TimeTask\Zhang\ToSqlServerAndZhuLian.bat
+实现功能：每天晚上19:10运行，从hbase读取当天主力合约同步至SqlServer数据库中
+104程序：
+
+定时任务名：RunSettlementPrice
+	运行程序：G:\TimeTask\SqlServer\RunSettlementPrice.bat
+	实现功能：每天执行   从hbase中读取主力合约Tick数据计算结算价并存入sql server数据库中的程序
+
+```
+
+
+
+3.股指历史数据补录		--先暂停， 优先处理上面的问题
+
+code 是否要保留21， 22的长度，如果要，实时已经入的是否需要修正
+
+​		历史数据删除?
+
+​		主连数据？
+
+​		是否需要备份， 觉得没有必要：
+
+​			1.先在本地测试，发一年的数据
+
+​			2.线上环境，先补一个月的数据，一个月一个月的进行补录
+
+​			3.补录周期， tick, 1s, 2s... 到天的周期
+
+同步程序也需要修改。。。
+
+
+
+scan "hznc_mkdata:1sdata", {STARTROW => "IC06_1621918800", ENDROW => "IC06_1621920000"}
+
+数据丢失？
+
+2021-05-25 13:00:15 INFO  [mergeAndstore-kline-2] - #1, waiting for 1000  actions to finish on table: hznc_mkdata:1sdata
+
+​			性能问题还是什么？
+
 
 
 todo:
+
+定时任务名：RunToSqlServerAndZhuLian			也要升级			--ok
+运行程序：D:\TimeTask\Zhang\ToSqlServerAndZhuLian.bat
+实现功能：每天晚上19:10运行，从hbase读取当天主力合约同步至SqlServer数据库中
+104程序：
+
+定时任务名：RunSettlementPrice		--ok
+	运行程序：G:\TimeTask\SqlServer\RunSettlementPrice.bat
+	实现功能：每天执行   从hbase中读取主力合约Tick数据计算结算价并存入sql server数据库中的程序
+
+
+
+今天工作：
+
+​	20210525
+
+​		1.合约名全称化的兼容程序开发和线上升级		--ok
+
+
+
+
+
+## 20210526
+
+1.每天上班要做的	
+
+```
+1.检查下hadoop集群, hbase集群			
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+	检查进程， 下面一个都不能少：
+		
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+10.10.10.102 administrator/Admin711406 
+	进程：GetMarketDataAndStore		8:50 @废弃，不用了
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+3.检查界面，行情软件			--重启一下
+	# 如果有问题，启动：hbase-daemon.sh start thrift2
+		地址已经在使用：
+
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+问一下数据库监控
+```
+
+
+
+2.合约全称化修改
+
+​		检查下数据量，数据
+
+```
+			scan "hznc_mkdata:1sdata", {STARTROW => "au02_1621944000", ENDROW => "au02_1621967400"}
+			scan "hznc_mkdata:1sdata", {STARTROW => "au2202_1621944000", ENDROW => "au2202_1621967400"}
+```
+
+
+
+​	问题：
+
+​		日志分开打
+
+​		还是没有过滤，重启一下程序		--ok, 考虑程序是否做一下控制，收盘时间的数据不要：3:00-8:00，16:00 - 20:00		--ok
+
+​		k线丢了？ 用历史数据测试一下		--ok
+
+​				FG的夜盘，23点的没有补录
+
+
+
+历史数据的时间有问题：	
+
+```
+FG106,20210407,22:59:59.0,2153.000000,2152.000000,2,2153.000000,69,1435,3088120.000000,9839.000000,2288.000000,2028.000000,2149.000000,2158.000000,2158.000000,9826.000000,
+FG106,20210408,22:59:59.0,2153.000000,2152.000000,2,2153.000000,69,1435,3088120.000000,9839.000000,2288.000000,2028.000000,2149.000000,2158.000000,2158.000000,9826.000000,2152.000000
+FG106,20210408,22:59:59.0,2153.000000,2152.000000,2,2153.000000,69,1435,3088120.000000,9839.000000,2288.000000,2028.000000,2149.000000,2158.000000,2158.000000,9826.000000,2152.000000
+到十点突然更新日期了，导致时间变化不准。
+```
+
+21:00 - 23:00   7200
+
+最后tick:FG106_1621954798_1, 22:59:58
+
+最后的1sk: 1621954797,   22:59:57		
+
+好像是没有补最后的k线，看看日志确定下	--没有补k线
+
+​	checkRestPoint方法有问题，23:00 对应-3600
+
+
+
+补录下昨天的tick数据		--ok
+
+
+
+3.算法，flink
+
+​	String, StringBuffer, StringBuilder
+
+​	LinkedHashMap
+
+​	LinkedHashTreeMap
+
+今日工作：
+
+​	20210526
+
+​	1.修复实时k线线程阻塞的问题
+
+​	2.检查合约全称化程序，暂时运行没有问题
+
+
+
+##########################
+
+## 20210527
+
+1.每天上班要做的	
+
+```
+1.检查下hadoop集群, hbase集群			
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+	检查进程， 下面一个都不能少：
+		
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+10.10.10.102 administrator/Admin711406 
+	进程：GetMarketDataAndStore		8:50 @废弃，不用了
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+3.检查界面，行情软件			--重启一下
+	# 如果有问题，启动：hbase-daemon.sh start thrift2
+		地址已经在使用：
+
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+问一下数据库监控
+
+检查下昨天修复的bug,23点没有补数据
+			scan "hznc_mkdata:1sdata", {STARTROW => "au02_1622030400", ENDROW => "au02_1622053800"}
+			scan "hznc_mkdata:1sdata", {STARTROW => "au2202_1622030400", ENDROW => "au2202_1622053800"}
+			
+			scan "hznc_mkdata:1sdata", {STARTROW => "FG06_1622030400", ENDROW => "FG06_1622053800"}
+			scan "hznc_mkdata:1sdata", {STARTROW => "FG106_1622030400", ENDROW => "FG106_1622053800"}
+			
+			tick数据到58秒，1s数据到53秒？两个问题：
+				1.一个补数据没有生效，endTs应该是后一天的				--ok,已经修复，明天再验证下
+				2.5 3秒后的数据是早上8点推过来的，数据源有问题。
+			
+			
+thrift 又查询不到数据了？
+2021-05-27 08:42:04,032 ERROR [hconnection-0x1b6e8480-metaLookup-shared--pool32-t38] zookeeper.ZooKeeperWatcher: hconnection-0x1b6e8480-0x2794ac470c90056, quorum=master:2181,slave1:2181,slave2:2181,keep-0:2181,keep-1:2181,slave3:2181,slave4:2181, baseZNode=/hbase Received unexpected KeeperException, re-throwing exception
+org.apache.zookeeper.KeeperException$SessionExpiredException: KeeperErrorCode = Session expired for /hbase/meta-region-server
+
+2021-05-27 08:42:04,232 WARN  [hconnection-0x1b6e8480-metaLookup-shared--pool32-t38] zookeeper.ZKUtil: hconnection-0x1b6e8480-0x2794ac470c90056, quorum=master:2181,slave1:2181,slave2:2181,keep-0:2181,keep-1:2181,slave3:2181,slave4:2181, baseZNode=/hbase Unable to get data of znode /hbase/meta-region-server
+org.apache.zookeeper.KeeperException$SessionExpiredException: KeeperErrorCode = Session expired for /hbase/meta-region-server
+        at org.apache.zookeeper.KeeperException.create(KeeperException.java:127)
+        
+
+要加内存了？		--ok,申请了
+
+
+实时k线程序日志告警：
+2021-05-27 08:29:23 INFO  [pool-1-thread-6] - id=1, table=hznc_mkdata:2sdata, attempt=6/16, failureCount=1000ops, last exception=org.apache.hadoop.hbase.RegionTooBusyException: org.apache.hadoop.hbase.RegionTooBusyException: Above memstore limit, regionName=hznc_mkdata:2sdata,CF,1610786264265.65dbcc8844cccb33431430875bcdaeef., server=slave1,60020,1619400429436, memstoreSize=273584000, blockingMemStoreSize=268435456
+	at org.apache.hadoop.hbase.regionserver.HRegion.checkResources(HRegion.java:3784)
+	at org.apache.hadoop.hbase.regionserver.HRegion.batchMutate(HRegion.java:2967)
+	at org.apache.hadoop.hbase.regionserver.HRegion.batchMutate(HRegion.java:2918)
+	at org.apache.hadoop.hbase.regionserver.RSRpcServices.doBatchOp(RSRpcServices.java:823)
+	at org.apache.hadoop.hbase.regionserver.RSRpcServices.doNonAtomicRegionMutation(RSRpcServices.java:785)
+	at org.apache.hadoop.hbase.regionserver.RSRpcServices.multi(RSRpcServices.java:2239)
+	at org.apache.hadoop.hbase.protobuf.generated.ClientProtos$ClientService$2.callBlockingMethod(ClientProtos.java:34958)
+	at org.apache.hadoop.hbase.ipc.RpcServer.call(RpcServer.java:2339)
+	at org.apache.hadoop.hbase.ipc.CallRunner.run(CallRunner.java:123)
+	at org.apache.hadoop.hbase.ipc.RpcExecutor$Handler.run(RpcExecutor.java:188)
+	at org.apache.hadoop.hbase.ipc.RpcExecutor$Handler.run(RpcExecutor.java:168)
+ on slave1,60020,1619400429436, tracking started null, retrying after=2012ms, operationsToReplay=1000
+2021-05-27 08:29:25 INFO  [store-tick] - no tick data.
+```
+
+
+
+
+
+1.定时任务，每天重启thrift
+
+​		找到thrift服务的进程id
+
+jps | grep ThriftServer |awk '{print $1}'
+
+​		杀掉，并且确认
+
+kill 
+
+​		重启并且确认
+
+hbase-daemon.sh start thrift2
+
+
+
+配一个定时脚本：
+
+配置定时任务
+
+cp restart_thrift2_server.cron /etc/cron.d/
+
+crontab /etc/cron.d/restart_thrift2_server.cron
+
+确认定时任务：
+
+crontab -l
+
+
+
+2.继续开发股指历史数据补录	
+
+
+
+3.slave2上线		--ok
+
+```
+[hznc_gzdata:ticktest,IC09_1591841969_0,1606300695860.9affdc2e3c0d5b2ebb5f0401ca6c8db4.](http://slave2:60030/region.jsp?name=9affdc2e3c0d5b2ebb5f0401ca6c8db4)
+```
+
+清一下僵尸进程：
+
+hbase-daemon.sh start regionserver
+
+
+
+slave2,60021,1601288037038-splitting
+
+hadoop fs -rmr /hbase/WALs/slave2,60021,1607766488334-splitting
+
+hadoop fs -rmr /hbase/WALs/slave2,60021,1604044287532-splitting
+
+hadoop fs -rm /hbase/WALs/slave2,60021,1601288037038-splitting
+
+重启一下master, 因为有备份的master,所以没有影响		--ok
+
+晚上观察一下
+
+
+
+4.主力合约没有生成的问题		--ok， 明天观察下有没有生成主力数据
+
+​		补录		--ok
+
+
+
+5.要加内存了， 写一个报告申请			--ok
+
+
+
+6. tick改成毫秒		--这个后面再考虑
+
+今日工作：
+
+20210527
+
+1.写定时脚本，每天凌晨三点重启thrift服务，保证稳定性		--ok
+
+2.股指主连数据补录		--ok
+
+3.继续开发历史数据补录程序
+
+
+
+##########################
+
+## 20210528
+
+1.每天上班要做的	
+
+```
+1.检查下hadoop集群, hbase集群			
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+	检查进程， 下面一个都不能少：
+		
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+10.10.10.102 administrator/Admin711406 
+	进程：GetMarketDataAndStore		8:50 @废弃，不用了
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+3.检查界面，行情软件			--重启一下
+	# 如果有问题，启动：hbase-daemon.sh start thrift2
+		地址已经在使用：
+
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+问一下数据库监控
+
+			
+			tick数据到58秒，1s数据到53秒？两个问题：
+				1.一个补数据没有生效，endTs应该是后一天的				--ok,已经修复，明天再验证下
+				2.5 3秒后的数据是早上8点推过来的，数据源有问题。
+			
+			
+			有延迟？
+			2021-05-28 09:55:47 INFO  [pool-1-thread-10] - id=1, table=hznc_mkdata:2sdata, attempt=6/16, failureCount=12ops, last exception=org.apache.hadoop.hbase.exceptions.RegionMovedException: Region moved to: hostname=master port=60020 startCode=1620695541020. As of locationSeqNum=8744807. on keep-1,60020,1620609114035, tracking started null, retrying after=2008ms, operationsToReplay=12
+			
+			exception=org.apache.hadoop.hbase.exceptions.RegionOpeningException: org.apache.hadoop.hbase.exceptions.RegionOpeningException: Region hznc_mkdata:1sdata,fu08_1615959832,1621346558611.dfff89a834f62426a1fef4aa1c1ff9e0. is opening on slave3,60020,1619400396937
+	at org.apache.hadoop.hbase.regionserver.HRegionServer.getRegionByEncodedName(HRegionServer.java:2972)
+	at org.apache.hadoop.hbase.regionserver.RSRpcServices.getRegion(RSRpcServices.java:1140)
+	at org.apache.hadoop.hbase.regionserver.RSRpcServices.multi(RSRpcServices.java:2197)
+	at 
+	
+	region达到一定的大小开始分裂，分裂成两个region,hbaes有自动的regionBalance功能，这个过程会移动region导致region的下线和重新上线
+	1.解决办法就是可以预分区，预分region
+	2.关闭自动的split和rebanlace,在没有数据的时候去检测有超过20g的就split
+	
+	
+	查看硬盘有没有做raid
+	cat /proc/mdstat
+	对master节点来说，使用raid主要是为了保护关键性的文件系统数据，通常的配置是raid1+0或者raid0+1
+	
+```
+
+
+
+2.继续股指历史数据的补录
+
+​	1.先用历史数据生成k线
+
+​			先补一天，再补一个月》 一年
+
+​	2.输出日k
+
+​	3.写一个删除的程序
+
+
+
+本周工作：
+
+1.股指历史数据补录程序开发， 本地测试
+
+2.合约全称化程序修改，上线
+
+3.期货实时k线程序的一些bug修复
+
+下周工作：
+
+1.股指历史数据线上补录
+
+
+
+3.tcp6连接很多？cpu型号
+
+
+
+4.slave2节点看看
+
+ip没有改变？
+
+应该是：10.10.0.54  slave2
+
+​	slave2/10.10.0.15:60020 failed on connection exception: org.apache.hbase.thirdparty.io.netty.channel.ConnectTimeoutException: connection timed out: slave2/10.10.0.15:60020 on slave2,60020,1622105907095, tracking started null, retrying after=10074ms, operationsToReplay=651
+
+
+
+5.生成日线程序有问题？
+
+​			中间升级，使用batch插入，没有配hznc_mkdata:ddata的缓存，导致没有插入进去		--ok,已更新
+
+
+
+
+
+##########################
+
+## 20210531
+
+1.每天上班要做的	
+
+```
+1.检查下hadoop集群, hbase集群				--ok
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			7.92 TB (16.9%)
+			36.1 TB (77.05%)
+	检查进程， 下面一个都不能少：
+		
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+10.10.10.102 administrator/Admin711406 
+	进程：
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+3.检查界面，行情软件			--ok
+	# 如果有问题，启动：hbase-daemon.sh start thrift2
+		地址已经在使用：
+
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+问一下数据库监控
+
+			
+			tick数据到58秒，1s数据到53秒？两个问题：
+				1.一个补数据没有生效，endTs应该是后一天的				--ok,已经修复，明天再验证下
+				2.5 3秒后的数据是早上8点推过来的，数据源有问题。
+			
+			
+			有延迟？
+			2021-05-28 09:55:47 INFO  [pool-1-thread-10] - id=1, table=hznc_mkdata:2sdata, attempt=6/16, failureCount=12ops, last exception=org.apache.hadoop.hbase.exceptions.RegionMovedException: Region moved to: hostname=master port=60020 startCode=1620695541020. As of locationSeqNum=8744807. on keep-1,60020,1620609114035, tracking started null, retrying after=2008ms, operationsToReplay=12
+			
+			exception=org.apache.hadoop.hbase.exceptions.RegionOpeningException: org.apache.hadoop.hbase.exceptions.RegionOpeningException: Region hznc_mkdata:1sdata,fu08_1615959832,1621346558611.dfff89a834f62426a1fef4aa1c1ff9e0. is opening on slave3,60020,1619400396937
+	at org.apache.hadoop.hbase.regionserver.HRegionServer.getRegionByEncodedName(HRegionServer.java:2972)
+	at org.apache.hadoop.hbase.regionserver.RSRpcServices.getRegion(RSRpcServices.java:1140)
+	at org.apache.hadoop.hbase.regionserver.RSRpcServices.multi(RSRpcServices.java:2197)
+	at 
+	
+	region达到一定的大小开始分裂，分裂成两个region,hbaes有自动的regionBalance功能，这个过程会移动region导致region的下线和重新上线
+	1.解决办法就是可以预分区，预分region
+	2.关闭自动的split和rebanlace,在没有数据的时候去检测有超过20g的就split
+	
+	
+	查看硬盘有没有做raid
+	cat /proc/mdstat
+	对master节点来说，使用raid主要是为了保护关键性的文件系统数据，通常的配置是raid1+0或者raid0+1
+	
+```
+
+
+
+商品夜盘数据不正常， 只到05.29 00:17, realtimedatasource 停了？没有推送数据，也加一下日志。		--ok
+
+
+
+​	看下tick数据：
+
+1. 28夜盘数据，截止到0点17分就没有了
+
+​		scan "hznc_mkdata:tickdata", {STARTROW => "au06_1622217600_0", ENDROW => "au06_1622226600_2"}	
+
+2.推送过来31号的数据？
+
+​	scan "hznc_mkdata:tickdata", {STARTROW => "eb08_1622206800_0", ENDROW => "eb08_1622473199_2"}
+
+
+
+​		初步判断是因为大商所的字段跟其他交易所字段不一致导致，其他交易所自然日字段为28号，而大商所的自然日为31号。
+
+
+
+rb09 没有1分钟k线， 5-28 22:43
+
+scan "hznc_mkdata:tickdata", {STARTROW => "rb09_1622379600_0", ENDROW => "rb09_1622399400_2"}
+
+
+
+前十分钟数据丢了？补一下		--ok
+
+scan "hznc_mkdata:tickdata", {STARTROW => "au06_1622422800_0", ENDROW => "au06_1622423460_2"}
+
+跑一下25,26,27
+
+2.股指历史数据修正
+
+​		1.本地发送测试
+
+​		2.删除旧数据
+
+​				历史旧数据：
+
+​					date -d @1604970000
+​					2020年 11月 10日 星期二 09:00:00 CST
+
+​					时间戳设为历史的
+
+​					可以稳定的发送
+
+​					合并的k线是对的
+
+​		3.生成日k数据，获取主力代码
+
+
+
+今天工作：
+
+20210531
+
+1.股指历史数据补录，本地测试
+
+
+
+todo:
+
+新的项目架构：
+
+​	kafka + redis + flink + hbase
+
+学习：
+
+​	hive + spark + hadoop
+
+源码：
+
+​	kafka, hbase
 
 SPI ,serviceLoader
 
