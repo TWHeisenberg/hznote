@@ -1430,8 +1430,6 @@ LinkedBlockingQueue
 
 
 
-###################
-
 ## 20210611
 
 1.每天上班要做的	
@@ -1549,9 +1547,713 @@ from dbo.futures_main_contract where future_variety = 'IC' AND '2021-06-11' >= s
 
 
 
-hashMap 和hashSet
+## 20210615
+
+1.每天上班要做的	
+
+```
+1.检查下hadoop集群, hbase集群				--ok
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			8.72 TB (18.62%)
+			35.29 TB (75.32%)
+	检查进程， 下面一个都不能少：
+		
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  		--ok
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+10.10.10.102 administrator/Admin711406 
+	进程：
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+3.检查界面，行情软件
+	# 如果有问题，启动：hbase-daemon.sh start thrift2
 
 
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+```
+
+
+
+
+
+2.期货主力规则切换算法开发
+
+​		是每一个交易日都生成记录还是一段时间？
+
+​		保存持仓量，成交量
+
+建一个新的表：
+
+```
+USE [Public1]
+GO
+
+/****** Object:  Table [dbo].[T152_151LOG]    Script Date: 2021/6/11 11:25:20 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+SET ANSI_PADDING ON
+GO
+
+CREATE TABLE [dbo].[futures_main_contract](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[contract_code] [char](10)  NOT NULL,
+	[future_variety] [char](10)  NOT NULL,
+	[start_date] [datetime]  NOT NULL,
+	[end_date] [datetime]  NOT NULL,
+	[update_tme] [smalldatetime] NOT NULL,
+  PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+
+SET ANSI_PADDING OFF
+GO
+
+
+# 查询
+
+select 
+id,
+contract_code,
+future_variety,
+start_date,
+end_date,
+update_time
+from dbo.futures_main_contract where future_variety = 'IC' AND '2021-06-11' >= start_date AND '2021-06-11' <= end_date;
+
+
+```
+
+
+
+今日工作：
+
+20210615
+
+期货主力规则切换算法开发 --明天开始测试
+
+上周夜盘商品数据补录  --ok
+
+实时期货数据检查		--ok
+
+
+
+## 20210616
+
+1.每天上班要做的	
+
+```
+1.检查下hadoop集群, hbase集群				--ok
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			8.72 TB (18.62%)
+			35.29 TB (75.32%)
+	检查进程， 下面一个都不能少：
+		
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  		--ok
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+10.10.10.102 administrator/Admin711406 
+	进程：
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+3.检查界面，行情软件
+	# 如果有问题，启动：hbase-daemon.sh start thrift2
+
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+```
+
+
+
+2.期货主力规则切换算法开发
+
+​		是每一个交易日都生成记录还是一段时间？
+
+​		保存持仓量，成交量
+
+​		6.11夜盘数据不应该有， 节假日放假前那个工作日夜盘不开市的 删掉先
+
+建一个新的表：
+
+```
+USE [Public1]
+GO
+
+/****** Object:  Table [dbo].[futures_main_contract]    Script Date: 2021/6/11 11:25:20 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+SET ANSI_PADDING ON
+GO
+
+CREATE TABLE [dbo].[futures_main_contract](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[contract_code] [char](10)  NOT NULL,
+	[future_variety] [char](10)  NOT NULL,
+	[volume] decimal(18, 2) NOT NULL,
+	[open_interest] decimal(18, 2) NOT NULL,
+	[start_date] [datetime]  NOT NULL,
+	[end_date] [datetime]  NOT NULL,
+	[update_time] [smalldatetime] NOT NULL,
+  PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+
+SET ANSI_PADDING OFF
+GO
+
+
+# 查询
+
+select 
+id,
+contract_code,
+future_variety,
+volume, 
+open_interest,
+start_date,
+end_date,
+update_time
+from dbo.futures_main_contract where future_variety = 'IC' AND '2021-06-11' >= start_date AND '2021-06-11' <= end_date;
+
+
+insert into table dbo.futures_main_contract (contract_code,future_variety,volume, open_interest,start_date,end_date,update_time) values()
+
+
+新增两个字段：
+Volume 成交量
+OpenInterest 持仓量
+
+```
+
+
+
+thrift2挂了：
+
+bash /usr/local/hbase/bin/restart_thrift2_server.sh
+
+
+
+今日工作：
+
+20210616
+
+1.期货主力规则切换程序本地测试和一些逻辑修改
+
+
+
+###################
+
+## 20210617
+
+1.每天上班要做的	
+
+```
+1.检查下hadoop集群, hbase集群				--ok
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			8.73 TB (18.64%)
+			35.28 TB (75.29%)
+	检查进程， 下面一个都不能少：
+		
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  		--ok
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+10.10.10.102 administrator/Admin711406 
+	进程：
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+3.检查界面，行情软件
+	# 如果有问题，启动：hbase-daemon.sh start thrift2
+
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+```
+
+
+
+2.期货主力规则切换算法开发
+
+​		是每一个交易日都生成记录还是一段时间？		--ok
+
+​		保存并更新持仓量，成交量		--ok
+
+​		还是从hbase捞出来快一点				--ok
+
+​				filter实现，扫描日k表，按照utim过滤
+
+​		实时的运行起来		--ok
+
+​		历史的先生成， IC, IH, IF		--ok
+
+​			2015-09-03 到2015-09-06都在休息，抗战胜利周年庆，但是节假日里面没有所以导致缺失了2015-09-07的主力合约
+
+​		本地运行起来，测试夜盘数据卡住的问题
+
+todo: 合约品种都改成小写
+
+
+
+
+
+###################
+
+## 20210618
+
+1.每天上班要做的	
+
+```
+1.检查下hadoop集群, hbase集群				--ok
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			8.73 TB (18.62%)
+			35.29 TB (75.31%)
+	检查进程， 下面一个都不能少：
+		
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  		--ok
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+10.10.10.102 administrator/Admin711406 
+	进程：
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+3.检查界面，行情软件
+	# 如果有问题，启动：hbase-daemon.sh start thrift2
+
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+```
+
+主力合约生成程序开发
+
+​	验证生成的主力代码		--ok
+
+​			日k线插入到数据库中		--ok
+
+​			使用方法:
+
+​				10.10.10.8服务器上的Index_Data_his数据库
+
+​				1.进入Index_Data_his数据库, 将需计算的数据存入“T003_主力合约待计算表”;
+​				2、执行“C001_批量计算期指主力合约”存储过程;
+​				3、查看“T004_主力合约代码”表
+
+​	生成股指主连数据
+
+​	
+
+跑夜盘数据程序的问题
+
+​		断点看看什么造成的， pass
+
+```
+kCycle = (kBuff.TimeStamp - beginOffset - kBreakOffset) / param.cycle; // kBreakOffset不应该是0，已经休息了一夜了
+
+
+断点：
+        // K 线时间点已经历的小节休息时间
+        if ((kMod - beginOffset) % _1day >= begin - beginOffset) {
+          restTime = param.durations[i].begin - param.durations[i - 1].end;
+          if (restTime < _60min * 3) {
+            kBreakOffset += restTime;
+          }
+        }
+```
+
+
+
+周末吧数据发送2021-01到2021-06的数据发送起来
+
+
+
+###################
+
+## 20210619
+
+hashMap 和hashSet， LinkedHashMap
+
+```java
+public class HashMap<K,V> extends AbstractMap<K,V>    implements Map<K,V>, Cloneable, Serializable:
+// 几个重要的成员变量
+/**
+   * The default initial capacity - MUST be a power of two.
+   * 默认的容量，必须是2的次方：
+   * 为了保证每个桶内的元素尽可能均匀的， 对添加的元素进行取模得到下标：h & (length-1)
+   * 如果length不是2的次方如：10，假如现在有hash值为11和9，那么进行位运算结果：
+   * 1011 & 1001 = 1001， 1001 & 1001 = 1001；
+   * 而如果length是2的次方如：16，则同样对hash值为11和9进行取模结果：
+   * 1011 & 1111 = 1011， 1001 & 1111 = 1001
+   * 这样，有效避免了hash冲突，保证元素尽可能分布均匀
+   *
+   */
+  static final int DEFAULT_INITIAL_CAPACITY = 1 << 4; // aka 16
+
+  /**
+   * The maximum capacity, used if a higher value is implicitly specified
+   * by either of the constructors with arguments.
+   * MUST be a power of two <= 1<<30.
+   */
+  static final int MAXIMUM_CAPACITY = 1 << 30;
+
+  /**
+   * The load factor used when none specified in constructor.
+   * 使用hash取模计算下标，元素分布的频率在hash桶中遵循一个泊松分布，然后0.75是泊松分布较理想的参数
+   * 上面注释中还给了一个参考例子，当加载因子是0.75是，发生hash碰撞的桶的元素超过8个的概率为0.00000006几乎不可能。
+   * 个人觉得从另一角度：
+   * 如果加载因子是0.5那么会浪费一半的内存空间，加载因子是1，这样容量满了再去扩容，很容易造成hash冲突，导致链表过程影响查询效率
+   * 所以0.75是一个折中的参数。
+   */
+  static final float DEFAULT_LOAD_FACTOR = 0.75f;
+
+  /**
+   *
+   * 链表转成红黑树的阈值
+   */
+  static final int TREEIFY_THRESHOLD = 8;
+
+  /**
+   * 红黑树退化成链表的阈值
+   */
+  static final int UNTREEIFY_THRESHOLD = 6;
+
+  /**
+   * 当当前hash表的容量大于这个阈值时，才会进行链表转成红黑树操作
+   * 否则只进行resize
+   */
+  static final int MIN_TREEIFY_CAPACITY = 64;
+
+// put 方法
+final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
+      boolean evict) {
+    Node<K,V>[] tab; Node<K,V> p; int n, i;
+    // 先判断是否为空
+    if ((tab = table) == null || (n = tab.length) == 0)
+      // 如果空就初始化
+      n = (tab = resize()).length;
+    // 判断插入的地方是否有人了
+    if ((p = tab[i = (n - 1) & hash]) == null)
+      // 没有人直接在末尾加入新节点
+      tab[i] = newNode(hash, key, value, null);
+    else {
+      // 判断key是否一样
+      Node<K,V> e; K k;
+      if (p.hash == hash &&
+          ((k = p.key) == key || (key != null && key.equals(k))))
+        // 一样就就覆盖，更新操作
+        e = p;
+      // 不一样说明发生了hash碰撞，进一步判断这个桶是链表还是红黑树
+      else if (p instanceof TreeNode)
+        // 以红黑树方式添加
+        e = ((TreeNode<K,V>)p).putTreeVal(this, tab, hash, key, value);
+      else {
+        // 以链表方式添加
+        for (int binCount = 0; ; ++binCount) {
+          if ((e = p.next) == null) {
+            p.next = newNode(hash, key, value, null);
+            // 如果链表长度大于阈值，转成红黑树
+            if (binCount >= TREEIFY_THRESHOLD - 1) // -1 for 1st
+              // 里面进一步判断，如果整个表容量小于64就只进行rehash,不转换了
+              treeifyBin(tab, hash);
+            break;
+          }
+          if (e.hash == hash &&
+              ((k = e.key) == key || (key != null && key.equals(k))))
+            break;
+          p = e;
+        }
+      }
+      if (e != null) { // existing mapping for key
+        V oldValue = e.value;
+        if (!onlyIfAbsent || oldValue == null)
+          e.value = value;
+        afterNodeAccess(e);
+        // 如果是覆盖就返回老的值
+        return oldValue;
+      }
+    }
+    // 最后添加完，判断是否需要resize
+    ++modCount;
+    if (++size > threshold)
+      resize(); // 先扩容现容量的2倍，重新放置元素
+    // 为了继承HashMap的LinkedHashMap类服务的
+    afterNodeInsertion(evict);
+    return null;
+  }
+
+
+// get 方法
+final Node<K,V> getNode(int hash, Object key) {
+    Node<K,V>[] tab; Node<K,V> first, e; int n; K k;
+    if ((tab = table) != null && (n = tab.length) > 0 &&
+        (first = tab[(n - 1) & hash]) != null) {
+      // 判断下标位置第一个元素是否符合key
+      if (first.hash == hash && // always check first node
+          ((k = first.key) == key || (key != null && key.equals(k))))
+        // 是就返回第一个
+        return first;
+      if ((e = first.next) != null) {
+        // 不是就接着往下找，判断桶如果是红黑树就用红黑树方式找，如果是链表就按链表找
+        if (first instanceof TreeNode)
+          return ((TreeNode<K,V>)first).getTreeNode(hash, key);
+        do {
+          if (e.hash == hash &&
+              ((k = e.key) == key || (key != null && key.equals(k))))
+            return e;
+        } while ((e = e.next) != null);
+      }
+    }
+    return null;
+  }
+
+public class LinkedHashMap<K,V>     extends HashMap<K,V>     implements Map<K,V>
+    
+ // 使用双向链表和重写了hashMap中3个方法保证顺序：
+    // Callbacks to allow LinkedHashMap post-actions
+    void afterNodeAccess(Node<K,V> p) { }
+    void afterNodeInsertion(boolean evict) { }
+    void afterNodeRemoval(Node<K,V> p) { }
+    
+ // put 方法： put方法没有重写HashMap的put方法，但是重新了其中的几个子的方法：
+   Node<K,V> newNode(int hash, K key, V value, Node<K,V> e) {
+    LinkedHashMap.Entry<K,V> p =
+        new LinkedHashMap.Entry<K,V>(hash, key, value, e);
+    linkNodeLast(p);    // 加到双向链表的末尾
+    return p;
+  }
+
+void afterNodeAccess(Node<K,V> e) { // move node to last将访问的元素放到链表最后
+    
+void afterNodeInsertion(boolean evict) { // possibly remove eldest， evict：是否删除旧元素
+  LinkedHashMap.Entry<K,V> first;
+    // removeEldestEntry给实现者来重写，有机会删除最老的元素，保持一定容量
+  if (evict && (first = head) != null && removeEldestEntry(first)) { // removeEldestEntry：return false;
+    K key = first.key;
+    removeNode(hash(key), key, null, false, true);
+  }
+}
+void afterNodeRemoval(Node<K,V> e) { // unlink remove方法中调用，删除链表中的元素
+    
+// 重写了get方法：
+public V get(Object key) {
+    Node<K,V> e;
+    if ((e = getNode(hash(key), key)) == null)
+      return null;
+    if (accessOrder) // 如果accessOrder为true,则开启LRU策略
+      afterNodeAccess(e);
+    return e.value;
+  }
+```
+
+ConcurrentHashMap
+
+
+
+
+
+```
+
+
+Collection:
+	List:
+		ArrayList
+		LinkedList
+	Set:
+		HashSet
+		TreeSet
+	Queue:
+		LinkedBlockingQueue
+		
+Map:
+	HashMap
+		1.7: 数组+链表， 头插法
+		1.8：数组+链表+红黑树， 尾插法
+		扩容机制，默认0.75
+		capacity必须是2的幂
+		equals和hashCode必须同时重写
+	ConcurrentHashMap
+	LinkedHashMap
+	
+	
+	
+	并发：
+	线程之间如何通信：
+	实现一个生产者和消费者模型
+	synchronized:
+		对象：
+			对象头：
+				Mark Word, 存储对象的HashCode,锁标志和分代年龄
+				Class Pointer,对象指向它的类元数据的指针，虚拟机通过这个指针来确定对象是哪个类的实例
+				Monitor:
+					EntryList
+					Owner,指向持有Monitor对象的线程
+					WaitSet
+			实例数据
+			对其填充
+		使用：
+			代码块：锁住的是括号内的对象， 通过monitorenter和monitorexit锁对象，程序计数器count
+			方法上：锁住的是当前调用对象,ACC_SYNCHRONIZED
+			静态方法：这个类对象，而不是实例对象
+		锁升级过程：偏向锁 -> 轻量级锁（乐观锁） -> 重量级锁
+	ThreadLocal
+		实现
+		get
+		put
+		内存泄露
+		InheritableThreadLocal
+		用来解决什么问题，为什么使用
+	volatile: TODO
+
+	JUC:
+    	Lock
+    	CountDownLatch
+    	CyclicBarrier
+    	TODO:
+		
+	线程池：
+		4种线程池：
+			CachedThreadPool
+			FixedThreadPool
+			SingleThreadPool
+			ScheduledThreadPool
+		7个参数：
+			corePoolSize
+			maximumPoolSize
+			keepAliveTime
+			TimeUnit
+			workQueue
+			threadFactory
+			RejectedExecutionHandler
+		如何优雅的指定线程名字
+		阿里不建议newCachedThreadPool等方法，建议自己构造原因
+		工厂方法
+		创建线程几种方式
+		线程池运行原理
+			状态
+			TODO
+		使用场景
+		怎么尽可能提高多线程并发数
+		
+		
+	
+	JVM:
+	io
+	反射
+	
+数据库和中间件
+	mysql
+	zookeeper
+	kafka
+	redis
+	
+大数据：
+	hadoop:
+		hdfs
+		mapreduce
+		hbase
+		yarn
+		hive
+	spark
+		spark core
+		spark sql
+	flink
+		
+计算机基础，数据结构和算法
+	设计模式
+	计算机基础
+	数据结构
+	算法
+```
+
+
+
+flink
 
 
 
@@ -1565,8 +2267,6 @@ todo:
 
 
 补k线程序有个小bug,kbug:11:29:59 , tick:13:00:01,那就会漏掉13:00:00的k线
-
-
 
 
 
