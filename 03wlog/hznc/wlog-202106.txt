@@ -2133,7 +2133,45 @@ public V get(Object key) {
 
 ConcurrentHashMap
 
+```java
+public class ConcurrentHashMap<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V>, Serializable
+    /**
+    jdk1.8之前使用分段锁实现，即每个segment负责连续的几个桶，通过对segment加锁的方式实现线程安全，默认的支持并发写数量是16
+    jdk1.8通过CAS + syncronized实现并发
+    */
 
+/**
+   * The default concurrency level for this table. Unused but
+   * defined for compatibility with previous versions of this class.
+   * 默认支持多少线程进行并发写，在jdk1.7及之前使用segment设计时使用，现在没用了。
+   */
+  private static final int DEFAULT_CONCURRENCY_LEVEL = 16;
+
+  /**
+   * 默认加载因子，同HashMap
+   */
+  private static final float LOAD_FACTOR = 0.75f;
+
+  /**
+   * 默认树化的阈值，同HashMap
+   */
+  static final int TREEIFY_THRESHOLD = 8;
+
+  /**
+   * 默认退化链表的阈值，同HashMap
+   */
+  static final int UNTREEIFY_THRESHOLD = 6;
+
+  /**
+   * 树化的表容量阈值，小于就只进行resize
+   */
+  static final int MIN_TREEIFY_CAPACITY = 64;
+
+
+public V remove(Object key)
+remove方法跟put方法过程差不多，调用replaceNode方法，先判断是否正在resize,如果是当前线程就进入helpTransfer方法
+否则直接使用synchronized加锁，删除成功后，调用addCount(-1, -1)方法计数字。
+```
 
 
 
