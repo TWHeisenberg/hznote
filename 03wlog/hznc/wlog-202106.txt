@@ -36,6 +36,10 @@ https://archive.apache.org/dist/maven/maven-3/
 
 
 
+个人开发的软件源代码需要每月备份到网络硬盘(在资源管理器输入\\10.10.10.3进入),用户名:各人中文姓名,密码:89024521
+
+
+
 这个SVN地址是你的私人地址，你可以提交任何临时代码。
 ：https://10.10.10.102/svn/private_source/wangtao
 账户名和密码是名字全拼。
@@ -77,8 +81,11 @@ hbase:
 	tail  -n -500 /usr/local/hbase/logs/hbase-hadoop-regionserver-slave4.log
 
 sql server:
-		properties.setProperty("user", "R16");
-		properties.setProperty("password", "R16_0625");
+
+10.10.10.8
+
+​		properties.setProperty("user", "R16");
+​		properties.setProperty("password", "R16_0625");
 
 现有集群规模：共有七台机器，老机房两台，新机房五台。
 
@@ -2171,6 +2178,268 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V> implements Concurre
 public V remove(Object key)
 remove方法跟put方法过程差不多，调用replaceNode方法，先判断是否正在resize,如果是当前线程就进入helpTransfer方法
 否则直接使用synchronized加锁，删除成功后，调用addCount(-1, -1)方法计数字。
+    
+    /** Implementation for put and putIfAbsent */
+  /**
+   *  如果是第一次put,需要初始化表
+   *  如果put位置桶空的，则通过CAS添加新节点
+   *  如果put位置桶不为空，但hash状态==MOVED(-1),说明当前表正在进行resize,当前线程进入helpTransfer方法
+   *  如果put位置桶不为空，说明桶已经有人了，对当前的桶进行加锁
+   *    判断是链表还是红黑树，用对应的方法去添加
+   *      如果有相同key则覆盖
+   *      没有相同key,添加新节点到后面
+   * 调用addCount(int count, int check),count表示新增元素个数，check是链表的长度. 计算并且检查是否需要resize
+   */
+  final V putVal(K key, V value, boolean onlyIfAbsent) {
+    if (key == null || value == null) throw new NullPointerException();
+    int hash = spread(key.hashCode()); // 对hashCode再hash,减少hash碰撞
+    int binCount = 0; // 统计链表元素个数，判断是否要转成红黑树
+    for (Node<K,V>[] tab = table;;) {
+      Node<K,V> f; int n, i, fh;
+      // 懒加载，第一次put时，初始化表，避免第一次操作就进行resize影响效率，如：putAll
+      if (tab == null || (n = tab.length) == 0)
+        tab = initTable();
+        // 查找桶，是否为空,tabAt内部直接调用UNSAFE.getObjectVolatile获取主内存中的值
+      else if ((f = tabAt(tab, i = (n - 1) & hash)) == null) {
+        // 添加空的桶，直接CAS,无需加锁
+        if (casTabAt(tab, i, null,
+            new Node<K,V>(hash, key, value, null)))
+          break;                   // no lock when adding to empty bin
+      }
+      // hash 为-1，说明当前表状态是正在扩容
+      else if ((fh = f.hash) == MOVED)
+        // 帮助扩容
+        tab = helpTransfer(tab, f);
+      else {
+        V oldVal = null;
+        synchronized (f) { // 要存的桶里已经有人了，对当前桶加锁
+          if (tabAt(tab, i) == f) {
+            if (fh >= 0) {
+              binCount = 1;
+              // 如果是链表，以链表方式添加
+              for (Node<K,V> e = f;; ++binCount) {
+                K ek;
+                if (e.hash == hash &&
+                    ((ek = e.key) == key ||
+                        (ek != null && key.equals(ek)))) {
+                  oldVal = e.val;
+                  // key是同一个，是否覆盖
+                  if (!onlyIfAbsent)
+                    e.val = value;
+                  break;
+                }
+                // 不是同一个key,新值加到链表最后
+                Node<K,V> pred = e;
+                if ((e = e.next) == null) {
+                  pred.next = new Node<K,V>(hash, key,
+                      value, null);
+                  break;
+                }
+              }
+            }
+            // 如果是红黑树，以红黑树方式添加
+            else if (f instanceof TreeBin) {
+              Node<K,V> p;
+              binCount = 2;
+              if ((p = ((TreeBin<K,V>)f).putTreeVal(hash, key,
+                  value)) != null) {
+                oldVal = p.val;
+                if (!onlyIfAbsent)
+                  p.val = value;
+              }
+            }
+          }
+        }
+        if (binCount != 0) {
+          // 判断链表是否需要转成红黑树
+          if (binCount >= TREEIFY_THRESHOLD)
+            treeifyBin(tab, i);
+          if (oldVal != null)
+            return oldVal;
+          break;
+        }
+      }
+    }
+    // 参数1表示增加表个数，binCount（链表长度）参数表示是否需要进行resize检查
+    addCount(1L, binCount);
+    return null;
+  }
+
+/**
+   * Helps transfer if a resize is in progress.
+   * 判断表不为空，并且状态是-1，正在转移
+   * 判断正在扩容，并且扩容线程是否满了
+   * 通过CAS设置扩容的线程数量+1
+   * 调用transfer方法，进行扩容
+   */
+  final Node<K,V>[] helpTransfer(Node<K,V>[] tab, Node<K,V> f) {
+    Node<K,V>[] nextTab; int sc;// 并发扩容的线程数量
+    //如果tab不为空并且节点是正在转移的节点
+    if (tab != null && (f instanceof ForwardingNode) &&
+        (nextTab = ((ForwardingNode<K,V>)f).nextTable) != null) {
+      // 获取表length获取一个标识
+      int rs = resizeStamp(tab.length);
+      // 判断nextTab和tab都没有并发修改，并且sizeCtl < 0说明还在扩容
+      while (nextTab == nextTable && table == tab &&
+          (sc = sizeCtl) < 0) {
+        // 判断sizeCtl标识符号，不在变化了，扩容结束了，达到最大扩容线程了或者转移下标在<0,扩容结束
+        if ((sc >>> RESIZE_STAMP_SHIFT) != rs || sc == rs + 1 ||
+            sc == rs + MAX_RESIZERS || transferIndex <= 0)
+          break;
+        // 通过CAS,扩容线程+1
+        if (U.compareAndSwapInt(this, SIZECTL, sc, sc + 1)) {
+          // 进行转移
+          transfer(tab, nextTab);
+          break;
+        }
+      }
+      return nextTab;
+    }
+    return table;
+  }
+
+
+  /**
+   * Moves and/or copies the nodes in each bin to new table. See
+   * above for explanation.
+   * 根据cpu个数，配置的最小步数：16和表长度计算步长，即每次转移多少节点
+   * 初始化一个长度为原来2倍的数组
+   * 进行转移
+   */
+  private final void transfer(Node<K,V>[] tab, Node<K,V>[] nextTab) {
+    int n = tab.length, stride;
+    // 根据cpu个数和配置的步长（即每次转移多少个节点）计算步长
+    // 公式：如果cpu个数>1,步长为表/8/cpu个数，这个结果小于最小值，则用最小值
+    if ((stride = (NCPU > 1) ? (n >>> 3) / NCPU : n) < MIN_TRANSFER_STRIDE)
+      stride = MIN_TRANSFER_STRIDE; // subdivide range
+    if (nextTab == null) {            // initiating
+      try {
+        @SuppressWarnings("unchecked")
+        Node<K,V>[] nt = (Node<K,V>[])new Node<?,?>[n << 1];// 创建一个原来大小2倍的数组
+        nextTab = nt;
+      } catch (Throwable ex) {      // try to cope with OOME
+        sizeCtl = Integer.MAX_VALUE;
+        return;
+      }
+      nextTable = nextTab;
+      transferIndex = n;
+    }
+    int nextn = nextTab.length;
+    ForwardingNode<K,V> fwd = new ForwardingNode<K,V>(nextTab);
+    boolean advance = true;
+    boolean finishing = false; // to ensure sweep before committing nextTab
+    for (int i = 0, bound = 0;;) {
+      Node<K,V> f; int fh;
+      while (advance) {
+        int nextIndex, nextBound;
+        if (--i >= bound || finishing)
+          advance = false;
+        else if ((nextIndex = transferIndex) <= 0) {
+          i = -1;
+          advance = false;
+        }
+        else if (U.compareAndSwapInt
+            (this, TRANSFERINDEX, nextIndex,
+                nextBound = (nextIndex > stride ?
+                    nextIndex - stride : 0))) {
+          bound = nextBound;
+          i = nextIndex - 1;
+          advance = false;
+        }
+      }
+      if (i < 0 || i >= n || i + n >= nextn) {
+        int sc;
+        if (finishing) {
+          nextTable = null;
+          table = nextTab;
+          sizeCtl = (n << 1) - (n >>> 1); // 转移完成，设置原表大小的0.75
+          return;
+        }
+        if (U.compareAndSwapInt(this, SIZECTL, sc = sizeCtl, sc - 1)) {
+          if ((sc - 2) != resizeStamp(n) << RESIZE_STAMP_SHIFT)
+            return;
+          finishing = advance = true;
+          i = n; // recheck before commit
+        }
+      }
+      else if ((f = tabAt(tab, i)) == null)
+        advance = casTabAt(tab, i, null, fwd);
+      else if ((fh = f.hash) == MOVED)
+        advance = true; // already processed
+      else {
+        synchronized (f) {
+          if (tabAt(tab, i) == f) {
+            Node<K,V> ln, hn;
+            if (fh >= 0) {
+              int runBit = fh & n;
+              Node<K,V> lastRun = f;
+              for (Node<K,V> p = f.next; p != null; p = p.next) {
+                int b = p.hash & n;
+                if (b != runBit) {
+                  runBit = b;
+                  lastRun = p;
+                }
+              }
+              if (runBit == 0) {
+                ln = lastRun;
+                hn = null;
+              }
+              else {
+                hn = lastRun;
+                ln = null;
+              }
+              for (Node<K,V> p = f; p != lastRun; p = p.next) {
+                int ph = p.hash; K pk = p.key; V pv = p.val;
+                if ((ph & n) == 0)
+                  ln = new Node<K,V>(ph, pk, pv, ln);
+                else
+                  hn = new Node<K,V>(ph, pk, pv, hn);
+              }
+              setTabAt(nextTab, i, ln);
+              setTabAt(nextTab, i + n, hn);
+              setTabAt(tab, i, fwd);
+              advance = true;
+            }
+            else if (f instanceof TreeBin) {
+              TreeBin<K,V> t = (TreeBin<K,V>)f;
+              TreeNode<K,V> lo = null, loTail = null;
+              TreeNode<K,V> hi = null, hiTail = null;
+              int lc = 0, hc = 0;
+              for (Node<K,V> e = t.first; e != null; e = e.next) {
+                int h = e.hash;
+                TreeNode<K,V> p = new TreeNode<K,V>
+                    (h, e.key, e.val, null, null);
+                if ((h & n) == 0) {
+                  if ((p.prev = loTail) == null)
+                    lo = p;
+                  else
+                    loTail.next = p;
+                  loTail = p;
+                  ++lc;
+                }
+                else {
+                  if ((p.prev = hiTail) == null)
+                    hi = p;
+                  else
+                    hiTail.next = p;
+                  hiTail = p;
+                  ++hc;
+                }
+              }
+              ln = (lc <= UNTREEIFY_THRESHOLD) ? untreeify(lo) :
+                  (hc != 0) ? new TreeBin<K,V>(lo) : t;
+              hn = (hc <= UNTREEIFY_THRESHOLD) ? untreeify(hi) :
+                  (lc != 0) ? new TreeBin<K,V>(hi) : t;
+              setTabAt(nextTab, i, ln);
+              setTabAt(nextTab, i + n, hn);
+              setTabAt(tab, i, fwd);
+              advance = true;
+            }
+          }
+        }
+      }
+    }
+  }
 ```
 
 
@@ -2291,11 +2560,596 @@ Map:
 
 
 
+## 20210621
+
+1.每天上班要做的	
+
+```
+1.检查下hadoop集群, hbase集群
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			8.79 TB (18.75%)
+			35.23 TB (75.19%)
+	检查进程， 下面一个都不能少：
+		
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  		--ok
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+10.10.10.102 administrator/Admin711406 
+	进程：
+	     GuPiaoReduce（RunDataMerge?）	9:25
+	     
+3.检查界面，行情软件
+	# 如果有问题，启动：hbase-daemon.sh start thrift2
+
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+```
+
+开发程序对接历史的商品数据
+
+​	21年的数据格式也要兼容		--ok
+
+​	计算一下商品数据		--ok
+
+		1.主观实盘：沪银ag、郑棉cf、豆油y、沥青bu、pta、纸浆sp、螺纹钢rb、玻璃fg、苹果ap、苯乙烯eb、沪镍ni、沪铝al；
+		2.策略应急及黑色系：热卷hc、燃油lu、棕榈油p、铁矿石i、焦煤jm、焦炭j、动力煤zc；
+		3.剩余品种可按交易所顺序补录主连数据；
+夜盘数据进行排序		--ok
+
+
+
+今日工作：
+
+20210621
+
+1.开发历史k线程序，支持对历史的商品数据补录
+
+​	兼容21年之前和之后的不同目录日期格式
+
+​	实现对商品日盘和夜盘数据排序，支持夜盘数据的扫描
+
 flink
 
 
 
+###################
+
+## 20210622
+
+1.每天上班要做的	
+
+```
+1.检查下hadoop集群, hbase集群
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			8.79 TB (18.77%)
+			35.22 TB (75.16%)
+	检查进程， 下面一个都不能少：
+		
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  		--ok
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+	     
+3.检查界面，行情软件
+	# 如果有问题，启动：hbase-daemon.sh start thrift2
+
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+```
+
+开发程序对接历史的商品数据
+
+​		测试发送历史数据，稳定不死
+
+​		测试夜盘数据一直loop的问题
+
+
+
+规则修改一下，主连数据重新生成
+
+
+
+## 20210623
+
+1.每天上班要做的	
+
+```
+1.检查下hadoop集群, hbase集群			--ok
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			8.8 TB (18.79%)
+			35.21 TB (75.14%)
+	检查进程， 下面一个都不能少：
+		
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  		--ok
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+	     
+3.检查界面，行情软件
+	# 如果有问题，启动：hbase-daemon.sh start thrift2
+
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+```
+
+开发程序对接历史的商品数据
+
+​		测试发送历史数据，稳定不死
+
+​		生成主力代码，copy主力合约
+
+​		测试夜盘数据一直loop的问题，k线算法调一下
+
+
+
+规则修改一下，主连数据重新生成
+
+
+
+## 20210624
+
+1.每天上班要做的			--ok
+
+```
+1.检查下hadoop集群, hbase集群	
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			8.78 TB (18.74%)
+			35.23 TB (75.18%)
+	检查进程， 下面一个都不能少：
+		
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123 
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+	     
+3.检查界面，行情软件
+	# 如果有问题，启动：hbase-daemon.sh start thrift2
+
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+```
+
+开发程序对接历史的商品数据
+
+​		测试发送历史数据，稳定不死
+
+​		生成主力代码，copy主力合约
+
+​		测试夜盘数据一直loop的问题，k线算法调一下
+
+​		增加15年的单元测试，股指和CF
+
+​				修改交易时间
+
+
+
+规则修改一下，主连数据重新生成
+
+
+
+注意：
+
+1.股指期货2016年之前的交易时间是9:15~15:15
+
+2.动力煤15年改过合约号，TC > ZC
+
+3.郑商所19年才调整过交易时间,夜盘时间21
+
+
+
+20210624
+
+今天工作:
+
+1.重新生成股指的主连数据  --正在运行
+
+2.测试商品期货历史补录程序
+
+​		整理和修改历年交易所的交易时间， 股指在16年之前是09:15-15:15， 郑商所在19年之前夜盘是：21：00-23:30
+
+​		兼容数据：动力煤在15年由合约号TC修改为ZC
+
+明天工作：
+
+继续测试商品期货历史补录程序
+
+
+
+## 20210625
+
+1.每天上班要做的
+
+```
+1.检查下hadoop集群, hbase集群	
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			8.78 TB (18.75%)
+			35.23 TB (75.18%)
+	检查进程， 下面一个都不能少：
+		
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123 
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+	     
+3.检查界面，行情软件
+	# 如果有问题，启动：hbase-daemon.sh start thrift2
+
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+```
+
+开发程序对接历史的商品数据
+
+​		测试发送历史数据，稳定不死
+
+​		生成主力代码，copy主力合约			--ok
+
+​		k线算法？生成的k线不对
+
+​		增加15年的单元测试，股指和CF		--ok
+
+​				修改交易时间							  --ok
+
+开盘前5分钟的数据都要，无论夜盘还是日盘		--ok
+
+
+
+规则修改一下，主连数据重新生成		--正在运行
+
+
+
+新服务器安装
+
+1.配置网络
+
+2.安装jdk
+
+3.安装
+
+​	zookeeper增加节点			--不需要，用原来的节点
+
+​		动态的增加节点，但要3.5+以上
+
+​		https://blog.csdn.net/admin_15082037343/article/details/100060014
+
+​	hadoop增加节点
+
+​	hbase增加节点
+
+​	slave2:
+
+​		ProcessReport from dead or unregistered node: DatanodeRegistration(10.10.0.15:50010
+
+​	测试
+
+注意：
+
+1.股指期货2016年之前的交易时间是9:15~15:15
+
+2.动力煤15年改过合约号，TC > ZC
+
+3.郑商所19年才调整过交易时间,夜盘时间21
+
+
+
+############
+
+## 20210628
+
+```
+1.检查下hadoop集群, hbase集群	
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			8.8 TB (15.88%)
+			35.23 TB (75.18%)
+	检查进程， 下面一个都不能少：
+		
+
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123 
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+	     
+3.检查界面，行情软件
+	如果有问题，启动：hbase-daemon.sh start thrift2
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+
+```
+
+
+
+1.商品历史数据补录
+
+​		股指+商品历史数据补录，股指21年的补完，15年的要重新处理
+
+​		丢失数据补录
+
+
+
+2.hbase新服务器安装， thrift分解掉用
+
+
+
+20210628
+
+今日工作
+
+1.hbase服务器
+
+​		系统安装		--ok
+
+​		hbase服务安装		--ok
+
+​		安装多台thriftserver
+
+​				端口转发：
+
+​			
+
+```
+1.安装 rinetd
+
+sudo` `apt-get ``install` `rinetd
+
+2.配置rinetd,增加端口转发规则
+ 	vim /etc/rinetd.conf
+	# 在最后添加以下配置
+	0.0.0.0 3388 127.0.0.1 3389  # 将本机3388端口转发到3389
+	# 启动转发进程：
+	rinetd -c /etc/rinetd.conf
+	# 确认
+	netstat -anp | grep 9091
+tcp        0      0 0.0.0.0:9091            0.0.0.0:*               LISTEN      14519/rinetd
+```
+
+ngixn的：
+
+https://blog.51cto.com/moerjinrong/2287680
+
+
+
+2.周五夜盘数据补录		--ok
+
+​	
+
+明天工作：
+
+安装多台thriftserver 分解调用
+
+​		thrift服务是一个rpc协议，并不是
+
+商品历史数据补录
+
+
+
+############
+
+## 20210629
+
+```
+1.检查下hadoop集群, hbase集群	
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			8.8 TB (15.88%)
+			35.23 TB (75.18%)
+	检查进程， 下面一个都不能少：
+		
+
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123 
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+	     
+3.检查界面，行情软件
+	如果有问题，启动：hbase-daemon.sh start thrift2
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+
+regionserver OOM了
+2021/06/29 07:09:24 INFO  [hconnection-0x1e1dd28-shared--pool1-t27770] - #370516, table=hznc_mkdata:2sdata, attempt=13/35 failed=175ops, last exception: java.io.IOException: com.google.protobuf.ServiceException: java.lang.OutOfMemoryError: Java heap space on slave1,60020,1622529106503, tracking started null, retrying after=20155ms, replay=175ops
+
+
+ Left over 9 task(s) are processed on server(s): [slave1,60020,1622529106503]
+```
+
+
+
+1.thrift分解掉用
+
+nginx 健康检查， 模块：nginx_upstream_check_module		--ok
+
+```
+
+        upstream hbase_thrift2_servers {
+                server hadoop01:9090 weight=6 max_fails=3 fail_timeout=3s;
+                server slave3:9090 weight=2 max_fails=3 fail_timeout=3s;
+                server slave4:9090 weight=2 max_fails=3 fail_timeout=3s;
+        }
+
+        server {
+                listen 9092;
+                proxy_pass hbase_thrift2_servers;
+
+        }
+
+}
+
+```
+
+提交一下		--ok
+
+
+
+盘后：
+
+2.商品历史数据补录
+
+​		股指历史数据补录，15年和21年的
+
+​			解压21年的和15年的		--ok
+
+​			发送21年的
+
+​			发送15年的
+
+​		商品历史数据补录
+
+​				ag,cf,y,bu,pta,sp,rb,fg,ap,eb,ni,al,hc,lu,p,i,jm,j,zc,tc,c
+
+​				检查15年的			--ok
+
+​				解压并继续发送15年的
+
+​				解压16年的
+
+​	
+
+3.hbase regionserver
+
+
+
+并发编程:
+
+LinkedBlockingQueue
+
+CopyOnWriteArrayList
+
+
+
 todo:
+
+jstat, qps
+
+查看连接:
+
+netstat -anp | grep 8080 -c
+
+查看进程的线程数：
+
+
 
 
     hbase优化：
