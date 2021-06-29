@@ -302,24 +302,6 @@ Singleton instance = new Singleton(),这句话实际是分三步执行：
 
 但是指令重排序可能会改变执行顺序：1>3>2，多线程下会导致得到一个半实例化的对象，使用volatile可以禁止指令重排序保证多线程也能正常运行。
 
-#### jdk1.6之后synchronized做了哪些优化，锁的几种状态？
-
-引进了偏向锁，轻量级锁，自旋锁，自适应自旋锁等技术减少锁操作的开销。
-
-几种状态：
-
-无锁
-
-偏向锁：同步代码一直被一个线程访问，那么该线程会自动获取锁，降低获取锁的代价。
-
-对象头mark word里会记录偏向线程的id。
-
-轻量级锁：当有另外线程竞争时会升级为轻量级锁，线程通过自旋的方式尝试获取锁，不会阻塞，提高性能。
-
-虚拟机在当前线程的帧栈建立lock record(锁记录)，然后尝试复制对象的mark word到lock record中，拷贝成功通过CAS将对象的mark word更新新为lock record里的，并将lock record的owner指向对象的mark word。然后将锁标志改为“00”，表示对象处于轻量级锁状态。
-
-重量级锁：当自旋超过一定次数，或者一个线程持有锁，另一个线程自旋，又来了第三个线程时，会从轻量级锁升级为重量级锁，此时等待锁的线程都会进入阻塞状态。
-
 #### synchronize和ReentrantLock区别
 
 reentrantLock是基于AQS实现的可重入锁，在jdk中实现。与synchronized相比：
@@ -338,45 +320,47 @@ reentrantLock是基于AQS实现的可重入锁，在jdk中实现。与synchroniz
 
 ​	即每次加入新的线程，会尝试自旋获取锁。所以可能后来的线程获取到锁。
 
-#### java内存模型和jvm内存分区
+#### AQS
 
-JMM是一种抽象的概念，也是一种规范，通过一些规范：可见性，原子性，有序性控制程序中各个变量在主内存跟工作内存的访问方式。
+队列同步器AbstractQueuedSynchronized,用来构建锁或者其他同步工具的基础框架，内部维护了一个volatile修饰的成员变量state表示同步状态，内置FIFO的双端队列作为线程的等待队列。定义了一些模板方法，完成同步的工作：
 
-jvm内存分区：
+```java
+public final void acquire(int arg) # 获取独占锁
+public final void acquireInterruptibly(int arg) # 获取独占锁，响应中断
+public final boolean tryAcquireNanos(int arg, long nanosTimeout) # 指定时长获取独占锁，响应中断
+public final boolean release(int arg) # 释放独占锁
+    
+public final void acquireShared(int arg) # 获取共享锁
+public final void acquireSharedInterruptibly(int arg) # 获取共享锁，响应中断
+private boolean doAcquireSharedNanos(int arg, long nanosTimeout) # 指定时长获取共享锁
+public final boolean releaseShared(int arg)  #释放共享锁
+```
 
-程序计数器
+通过继承的方式去重写实现其中的如tryAcquire，tryAcquireShared，tryRelease，tryReleaseShared等实现同步工具。
 
-栈
+简化了锁的实现方式，隐藏了线程等待和唤醒的操作，可以很灵活的实现自己需要的并发工具。
 
-堆
+查看源代码：AbstractQueuedSynchronized
 
-方法区：
+##### ReetrantLock
 
-​	方法区是JVM 定义的一种规范，是所有虚拟机都需要遵守的约定， **而“永久代（PermGen space）”和“元数据（MetaSpace）”都是实际某个虚拟机针对“方法区”的一种实现**，“永久代”是的JDK1.7之前 Hotspot虚拟机对方法区的实现，而“元数据”则是1.8之后Hotspot虚拟机针对方法区的一种实现而已。
+##### ReentrantReadWriteLock
 
-本地方法栈
+##### LockSupport
 
-tip: 程序计数器，栈，本地方法栈都是线程私有的，生命周期随线程消亡，所以不需要进行垃圾回收。
+##### Condition
 
-堆和方法区是共享内存也是发生垃圾回收的主要区域。
+##### LinkedBlockingQueue
 
-TODO：画图
+##### CopyOnWriteArrayList
 
-#### ThreadLocal
+##### ConcurrentHashMap
 
-是什么？
+##### CountDownLatch和CycliBarrier
 
-作用是让每个线程保存只有自己访问的私有变量。通过threadLocal的set和get方法赋值和获取。
+##### Semaphore和Exchanger
 
-从而避免线程的安全问题。
-
-实现原理：
-
-每个线程都有ThreadLocalMap类型的变量，类似hashMap，调用threadLocal的set和get方法时，将要线程私有的变量以threadLocal为key,变量为value存到ThreadLocalMap中。
-
-内存泄漏问题：
-
-ThreadLocalMap中的key是ThreadLocal的弱引用（WeakReference），而value是强引用，所以如果ThreadLocal没有被强引用的情况，在垃圾回收的时候，key会被清理，而value不会被清理掉。这样会引起内存泄漏，key手动调用remove方法，清理掉key为null的元素。
+#### 
 
 #### 线程池
 
@@ -418,17 +402,21 @@ FixedThreadPool和SingleThreadPool：运行请求的队列为Integer.Max_value�
 
 CacheThreadPool和SchedulerThreadPool：允许创建的队列数量为Integer.Max_value，可能创建大量线程，OOM。
 
-#### AQS
+#### ThreadLocal
 
-AbstractQuenedSynchronizer（同步队列），底层是一个双向链表实现了FIFO的队列，核心思想是：如果被请求的共享资源是空闲的，就将请求资源的线程设置为有效的工作线程并且将共享资源设置为锁定状态，如果被占用就假如队列阻塞等待。
+是什么？
 
-几个重要AQS组件：
+作用是让每个线程保存只有自己访问的私有变量。通过threadLocal的set和get方法赋值和获取。
 
-Semaphore(信号量)：允许多个线程同时访问。可以指定多个线程同时访问某个资源。
+从而避免线程的安全问题。
 
-CountDownLatch(计数器)：用来协调多个线程同步的工具，通常用来控制线程等待，可以让多个线程同时达到再开始执行某个方法。计数器递减，只能使用一次。
+实现原理：
 
-CyclicBarrier(循环栅栏)：跟CounDownLatch相似，但可以reset循环使用,计数器递增。它要做的事情是，让一组线程到达一个屏障（也可以叫同步点）时被阻塞，直到最后一个线程到达屏障时，屏障才会开门，所有被屏障拦截的线程才会继续干活。
+每个线程都有ThreadLocalMap类型的变量，类似hashMap，调用threadLocal的set和get方法时，将要线程私有的变量以threadLocal为key,变量为value存到ThreadLocalMap中。
+
+内存泄漏问题：
+
+ThreadLocalMap中的key是ThreadLocal的弱引用（WeakReference），而value是强引用，所以如果ThreadLocal没有被强引用的情况，在垃圾回收的时候，key会被清理，而value不会被清理掉。这样会引起内存泄漏，key手动调用remove方法，清理掉key为null的元素。
 
 #### JVM
 
