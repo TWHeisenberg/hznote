@@ -3101,6 +3101,8 @@ nginx 健康检查， 模块：nginx_upstream_check_module		--ok
 
 提交一下		--ok
 
+master 端口改为9090		--ok
+
 
 
 盘后：
@@ -3127,7 +3129,31 @@ nginx 健康检查， 模块：nginx_upstream_check_module		--ok
 
 ​	
 
-3.hbase regionserver
+3.hbase regionserver		--ok
+
+​		删除datanode
+
+​		删除逻辑卷轴
+
+​		重启datanode
+
+​		重启regionserver
+
+
+
+20210629
+
+今天工作：
+
+1.商品历史数据补录
+
+2.安装多台hbaes thrift 通过配置nginx 分解调用		--ok
+
+明天工作：
+
+1.继续历史商品数据补录， 
+
+2.升级实时k线程序，对接新的主力切换规则
 
 
 
