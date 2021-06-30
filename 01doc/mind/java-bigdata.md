@@ -342,25 +342,212 @@ public final boolean releaseShared(int arg)  #释放共享锁
 
 查看源代码：AbstractQueuedSynchronized
 
-##### ReetrantLock
+##### ReentrantLock
+
+​	支持重入的锁，并且内置了两种模式的锁：公平锁和非公平锁， 缺省使用非公平锁，提供带boolean类型的构造方法来选择锁的模式。
+
+内置实现了一个同步器Sync继承AQS这个抽象类，实现了nonfairTryAcquire方法，非公平获取锁，ReentrantLock中的内部子类NonfairSync和调用nonfairTryAcquire方法。值得一提的是，Sync的tryLock方法，无论是在公平还是非公平状态，都是调用nonfairTryAcquire非公平的获取锁，如果失败立即返回，不加入等待队列。
+
+```java
+public boolean tryLock() {
+  return sync.nonfairTryAcquire(1);
+}
+```
+
+​	NonfairSync 继承Sync重写了lock方法，一进来就通过CAS设置同步状态，如果成功独占锁，失败就调用acquire加入等待队列。
+
+```java
+    final void lock() {
+      // 一进来就尝试CAS获取锁
+      if (compareAndSetState(0, 1))
+        setExclusiveOwnerThread(Thread.currentThread());
+      else
+        // 如果失败，就加入等待队列
+        acquire(1); // 实现是先tryAcquire,失败再加入等待队列，自旋获取
+    }
+```
+
+FairSync实现很简单，就是重写了tryAcquire方法，获取锁之前判断，等待队列中是否有排在前面的线程，如果没有，通过CAS尝试获取同步状态，如果成功，独占锁：
+
+```java
+       if (!hasQueuedPredecessors() &&
+            compareAndSetState(0, acquires)) {
+          // 独占锁
+          setExclusiveOwnerThread(current);
+          return true;
+        }
+```
+
+
 
 ##### ReentrantReadWriteLock
 
-##### LockSupport
+读写锁是一个支持公平和非公平两种模式的读写锁，内置了两把锁，读锁和写锁。读锁是共享锁，写锁是可重入的排他锁，
 
-##### Condition
+当写锁被占有，读锁和写锁排他，但是可重入。
+
+当获取写锁，如果读锁被获取需要等待读锁释放，写锁如果是自己可重入。
+
+都是基于内置一个同步器sync实现：
+
+```java
+private final ReentrantReadWriteLock.ReadLock readerLock;
+private final ReentrantReadWriteLock.WriteLock writerLock;
+final Sync sync;
+```
+
+同步器根据公平模式选择公平模式和非公平模式，通过实现两个方法达到公平和非公平的功能：
+
+```java
+// NonfairSync
+final boolean writerShouldBlock() {
+  return false; // writers can always barge
+}
+final boolean readerShouldBlock() {
+  return apparentlyFirstQueuedIsExclusive(); // 只关注队列中第一个是否是写锁
+}
+
+// FairSync
+final boolean writerShouldBlock() {return hasQueuedPredecessors();}
+final boolean readerShouldBlock() {return hasQueuedPredecessors();}
+```
+
+同步器在通过一个int类型的stat变量同时维护读写锁的状态，高16位表示读，低16位表示写，实现sharedCount方法（符号补0右移16位置）得到读锁的数量， 
+
+exclusiveCount(抹掉高16位)得到写锁的数量。
+
+重写了tryAcquire和tryAcquireShared分别实现获取写锁和读锁的功能，重写了tryRelease和tryReleaseShared分别实现释放写锁和读锁的功能。
+
+适用于读写并存，并且多读少写的场景。
+
+查看源码：ReentrantReadWriteLock
+
+
+
+##### LockSupport和Condition
+
+通过此LockSupport这个工具类对线程进行阻塞和唤醒操作，调用park和unpark，也有支持阻塞指定时长的parkNanos方法。
+
+Condition是一个接口定义了等待/通知两种类型的方法，它的实现类ConditionObject是AQS的内部类，每个ConditionObject都有一个等待队列，调用wait方法时
+
+添加到新节点加到等待队列的尾部，调用signal唤醒时会将首节点（等待最久的节点）移到同步队列中。相当于Object的监视器的wait和notify方法
+
+但是Object的监视器模型一个对象有一个同步队列和一个等待队列，而AQS可以拥有一个同步队列和多个等待队列。
+
+依赖Lock的newCondition创建，配置lock的lock和unlock使用
+
+#### 并发队列
+
+##### ConcurrentLinkedQueue
+
+​	基于链表的无界安全队列
 
 ##### LinkedBlockingQueue
 
+ 	基于链表的有界阻塞队列
+
+##### SynchronourQueue
+
+​	不存储元素的阻塞队列，每一个put操作都必须等待take操作，吞吐量最高
+
+##### LinkedTransferQueue
+
+​	由链表组成的无界阻塞队列，多了tryTransfer和transfer方法。transfer方法：如果有消费者等待可以立即吧元素传输给消费者，没有就加入链表尾部，一直等到有消费者接收后再返回。tryTransfer如果没有消费者poll会返回false。
+
+##### ArrayBlockingQueue
+
+​	基于数组的有界阻塞队列
+
+##### PriorityBlockingQueue
+
+​	支持优先序的无界阻塞队列
+
+##### DelayQueue 
+
+​	支持延时获取元素的无界阻塞队列
+
 ##### CopyOnWriteArrayList
 
-##### ConcurrentHashMap
+是ArrayList的一个线程安全的实现，主要思想是内置成员变量一把重入锁，在添加元素时进行加锁，然后复制一个新的数组，容量比原来大一个，添加完成，覆盖原来的数组。
+
+所以如果元素很多，每次添加都比较消耗内存，适合初始化和一些读多写少的场景。
+
+内置了一个可重入锁：
+
+```java
+final transient ReentrantLock lock = new ReentrantLock();
+```
+
+每次添加元素时，进行加锁, lock.lock();
+
+添加过程也比较简单，就是复制一个新的比原来容量多1的数组，然后添加元素：
+
+```java
+// 复制出来一个新的数组，比原来多1
+Object[] newElements = Arrays.copyOf(elements, len + 1);
+newElements[len] = e; // 添加元素
+setArray(newElements); // 添加完成后再覆盖原来的数组，所以这期间其他线程读到的数组还是老的
+```
+
+tips: ArrayList其他的线程安全的实现：Vector， Collections.synchronizedList
+
+而Collections.synchronizedList会封装传入的List， 封装成一个SynchronizedList或者SynchronizedRandomAccessList，其实就是对读写方法进行加锁实现的。
+
+如：
+
+```java
+return (list instanceof RandomAccess ?new SynchronizedRandomAccessList<>(list) :new SynchronizedList<>(list));   
+
+public E get(int index) {
+            synchronized (mutex) {return list.get(index);}
+        }
+```
 
 ##### CountDownLatch和CycliBarrier
 
+CountDownLatch用来线程之间等待操作，内部维护一个同步器实现共享锁，通过构造函数传入计数，也就是共享锁的最大获取数量：
+
+```java
+public CountDownLatch(int count) {
+    if (count < 0) throw new IllegalArgumentException("count < 0");
+    this.sync = new Sync(count);
+}
+```
+
+线程调用countDown方法，状态-1，也就是释放共享锁：
+
+```java
+public void countDown() { sync.releaseShared(1); }
+```
+
+调用await方法，等待计数为0，其实就是调用了acquireSharedInterruptibly方法获取同步状态，而重写了tryAcquireShared方法，只有计数为0时，才返回成功。
+
+```java
+   public void await() throws InterruptedException { sync.acquireSharedInterruptibly(1);    }
+protected int tryAcquireShared(int acquires) {    return (getState() == 0) ? 1 : -1; }
+```
+
+CycliBarrier：
+
+同步屏障，可以用来阻塞线程直到所有线程都到达屏障时才会继续执行。
+
+跟CountDownLatch差不多，也是通过构造函数，传入计数，线程调用await方法进行等待其他线程到达屏障。
+
+可以用于多线程计算最后要进行合并的场景。
+
+和CountDownLatch区别：CycliBarrier可以重置计数，而CountDownLatch只能计一次。
+
+还提供了其他有用方法：getNumberWaiting获得正在等待线程的数量，isBroken判断阻塞的线程是否被中断。
+
+更加灵活也更加强大。
+
 ##### Semaphore和Exchanger
 
-#### 
+##### ConcurrentHashMap
+
+#### Fork/Join
+
+
 
 #### 线程池
 
