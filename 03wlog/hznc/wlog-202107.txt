@@ -1,0 +1,2197 @@
+## tips
+
+释放buffer/cache的内存：
+
+```
+释放缓存区内存的方法
+sync# 将内存中数据同步到磁盘
+
+ a）清理pagecache（页面缓存）
+
+# echo 1 > /proc/sys/vm/drop_caches     或者 # sysctl -w vm.drop_caches=1
+
+　 b）清理dentries（目录缓存）和inodes
+# echo 2 > /proc/sys/vm/drop_caches     或者 # sysctl -w vm.drop_caches=2
+　 c）清理pagecache、dentries和inodes
+
+# echo 3 > /proc/sys/vm/drop_caches     或者 # sysctl -w vm.drop_caches=3
+
+# 如何限制buffer/cache的占用？
+```
+
+注意：
+
+夜盘数据比较特殊,  比如 2021-04-01 21:00:00 ~ 2021-04-02 00:00:00 的数据, 其实是 2021-03-31 21:00:00 ~ 2021-04-01 00:00:00 的数据.  即夜盘一整天的开盘时间是 昨天 21:00
+
+maven 官方下载地址：
+
+https://archive.apache.org/dist/maven/maven-3/
+
+服务器地址：
+
+```
+10.10.10.104   administrator  Admin123
+10.10.10.102 administrator  Admin711406
+```
+
+
+
+个人开发的软件源代码需要每月备份到网络硬盘(在资源管理器输入\\10.10.10.3进入),用户名:各人中文姓名,密码:89024521
+
+
+
+这个SVN地址是你的私人地址，你可以提交任何临时代码。
+：https://10.10.10.102/svn/private_source/wangtao
+账户名和密码是名字全拼。
+
+项目 SVN 地址:
+https://10.10.10.102/svn/量化系统/nc_tree_parse/nc_algo
+
+confluence 地址：http://10.10.0.47:8090/
+
+​	ftp:list_delete_rowkey.shb
+
+	   历史股指期权 和 商品期权 数据的下载地址 ：
+	   域名：tik-ftp.citicsf.com 端口：8371
+	   电信IP：58.33.80.163     端口：8371
+	   联通IP：140.206.97.123 端口：8371
+	   李佳桧/83g3Mh7m
+
+​	历史数据：
+
+​		50ETF期权数据
+​		CFFEX股指期货
+​		DCE大连商品
+​		CZC3郑州商品
+​		SHFE上海商品
+
+钉钉邮箱：wangdao6551@dingtalk.com
+
+能诚账号：u00479密码：1
+
+jira账号：u00479/123456
+
+jira   ip地址更换成：http://10.10.0.47:8080/
+
+svn账号和密码：liuzhenjiang/liuzhenjiang
+
+hbase:
+	hadoop-daemon.sh start datanode
+	hbase-daemon.sh start regionserver
+	tail  -n -500 /usr/local/hbase/logs/hbase-hadoop-regionserver-slave4.log
+
+sql server:
+
+10.10.10.8
+
+​		properties.setProperty("user", "R16");
+​		properties.setProperty("password", "R16_0625");
+
+现有集群规模：共有七台机器，老机房两台，新机房五台。
+
+老机房两台：
+
+​     主机名：keep-0        IP：10.10.10.110    nc_007用户登录密码：nc_007
+
+主机名：keep-1        IP：10.10.10.111       nc_008用户登录密码：nc_008
+
+ ![image-20210510085345685](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20210510085345685.png)
+
+新机房五台：
+
+​     主机名：master      IP：10.10.0.254        root用户登录密码：1
+
+主机名：slave1        IP：10.10.0.119        root用户登录密码：1
+
+主机名：slave2        IP：10.10.0.54        root用户登录密码：1
+
+主机名：slave3        IP：10.10.0.253        hadoop用户登录密码：1
+
+主机名：slave4        IP：10.10.0.252        hadoop用户登录密码：1
+
+ 
+
+集群配置：
+
+​     三台zookeeper，七台HDFS（master，slave1，上运行namenode，七台DataNode）
+
+​     Master，slave3作为HBASE的HMaster节点，除master节点之外，六台起HRegionserver服务，HMaster节点需要另起ThriftServer服务来提供读取数据服务。集群启动步骤见《集群各项服务启动命令.txt》文件
+
+Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas
+
+HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview
+
+
+
+git key: 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
+
+搭建ceph跟solr:
+
+```
+IP：10.10.0.202
+用户名：wangtao/root
+密码：123
+```
+
+
+
+
+
+## 每天做的
+
+```
+1.检查下hadoop集群, hbase集群
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123  
+	进程：RunOnlyGuzhi，
+    	  
+10.10.10.102 administrator/Admin711406  
+	进程：GetMarketDataAndStore
+	     GuPiaoReduce（RunDataMerge?）
+```
+
+
+
+## 20210701
+
+```
+1.检查下hadoop集群, hbase集群
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			66.2 TB
+			8.9 TB (13.44%)
+			53.34 TB (80.57%)
+	检查进程， 下面一个都不能少：
+
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123 
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+	     
+3.检查界面，行情软件
+	如果有问题，启动：hbase-daemon.sh start thrift2
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+```
+
+1.商品历史数据补录
+
+​		商品历史数据补录
+
+​				ag,cf,y,bu,pta,sp,rb,fg,ap,eb,ni,al,hc,lu,p,i,jm,j,zc,tc,c
+
+​				检查15年的			--ok
+
+​				解压并继续发送15年的
+
+​				解压16年的
+
+导入太慢了，换种方式，直接生成hfile:
+
+​	Bulkload 
+
+​	https://blog.csdn.net/xiaohu21/article/details/108310612
+
+​		先生成csv		--ok
+
+​		上传到hdfs
+
+​				创建目录：
+
+​						hdfs dfs -mkdir -p /csv/input/2015
+
+​				上传：
+
+​						hdfs dfs -put hznc_mkdata-tickdata.csv /csv/input/2015
+
+​				查看：
+
+​						hdfs dfs -ls /csv/input/2015
+
+​		hbase shell 生成hfile文件
+
+```shell
+hbase  org.apache.hadoop.hbase.mapreduce.ImportTsv \
+-Dimporttsv.separator=, \
+-Dimporttsv.columns='HBASE_ROW_KEY,cf_data:01cSymbol,cf_data:02dbClosePrice,cf_data:03dbHeightPrice,cf_data:04dbLowPrice,cf_data:05dbOpenPrice,cf_data:06dbSum,cf_data:07dbYTClosePrice,cf_data:08uTime,cf_data:09uVolume,cf_data:10uVolume_Sell,cf_data:11zpos,cf_data:12zpos_diff,cf_data:13avgPrice,cf_data:14tdHighestPrice,cf_data:15tdLowestPrice,cf_data:16UpperLimitPrice,cf_data:17LowerLimitPrice,cf_data:18BidPrice1,cf_data:19BidVolume1,cf_data:20AskPrice1,cf_data:21AskVolume1,cf_data:from'  \
+-Dimporttsv.bulk.output=/csv/output/2015 \
+hznc_mkdata:tickdata \
+/csv/input/2015
+```
+
+​		
+
+没有权限：
+
+```
+Exception in thread "main" org.apache.hadoop.security.AccessControlException: Permission denied: user=root, access=EXECUTE, inode="/user/root/.staging/job_1625124755907_0002":hadoop:supergroup:drwx------
+        at org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker.check(FSPermissionChecker.java:320)
+```
+
+
+
+需要启动web-proxy:
+
+yarn-daemon.sh start proxyserver
+
+查看mr任务：
+
+yarn application -list
+
+杀掉任务：
+
+yarn application -kill application_1625127398446_0003
+
+
+
+实时k线程序本地内存溢出了？
+
+```java
+// Something really bad happened. We are on the send thread that will now die.
+LOG.error("Internal AsyncProcess #" + id + " error for "
+    + tableName + " processing for " + server, t);
+throw new RuntimeException(t);
+```
+
+是否可以调节线程的大小
+
+32 位 windows增加内存？
+
+
+
+20210701
+
+今天工作：
+
+1.商品历史数据补录
+
+​		准备修改程序，换个方式导历史数据：
+
+​					1.修改程序将各周期数据生成本地csv		--ok
+
+​					2.收盘后调用hbase自带的importTsv工具将csv转换成hbase基础文件hfile		--正在测试中
+
+​					3.增量导入hfile文件
+
+2.商品历史数据补录  --ok
+
+明天工作：
+
+1.测试hbase BulkLoad导入数据方式
+
+2.补录股指历史数据，由于合约全称化升级导致6.1-6.17数据缺失
+
+
+
+#########
+
+## 20210702
+
+```
+1.检查下hadoop集群, hbase集群
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			66.2 TB
+			8.9 TB (13.44%)
+			53.34 TB (80.57%)
+	检查进程， 下面一个都不能少：
+
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123 
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+	     
+3.检查界面，行情软件
+	如果有问题，启动：hbase-daemon.sh start thrift2
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+实时k线内存溢出了？
+2021-07-02 13:51:32 ERROR [hconnection-0x87af79-shared--pool1-t2640] - Internal AsyncProcess #34257 error for hznc_mkdata:1sdata processing for keep-1,60020,1622529047848
+java.lang.RuntimeException: java.lang.OutOfMemoryError: unable to create new native thread
+	at org.apache.hadoop.hbase.client.RpcRetryingCaller.callWithoutRetries(RpcRetryingCaller.java:220)
+
+线程有多少？ 272 ，那么修改批次后呢？
+
+jni创建的线程？
+
+减小堆内存， --ok,让出了300M
+修改批次大小，改成1000  --ok
+再测试看看吧
+```
+
+1.商品历史数据补录
+
+​		商品历史数据补录
+
+​				ag,cf,y,bu,pta,sp,rb,fg,ap,eb,ni,al,hc,lu,p,i,jm,j,zc,tc,c
+
+​				继续发送15年的
+
+导入太慢了，换种方式，直接生成hfile:
+
+​	Bulkload 
+
+​	https://blog.csdn.net/xiaohu21/article/details/108310612
+
+​		先生成csv		--ok
+
+​		上传到hdfs
+
+​				创建目录：
+
+​						hdfs dfs -mkdir -p /csv/input/2015
+
+​				上传：
+
+​						hdfs dfs -put hznc_mkdata-tickdata.csv /csv/input/2015
+
+​				查看：
+
+​						hdfs dfs -ls /csv/input/2015
+
+​		hbase shell 生成hfile文件		--ok
+
+```shell
+hbase  org.apache.hadoop.hbase.mapreduce.ImportTsv \
+-Dimporttsv.separator=, \
+-Dimporttsv.columns='HBASE_ROW_KEY,cf_data:01cSymbol,cf_data:02dbClosePrice,cf_data:03dbHeightPrice,cf_data:04dbLowPrice,cf_data:05dbOpenPrice,cf_data:06dbSum,cf_data:07dbYTClosePrice,cf_data:08uTime,cf_data:09uVolume,cf_data:10uVolume_Sell,cf_data:11zpos,cf_data:12zpos_diff,cf_data:13avgPrice,cf_data:14tdHighestPrice,cf_data:15tdLowestPrice,cf_data:16UpperLimitPrice,cf_data:17LowerLimitPrice,cf_data:18BidPrice1,cf_data:19BidVolume1,cf_data:20AskPrice1,cf_data:21AskVolume1,cf_data:from'  \
+-Dimporttsv.bulk.output=/csv/output/2015 \
+hznc_mkdata:tickdata \
+/csv/input/2015
+```
+
+​		
+
+增量导入表：
+
+hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles /csv/output/2015  hznc_mkdata:tickdata
+
+se
+
+没有权限：
+
+```
+Exception in thread "main" org.apache.hadoop.security.AccessControlException: Permission denied: user=root, access=EXECUTE, inode="/user/root/.staging/job_1625124755907_0002":hadoop:supergroup:drwx------
+        at org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker.check(FSPermissionChecker.java:320)
+        
+vim /etc/profile
+export HADOOP_USER_NAME=hadoop
+source /etc/profile
+```
+
+
+
+需要启动web-proxy:
+
+yarn-daemon.sh start proxyserver
+
+查看mr任务：
+
+yarn application -list
+
+杀掉任务：
+
+yarn application -kill application_1625127398446_0003
+
+
+
+本地生成csv文件， 多进程，电脑资源利用好
+
+​	15年		--正在运行
+
+​	16年，17年，18年， 先解压完
+
+hbase增量导入，测试一下
+
+
+
+2.线程池
+
+
+
+并发编程：
+
+LinkedBlockingQueue
+
+CopyOnWriteArrayList
+
+
+
+#########
+
+## 20210705
+
+```
+1.检查下hadoop集群, hbase集群
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			66.2 TB
+			8.9 TB (13.44%)
+			53.34 TB (80.57%)
+	检查进程， 下面一个都不能少：
+
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123 
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+	     
+3.检查界面，行情软件
+	如果有问题，启动：hbase-daemon.sh start thrift2
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+
+#########
+
+## 20210702
+
+​```
+1.检查下hadoop集群, hbase集群
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			66.2 TB
+			8.9 TB (13.44%)
+			53.34 TB (80.57%)
+	检查进程， 下面一个都不能少：
+
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123 
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+	     
+3.检查界面，行情软件
+	如果有问题，启动：hbase-daemon.sh start thrift2
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+实时k线内存溢出了？
+2021-07-02 13:51:32 ERROR [hconnection-0x87af79-shared--pool1-t2640] - Internal AsyncProcess #34257 error for hznc_mkdata:1sdata processing for keep-1,60020,1622529047848
+java.lang.RuntimeException: java.lang.OutOfMemoryError: unable to create new native thread
+	at org.apache.hadoop.hbase.client.RpcRetryingCaller.callWithoutRetries(RpcRetryingCaller.java:220)
+
+线程有多少？ 272 ，那么修改批次后呢？
+
+jni创建的线程？
+
+减小堆内存， --ok,让出了300M
+修改批次大小，改成1000  --ok
+再测试看看吧
+​```
+
+离线补录数据的程序总是内存溢出？在regionserver
+发的太快，热点问题？
+
+```
+
+1.商品历史数据补录
+
+​		本地可以稳定发送起来，不会OOM
+
+​		改成不保存元素的队列试试，应该是parseLine这个方法出现了内存泄露		--ok
+
+10.08日的数据没有？直接到1009了？
+
+2.安装ceph,fileserver, 可以上传下载文件
+
+​			ceph 部署安装
+
+IP：10.10.0.202
+用户名：wangtao/root
+密码：123
+
+
+
+ubuntu 安装ceph:
+
+https://www.cnblogs.com/wangmo/p/11420197.html
+
+https://zhuanlan.zhihu.com/p/67832892
+
+
+
+卸载ceph,重新安装：
+
+```
+ceph-deploy purge streaming
+ceph-deploy purgedata streaming
+ceph-deploy forgetkeys
+```
+
+磁盘删除分区：
+
+删除osd:
+
+https://zhuanlan.zhihu.com/p/73478455
+
+
+
+查看pool对象：
+
+rados ls  --pool=ncdata
+
+下载：
+
+rados get test-object-1 test-object-1.txt --pool=ncdata
+
+
+
+​			fileserver2编译过
+
+​			fileserver2安装
+
+
+
+20210705
+
+今天工作：
+
+1.物流项目，搭建ceph存储服务器
+
+2.商品数据补录，修改程序生成本地csv文件
+
+明天工作：
+
+1.物流项目，开发和搭建fileserver提供上传下载功能
+
+2.商品数据补录，生成20年数据的csv
+
+
+
+#########
+
+## 20210706
+
+```
+1.检查下hadoop集群, hbase集群
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			66.2 TB
+			8.85 TB (13.37%)
+			53.38 TB (80.63%)
+	检查进程， 下面一个都不能少：
+
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123 
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+	     
+3.检查界面，行情软件
+	如果有问题，启动：hbase-daemon.sh start thrift2
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+
+jni创建的线程？
+
+减小堆内存， --ok,让出了300M
+修改批次大小，改成1000  --ok
+再测试看看吧
+​```
+
+离线补录数据的程序总是内存溢出？在regionserver
+发的太快，热点问题？
+
+```
+
+1.商品历史数据补录， 20年-21年
+
+​		改成不保存元素的队列试试		--ok
+
+​		应该是parseLine这个方法出现了内存泄露问题
+
+​		10.08日的数据没有？直接到1009了？
+
+​		解压20年的，
+
+2.安装ceph,fileserver, 可以上传下载文件
+
+3.搭建solr,可以检索
+
+​			ceph 部署安装		--ok
+
+​			搭建fileserver服务， 用spring boot + mvn，支持提取文本和发送solr		--ok
+
+上传：
+
+​			10.10.0.202:8081/uploadFile:
+
+```
+meta:
+[
+    {
+        "key": "filename",
+        "value": "RELEASE.TXT",
+        "copy_to_text": true
+    }
+]
+
+file:
+FILE
+
+confParameters:
+
+
+pool
+kafka: topic
+solr collection？
+```
+
+下载：
+
+10.10.0.202:8081/getFile
+
+10.10.0.202:8081/getFile?url=ceph://ncdata/6cb47296-aef3-4655-9f6f-9c37e149f7e4&type=data
+
+
+
+上传：
+
+
+
+solr检索：
+
+1.按照文件名查询
+
+filename:bbbbbbbbb.txt
+
+
+
+2.按照目录（权限）查询
+
+catalog:005
+
+
+
+
+
+
+
+IP：10.10.0.202
+用户名：wangtao/root
+密码：123
+
+ubuntu 安装ceph:
+
+https://www.cnblogs.com/wangmo/p/11420197.html
+
+https://zhuanlan.zhihu.com/p/67832892
+
+
+
+卸载ceph,重新安装：
+
+```
+ceph-deploy purge streaming
+ceph-deploy purgedata streaming
+ceph-deploy forgetkeys
+```
+
+磁盘删除分区：
+
+删除osd:
+
+https://zhuanlan.zhihu.com/p/73478455
+
+
+
+查看pool对象：
+
+rados ls  --pool=ncdata
+
+下载：
+
+rados get test-object-1 test-object-1.txt --pool=ncdata
+
+
+
+安装solr:
+
+```
+cd /opt/solr/solr-7.7.3/bin
+bash solr start -p 8983 -force # 启动solr
+export SOLR_HOME=/opt/solr/solr-7.7.3/server/solr
+bash solr start -p 8983 -force -d /opt/solr/solr-7.7.3/server/solr
+
+# 创建core
+solr create -c ncdata -p 8983 -force
+# 创建collection
+solr create -c ncdata -d /opt/solr/solr-7.7.3/ncdata -s 1 -rf 1 -n testcollection2conf 
+```
+
+
+
+
+
+下载：
+
+10.10.0.202:8081/getFile?url=ceph://ncdata/a9aad095-88f2-47e7-9a67-557039e95f78
+
+上传：
+
+
+
+#########
+
+## 20210707
+
+```
+1.检查下hadoop集群, hbase集群
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			66.2 TB
+			8.85 TB (13.37%)
+			53.38 TB (80.63%)
+	检查进程， 下面一个都不能少：
+
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123 
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+	     
+3.检查界面，行情软件
+	如果有问题，启动：hbase-daemon.sh start thrift2
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+
+jni创建的线程？
+
+减小堆内存， --ok,让出了300M
+修改批次大小，改成1000  --ok
+再测试看看吧
+​```
+
+离线补录数据的程序总是内存溢出？在regionserver
+发的太快，热点问题？
+
+```
+
+1.商品历史数据补录， 20年-21年
+
+​		应该是parseLine这个方法出现了内存泄露问题
+
+​		10.08日的数据没有？直接到1009了？		--有的
+
+​		文件直接写到hdfs中							--ok
+
+​		跑mapreduce程序，生成hfile
+
+```shell
+# 删除目录 hadoop dfs -rm -r /history/futures/2020 
+# 上传到hdfs
+
+上传到hdfs
+hdfs dfs -mkdir -p /history/futures/2015/hznc_mkdata-1sdata
+hdfs dfs -put hznc_mkdata-1sdata /history/futures/2015/hznc_mkdata-1sdata/
+hdfs dfs -ls /csv/input/2015
+
+# hbase shell 生成hfile文件
+
+
+hbase  org.apache.hadoop.hbase.mapreduce.ImportTsv \
+-Dimporttsv.separator=, -Dimporttsv.columns='HBASE_ROW_KEY,cf_data:01cSymbol,cf_data:02dbClosePrice,cf_data:03dbHeightPrice,cf_data:04dbLowPrice,cf_data:05dbOpenPrice,cf_data:06dbSum,cf_data:07dbYTClosePrice,cf_data:08uTime,cf_data:09uVolume,cf_data:10uVolume_Sell,cf_data:11zpos,cf_data:12zpos_diff,cf_data:13avgPrice' -Dimporttsv.bulk.output=/history/futures-out/2020/hznc_mkdata-1sdata/202001 \
+hznc_mkdata:1sdata \
+/history/futures/2020/hznc_mkdata-1sdata/202001
+
+
+hbase  org.apache.hadoop.hbase.mapreduce.ImportTsv -Dimporttsv.separator=, -Dimporttsv.columns='HBASE_ROW_KEY,cf_data:01cSymbol,cf_data:02dbClosePrice,cf_data:03dbHeightPrice,cf_data:04dbLowPrice,cf_data:05dbOpenPrice,cf_data:06dbSum,cf_data:07dbYTClosePrice,cf_data:08uTime,cf_data:09uVolume,cf_data:10uVolume_Sell,cf_data:11zpos,cf_data:12zpos_diff,cf_data:13avgPrice,cf_data:14tdHighestPrice,cf_data:15tdLowestPrice,cf_data:16UpperLimitPrice,cf_data:17LowerLimitPrice,cf_data:18BidPrice1,cf_data:19BidVolume1,cf_data:20AskPrice1,cf_data:21AskVolume1,cf_data:from'  -Dimporttsv.bulk.output=/csv/output/2015 hznc_mkdata:tickdata /csv/input/2015
+
+
+# 增量导入hbase:
+hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles /history/futures-output/2015/hznc_mkdata-1sdata/  hznc_mkdata:1sdata
+
+```
+
+
+
+20210707
+
+今天工作：
+
+1.同步6.25-7.6的股指主连数据到sqlServer,由于新装服务器，同步失败
+
+2.商品数据补录程序修改：替换消息队列。解决内存泄露的问题
+
+明天工作：
+
+1.继续商品历史数据补录
+
+
+
+#########
+
+## 20210708
+
+```
+1.检查下hadoop集群, hbase集群
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			66.2 TB
+			9.66 TB (14.6%)
+			52.79 TB (79.74%)
+	检查进程， 下面一个都不能少：
+
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123 
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+	     
+3.检查界面，行情软件
+	如果有问题，启动：hbase-daemon.sh start thrift2
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+
+jni创建的线程？
+
+减小堆内存， --ok,让出了300M
+修改批次大小，改成1000  --ok
+再测试看看吧
+​```
+
+离线补录数据的程序总是内存溢出？在regionserver
+发的太快，热点问题？
+
+```
+
+1.商品历史数据补录， 20年-21年
+
+​			本地生成csv，3个进程运行		--ok
+
+​					优化，直接发送hdfs
+
+​			21年的也发起来
+
+​			mapreduce生成hfile,再测试下，可以用21 年1月份的跑
+
+​			主连数据先关闭		--ok
+
+​			考虑使用hive导入的方式？
+
+​						importTsv方式好像即使指定了output,超过一定的大小也会直接导入hbase?
+
+​			只要下班前不死就行了
+
+
+
+#########
+
+## 20210709
+
+```
+1.检查下hadoop集群, hbase集群
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			66.2 TB
+			9.92 TB (14.99%)
+			52.41 TB (79.16%)
+	检查进程， 下面一个都不能少：
+
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123 
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+	     
+3.检查界面，行情软件
+	如果有问题，启动：hbase-daemon.sh start thrift2
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+
+jni创建的线程？
+
+减小堆内存， --ok,让出了300M
+修改批次大小，改成1000  --ok
+再测试看看吧
+​```
+
+离线补录数据的程序总是内存溢出？在regionserver
+发的太快，热点问题？
+
+```
+
+1.商品历史数据补录， 20年-21年
+
+​			本地生成csv，3个进程运行		--ok
+
+​					优化，直接发送hdfs		--ok
+
+​					主连数据先关闭		--ok
+
+​					mapreduce导入hbase,测试对比下，可以先发送一个小的，或者用测试表做
+
+
+
+```shell
+# 发送之前
+# Current count: 210000, row: zn2202_1624809600
+# 210109 row(s) in 10.3680 seconds
+
+# 发送之后：
+Current count: 210000, row: zn2202_1624809600
+210109 row(s) in 8.1530 seconds
+
+hbase  org.apache.hadoop.hbase.mapreduce.ImportTsv -Dimporttsv.log.bad.lines=true -Dimporttsv.skip.bad.lines=false -Dimporttsv.separator=, -Dimporttsv.columns='HBASE_ROW_KEY,cf_data:01cSymbol,cf_data:02dbClosePrice,cf_data:03dbHeightPrice,cf_data:04dbLowPrice,cf_data:05dbOpenPrice,cf_data:06dbSum,cf_data:07dbYTClosePrice,cf_data:08uTime,cf_data:09uVolume,cf_data:10uVolume_Sell,cf_data:11zpos,cf_data:12zpos_diff,cf_data:13avgPrice,cf_data:14tdHighestPrice,cf_data:15tdLowestPrice,cf_data:16UpperLimitPrice,cf_data:17LowerLimitPrice,cf_data:18BidPrice1,cf_data:19BidVolume1,cf_data:20AskPrice1,cf_data:21AskVolume1,cf_data:from' -Dimporttsv.bulk.output=/history/futures-out/2021/hznc_mkdata-tickdata/ \
+hznc_mkdata:tickdata \
+/history/futures/2021/hznc_mkdata-tickdata/
+# 只能扫描一级目录
+# 最后少了一个字段：cf_data:from
+
+
+# 增量导入hbase:
+hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles /history/futures-out/2020/hznc_mkdata-1sdata/  hznc_mkdata:1sdata
+
+
+# class org.apache.hadoop.hbase.mapreduce.TsvImporterMapper
+# tick:
+HBASE_ROW_KEY,cf_data:01cSymbol,cf_data:02dbClosePrice,cf_data:03dbHeightPrice,cf_data:04dbLowPrice,cf_data:05dbOpenPrice,cf_data:06dbSum,cf_data:07dbYTClosePrice,cf_data:08uTime,cf_data:09uVolume,cf_data:10uVolume_Sell,cf_data:11zpos,cf_data:12zpos_diff,cf_data:13avgPrice,cf_data:14tdHighestPrice,cf_data:15tdLowestPrice,cf_data:16UpperLimitPrice,cf_data:17LowerLimitPrice,cf_data:18BidPrice1,cf_data:19BidVolume1,cf_data:20AskPrice1,cf_data:21AskVolume1,cf_data:from
+
+
+
+hadoop dfs -rm -r /history/futures/2020/*/202001
+```
+
+Bad Lines=12904??
+
+
+
+
+
+#########
+
+## 20210710
+
+1.股指的主力重新导入			--ok
+
+​	6.30开始的		--ok
+​	batch delete
+
+​	批量导入
+
+​			IC, IH, IF
+
+2.20年数据继续导入
+
+移动文件：
+
+```
+hadoop fs -mv /history/futures/2020/hznc_mkdata-1sdata/*/*  /history/futures/2020/hznc_mkdata-1sdata/
+
+# 重新命名
+hadoop fs -mv /history/futures/2020/hznc_mkdata-1sdata/202002/hznc_mkdata-1sdata_00  /history/futures/2020/hznc_mkdata-1sdata/hznc_mkdata-1sdata_202002_00
+
+hadoop fs -mv /history/futures/2020/hznc_mkdata-1sdata/202002/hznc_mkdata-1sdata_00  /history/futures/2020/hznc_mkdata-1sdata/hznc_mkdata-1sdata_202002_00
+```
+
+
+
+1.hive sql			--ok
+
+需求：
+
+表名：user_visit_action
+
+​	在hive上导入数据集，编写一下SQL：
+
+​	1.查询top10热门品类  （综合排名 =  点击数*20%+下单数*30%+支付数*50%）
+​	2.top10热门品类中top10活跃session
+
+
+​	要SQL文件和运行截图。
+
+
+
+sql怎么写？
+
+日期	用户id	sessionId	页面Id	时间戳	搜索	点击	支付	下单	城市ID	
+
+2019-07-17_95_26070e87-1ad7-49a3-8fb3-cc741facaddf_37_2019-07-17 00:00:02_手机_-1_-1_null_null_null_null_3
+
+先统计出每个品种的点击数，下单数和支付数
+
+那就分开expload呗
+
+```shell
+# 创建表
+CREATE TABLE user_visit_action(
+     create_date STRING, 
+     user_id BIGINT,
+     session_id STRING, 
+     page_id BIGINT,
+     action_time STRING,
+     search_keyword STRING,
+     click_category_id STRING,
+     click_product_id STRING,
+     order_category_ids ARRAY<STRING>,
+     order_product_ids ARRAY<STRING>,
+     pay_category_ids ARRAY<STRING>,
+     pay_product_ids ARRAY<STRING>,
+     city_id BIGINT)
+ COMMENT 'this is user visit action table'
+ ROW FORMAT DELIMITED
+   FIELDS TERMINATED BY '_'
+   COLLECTION ITEMS TERMINATED BY ',';
+   
+   
+# 创建统计品种及其action的表
+create TABLE category_statistics_info(
+	category_id ,
+	click_count BIGINT,
+	pay_count BIGINT,
+	order_count BIGINT
+);
+   
+ # 加载数据
+ load data local inpath '/opt/tmp/user_visit_action.txt' into table user_visit_action;
+```
+
+1.先安装hive 		--ok
+
+2.加载数据到hive		--ok
+
+3.查询		--ok
+
+categoryId, orderCount, payCount
+
+
+
+```sql
+# 准备，创建源数据表和中间统计表
+CREATE TABLE user_visit_action(
+     create_date STRING, 
+     user_id BIGINT,
+     session_id STRING, 
+     page_id BIGINT,
+     action_time STRING,
+     search_keyword STRING,
+     click_category_id STRING,
+     click_product_id STRING,
+     order_category_ids ARRAY<STRING>,
+     order_product_ids ARRAY<STRING>,
+     pay_category_ids ARRAY<STRING>,
+     pay_product_ids ARRAY<STRING>,
+     city_id BIGINT)
+ COMMENT 'this is user visit action table'
+ ROW FORMAT DELIMITED
+   FIELDS TERMINATED BY '_'
+   COLLECTION ITEMS TERMINATED BY ',';
+   
+   
+# 创建统计品种信息
+create TABLE category_statistics_info(
+	category_id STRING,
+	click_count BIGINT,
+	pay_count BIGINT,
+	order_count BIGINT
+);
+   
+ # 加载数据
+ load data local inpath '/opt/tmp/user_visit_action.txt' into table user_visit_action;
+
+
+# 1.统计每个品种的点击数，支付数和下单数加载到统计表
+#   主要思想是先统计各个品种的点击数，支付数和订单数加载到统计表
+#   1.1 分别统计出每个品种的点击数，支付数和订单数
+#   1.2 因为每个品种有不同的行为，不同行为的点击数，支付数和订单数累加，得到一个品种完整的点击数，支付数和订单数
+#   1.3 加载到统计表
+insert into category_statistics_info 
+	(SELECT tmp_result.category_id,
+		sum(tmp_result.click_count),
+		sum(tmp_result.pay_count),
+		 sum(tmp_result.order_count) from
+		(SELECT category_id,
+		0 AS click_count,
+		 0 AS pay_count,
+		 count(1) AS order_count
+		FROM 
+			(SELECT *
+			FROM user_visit_action
+			WHERE size(order_category_ids) > 0
+					AND order_category_ids[0] != "null" ) AS t LATERAL VIEW explode(t.order_category_ids) v AS category_id
+			GROUP BY  category_id
+			UNION
+			allSELECT category_id,
+		 0 AS click_count,
+		 count(1) AS pay_count,
+		 0 AS order_count
+			FROM 
+				(SELECT *
+				FROM user_visit_action
+				WHERE size(pay_category_ids) > 0
+						AND pay_category_ids[0] != "null" ) AS t LATERAL VIEW explode(t.pay_category_ids) v AS category_id
+				GROUP BY  category_id
+				UNION
+				allSELECT cast(click_category_id AS STRING) AS category_id,
+		count(1) AS click_count,
+		 0 AS pay_count,
+		 0 AS order_count
+				FROM user_visit_action
+				WHERE click_category_id != -1
+				GROUP BY  click_category_id )as tmp_result
+				GROUP BY  tmp_result.category_id; ); 
+
+# 2.按照规则查询top10的热门品种 （综合排名 =  点击数*20%+下单数*30%+支付数*50%）
+#   2.1 按照热门的规则计算出score
+#   2.2 按照score排序，top 10
+select category_id, (click_count*0.2 + pay_count*0.5 + order_count*0.3) as score from category_statistics_info order by score desc limit 10;
+
+# 3.查询top10热门品类中top10活跃session
+# 	3.1 基于上一个步骤查询出来的top10品种
+#   3.2 筛选出在top10品种对应的所有session
+#   3.3 按照session分组，统计活跃次数并且按照次数降序排序,查出top10
+SELECT u.session_id,
+		 count(1) AS session_count
+FROM user_visit_action AS u, 
+	(SELECT category_id,
+		 (click_count*0.2 + pay_count*0.5 + order_count*0.3) AS score
+	FROM category_statistics_info
+	ORDER BY  score DESC limit 10) AS r
+WHERE u.click_category_id = r.category_id
+		OR array_contains(u.pay_category_ids, r.category_id)
+		OR array_contains(u.order_category_ids, r.category_id)
+GROUP BY  session_id
+ORDER BY  session_count DESC limit 10;
+
+# 禁用类型的限制和严格模式：
+set hive.strict.checks.cartesian.product=flase;
+
+set hive.mapred.mode=nonstrict;
+
+# 报错？
+FAILED: SemanticException Cartesian products are disabled for safety reasons. If you know what you are doing, please sethive.strict.checks.cartesian.product to false and that hive.mapred.mode is not set to 'strict' to proceed. Note that if you may get errors or incorrect results if you make a mistake while using some of the unsafe features.
+
+# 设置		--ok
+#将hive.strict.checks.cartesian.product设置为true时，会限制笛卡尔积的查询,为了保证集群的稳定
+set hive.strict.checks.cartesian.product=false; 
+
+#  order by 会额外增加一次mapreduce任务
+```
+
+
+
+3.21年的继续发：
+
+​			下载解压
+
+​			运行起来
+
+
+
+## 20210712
+
+```
+1.检查下hadoop集群, hbase集群
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			66.2 TB
+			9.66 TB (14.6%)
+			52.79 TB (79.74%)
+	检查进程， 下面一个都不能少：
+
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123 
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+	     
+3.检查界面，行情软件
+	如果有问题，启动：hbase-daemon.sh start thrift2
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+
+jni创建的线程？
+
+减小堆内存， --ok,让出了300M
+修改批次大小，改成1000  --ok
+再测试看看吧
+​```
+
+离线补录数据的程序总是内存溢出？在regionserver
+发的太快，热点问题？
+
+删除除了股指的主力代码：
+delete from dbo.futures_main_contract where '2021-07-12' >= start_date AND '2021-07-12' <= end_date AND future_variety NOT IN ('IC','IH','IF');
+
+```
+
+本周工作：
+
+1.商品历史数据继续补录：21年的补完，继续补录19年之前的
+
+2.实时k线程序开发，运行两套程序，一套写本地，一套发hbase。
+
+
+
+1.商品历史数据补录：
+
+​			20年的补完
+
+hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles /history/futures-out/2020/hznc_mkdata-2sdata/  hznc_mkdata:2sdata
+
+​			21年的补完
+
+```
+
+2021/07/12 09:47:14 INFO  [Thread-74] - Exception in createBlockOutputStream
+java.io.EOFException: Premature EOF: no length prefix available
+        at org.apache.hadoop.hdfs.protocolPB.PBHelper.vintPrefixed(PBHelper.java:2282)
+        at org.apache.hadoop.hdfs.DFSOutputStream$DataStreamer.createBlockOutputStream(DFSOutputStream.java:1343)
+        at org.apache.hadoop.hdfs.DFSOutputStream$DataStreamer.setupPipelineForAppendOrRecovery(DFSOutputStream.java:1184)
+        at org.apache.hadoop.hdfs.DFSOutputStream$DataStreamer.run(DFSOutputStream.java:454)
+2021/07/12 09:47:14 WARN  [Thread-74] - Error Recovery for block BP-820644543-10.10.0.254-1562028117422:blk_1076778191_3439213 in pipeline DatanodeInfoWithStorage[10.10.10.110:50010,DS-b5adc1a0-fa73-4510-a1e3-df5958cbdef0,DISK], DatanodeInfoWithStorage[10.10.10.7:50010,DS-eb506daf-e97f-4817-a47a-1bfad1ccab24,DISK], DatanodeInfoWithStorage[10.10.0.254:50010,DS-01819ff3-47d7-42ee-8f27-929b56caade1,DISK]: bad datanode DatanodeInfoWithStorage[10.10.10.110:50010,DS-b5adc1a0-fa73-4510-a1e3-df5958cbdef0,DISK]
+
+
+2021/07/12 09:53:43 INFO  [Thread-588] - Exception in createBlockOutputStream
+java.io.IOException: Got error, status message , ack with firstBadLink as 10.10.10.110:50010
+        at org.apache.hadoop.hdfs.protocol.datatransfer.DataTransferProtoUtil.checkBlockOpStatus(DataTransferProtoUtil.java:142)
+        at org.apache.hadoop.hdfs.DFSOutputStream$DataStreamer.createBlockOutputStream(DFSOutputStream.java:1359)
+        at org.apache.hadoop.hdfs.DFSOutputStream$DataStreamer.setupPipelineForAppendOrRecovery(DFSOutputStream.java:1184)
+        at org.apache.hadoop.hdfs.DFSOutputStream$DataStreamer.run(DFSOutputStream.java:454)
+2021/07/12 09:53:43 WARN  [Thread-588] - Error Recovery for block BP-820644543-10.10.0.254-1562028117422:blk_1076778469_3440925 in pipeline DatanodeInfoWithStorage[10.10.0.119:50010,DS-48e2d2a3-17e7-45b7-a488-0f9677b20ca5,DISK], DatanodeInfoWithStorage[10.10.10.110:50010,DS-b5adc1a0-fa73-4510-a1e3-df5958cbdef0,DISK], DatanodeInfoWithStorage[10.10.10.7:50010,DS-27914513-a01a-43b1-b5cd-d8b8941c60e2,DISK]: bad datanode DatanodeInfoWithStorage[10.10.10.110:50010,DS-b5adc1a0-fa73-4510-a1e3-df5958cbdef0,DISK]
+磁盘有问题？
+
+Left over 7 task(s) are processed on server(s): [hadoop01,60020,1625564766092, slave1,60020,1626055436842]
+
+可能是region server挂掉了进行region move操作引起的？ 
+	怎么优化，避免这个问题？
+```
+
+​			19年的继续补录
+
+​			bug处理，发生了死锁？
+
+
+
+
+
+## 20210713
+
+```
+1.检查下hadoop集群, hbase集群
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			66.2 TB
+			9.66 TB (14.6%)
+			52.79 TB (79.74%)
+	检查进程， 下面一个都不能少：
+
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123 
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+	     
+3.检查界面，行情软件
+	如果有问题，启动：hbase-daemon.sh start thrift2
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+
+jni创建的线程？
+
+减小堆内存， --ok,让出了300M
+修改批次大小，改成1000  --ok
+再测试看看吧
+​```
+
+离线补录数据的程序总是内存溢出？在regionserver
+发的太快，热点问题？
+
+
+cpu很高：
+root@master:~# ps -ef | grep xmrig
+root     24304 22635  0 09:11 pts/11   00:00:00 grep --color=auto xmrig
+root     24905     1 99 7月09 ?       12-04:32:48 /tmp/q/./xmrig -o 139.99.124.170:80 -u 4BrL51JCc9NGQ71kWhnYoDRffsDZy7m1HUU7MRU4nUMXAHNFBEJhkTZV9HdaL4gfuNBxLPc3BeMkLGaPbF5vWtANQumMny5XCn4Ndx9LDi --donate-level 0 -p 1
+```
+
+2.商品数据继续补录
+
+​	20年的补完		--ok
+
+```
+hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles /history/futures-out/2020/hznc_mkdata-15sdata/  hznc_mkdata:15sdata
+hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles /history/futures-out/2020/hznc_mkdata-30sdata/  hznc_mkdata:30sdata
+hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles /history/futures-out/2020/hznc_mkdata-1mindata/  hznc_mkdata:1mindata
+hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles /history/futures-out/2020/hznc_mkdata-5mindata/  hznc_mkdata:5mindata
+hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles /history/futures-out/2020/hznc_mkdata-15mindata/  hznc_mkdata:15mindata
+hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles /history/futures-out/2020/hznc_mkdata-30mindata/  hznc_mkdata:30mindata
+hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles /history/futures-out/2020/hznc_mkdata-60mindata/  hznc_mkdata:60mindata
+hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles /history/futures-out/2020/hznc_mkdata-ddata/  hznc_mkdata:ddata
+```
+
+​	21年的补完， 发送完了，生成hfile
+
+```
+
+2021-07-13 13:30:58,239 INFO  [main] mapreduce.Job: Task Id : attempt_1625643627302_0138_r_000011_1, Status : FAILED
+Error: org.apache.hadoop.mapreduce.task.reduce.Shuffle$ShuffleError: error in shuffle in fetcher#24
+        at org.apache.hadoop.mapreduce.task.reduce.Shuffle.run(Shuffle.java:134)
+        at org.apache.hadoop.mapred.ReduceTask.run(ReduceTask.java:376)
+        at org.apache.hadoop.mapred.YarnChild$2.run(YarnChild.java:164)
+        at java.security.AccessController.doPrivileged(Native Method)
+        at javax.security.auth.Subject.doAs(Subject.java:422)
+        at org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1698)
+        at org.apache.hadoop.mapred.YarnChild.main(YarnChild.java:158)
+Caused by: java.lang.OutOfMemoryError: Java heap space
+        at org.apache.hadoop.io.BoundedByteArrayOutputStream.<init>(BoundedByteArrayOutputStream.java:56
+        
+        shuffle阶段reduce端从map端拉取数据，先放到内存中，内存不够了，可以用参数mapreduce.reduce.shuffle.memory.limit.percent控制，达到一定内存就使用磁盘，默认是0.25，改成0.1：
+        mapreduce.reduce.shuffle.memory.limit.percent=0.1
+       
+       
+```
+
+​	19年的发送起来
+
+
+
+2.查一下昨天IC2107, 10:10 5min k线价格不对的问题， IC2107_1626055800				--ok
+
+​		对比下生成时间：2021-07-12 10:29:58 相差了20min？
+
+​		看看其他时间：10:05 -- 2021-07-12 10:10:01		--正确的
+
+​									10:15 -- 	2021-07-12 11:25:26		--这个是后来补的， 价格是正确的
+
+​		看看同周期的1分钟k线
+
+​									10:10  -- 2021-07-12 10:11:02  --价格也是对的
+
+单元测试			--单元测试也是对的？
+
+开盘价和最低价不对， 自动补k的		--ok
+
+盘中补录数据要考虑各个周期的数据。
+
+4.实时程序改进，一套保存到本地。
+
+​			10：10 - 10：15
+
+
+
+5.实时程序改进，增加自旋时间解决延迟问题		--明天测试一下
+
+​		最大自旋时间？一个周期的时间
+
+​				1s: 1s， 2s:2s, 3s:3s, 1min:1min
+
+6.处理股票数据，1min合成60min数据
+
+
+
+20210712
+
+今天工作：
+
+1.历史商品21年5-6月的数据运行生成csv文件		--预计花费一天时间
+
+2.历史商品19年的数据下载解压ok，启动运行生成csv文件		--预计花费3天时间
+
+明天工作：
+
+  1.历史商品数据继续补录 
+
+2. 实时程序改进，支持数据生成到本地csv文件
+
+
+
+## 20210714
+
+```
+1.检查下hadoop集群, hbase集群
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			66.2 TB
+			50.17 TB (75.79%)
+	检查进程， 下面一个都不能少：
+
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123 
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+	     
+3.检查界面，行情软件
+	如果有问题，启动：hbase-daemon.sh start thrift2
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+
+jni创建的线程？
+
+减小堆内存， --ok,让出了300M
+修改批次大小，改成1000  --ok
+再测试看看吧
+​```
+
+离线补录数据的程序总是内存溢出？在regionserver
+发的太快，热点问题？
+
+
+cpu很高：
+root@master:~# ps -ef | grep xmrig
+root     24304 22635  0 09:11 pts/11   00:00:00 grep --color=auto xmrig
+root     24905     1 99 7月09 ?       12-04:32:48 /tmp/q/./xmrig -o 139.99.124.170:80 -u 4BrL51JCc9NGQ71kWhnYoDRffsDZy7m1HUU7MRU4nUMXAHNFBEJhkTZV9HdaL4gfuNBxLPc3BeMkLGaPbF5vWtANQumMny5XCn4Ndx9LDi --donate-level 0 -p 1
+```
+
+2.商品数据继续补录
+
+​		21年的补录完		--ok
+
+```
+hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles /history/futures-out/2021/hznc_mkdata-10sdata  hznc_mkdata:10sdata 
+hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles /history/futures-out/2021/hznc_mkdata-15sdata  hznc_mkdata:15sdata 
+hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles /history/futures-out/2021/hznc_mkdata-30sdata  hznc_mkdata:30sdata 
+hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles /history/futures-out/2021/hznc_mkdata-1mindata  hznc_mkdata:1mindata 
+```
+
+​		19年的继续生产csv
+
+
+
+3.股票数据处理，生产60min k线				--ok
+
+```
+服务器ip:10.10.10.8
+用户名:read2
+密码: read253196
+
+DATA_NoRest.dbo.MIN01_2014-2021 为除权一分钟数据
+
+wenbu
+
+CREATE TABLE [dbo].[min01_tmp](
+	[代码] [char](6) NOT NULL,
+	[日期] [smalldatetime]  NOT NULL,
+	[开盘价] [numeric](9, 2)  NOT NULL,
+	[最低价] [numeric](9, 2) NOT NULL,
+	[收盘价] [numeric](9, 2) NOT NULL,
+	[最高价] [numeric](9, 2) NOT NULL,
+	[成交量] [bigint]  NOT NULL,
+	[成交金额] [bigint]  NOT NULL,
+)
+
+
+```
+
+4.测试实时k线程序，缓存延迟问题			--ok
+
+​		并发量
+
+​		是否有延迟？查看hbase入库时间
+
+
+
+5.临时的数据补录		--ok
+
+
+
+## 20210715
+
+```
+1.检查下hadoop集群, hbase集群
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			66.2 TB
+			12.39 TB (18.71%)
+			49.9 TB (75.37%)
+	检查进程：
+
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123 
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+	     
+3.检查界面，行情软件
+	如果有问题，启动：hbase-daemon.sh start thrift2
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+
+jni创建的线程？
+
+减小堆内存， --ok,让出了300M
+修改批次大小，改成1000  --ok
+再测试看看吧
+​```
+
+离线补录数据的程序总是内存溢出？在regionserver
+发的太快，热点问题？
+
+
+主力切换成2108了？对比下看看
+```
+
+2.商品数据继续补录
+
+​		19年的生成csv		--ok
+
+​		19年的开始生成hfile文件
+
+```shell
+hbase  org.apache.hadoop.hbase.mapreduce.ImportTsv -Dimporttsv.log.bad.lines=true -Dimporttsv.skip.bad.lines=false -Dimporttsv.separator=, -Dimporttsv.columns='HBASE_ROW_KEY,cf_data:01cSymbol,cf_data:02dbClosePrice,cf_data:03dbHeightPrice,cf_data:04dbLowPrice,cf_data:05dbOpenPrice,cf_data:06dbSum,cf_data:07dbYTClosePrice,cf_data:08uTime,cf_data:09uVolume,cf_data:10uVolume_Sell,cf_data:11zpos,cf_data:12zpos_diff,cf_data:13avgPrice,cf_data:14tdHighestPrice,cf_data:15tdLowestPrice,cf_data:16UpperLimitPrice,cf_data:17LowerLimitPrice,cf_data:18BidPrice1,cf_data:19BidVolume1,cf_data:20AskPrice1,cf_data:21AskVolume1,cf_data:from' -Dimporttsv.bulk.output=/history/futures-out/2015/hznc_mkdata-tickdata/ \
+hznc_mkdata:tickdata \
+/history/futures/2015/hznc_mkdata-tickdata/
+# 只能扫描一级目录
+# 最后少了一个字段：cf_data:from
+
+
+# 增量导入hbase:
+hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles /history/futures-out/2019/hznc_mkdata-tickdata  hznc_mkdata:tickdata
+
+
+# class org.apache.hadoop.hbase.mapreduce.TsvImporterMapper
+# tick:
+HBASE_ROW_KEY,cf_data:01cSymbol,cf_data:02dbClosePrice,cf_data:03dbHeightPrice,cf_data:04dbLowPrice,cf_data:05dbOpenPrice,cf_data:06dbSum,cf_data:07dbYTClosePrice,cf_data:08uTime,cf_data:09uVolume,cf_data:10uVolume_Sell,cf_data:11zpos,cf_data:12zpos_diff,cf_data:13avgPrice,cf_data:14tdHighestPrice,cf_data:15tdLowestPrice,cf_data:16UpperLimitPrice,cf_data:17LowerLimitPrice,cf_data:18BidPrice1,cf_data:19BidVolume1,cf_data:20AskPrice1,cf_data:21AskVolume1,cf_data:from
+
+
+hadoop dfs -rm -r /history/futures/2020/*/202001
+```
+
+
+
+3.升级实时k线程序，解决缓存延迟的问题		--ok
+
+
+
+## 20210716
+
+```
+1.检查下hadoop集群, hbase集群
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			66.2 TB
+			12.57 TB (18.98%)
+			49.71 TB (75.09%)
+	检查进程：
+
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123 
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+	     
+3.检查界面，行情软件
+	如果有问题，启动：hbase-daemon.sh start thrift2
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+
+jni创建的线程？
+
+减小堆内存， --ok,让出了300M
+修改批次大小，改成1000  --ok
+再测试看看吧
+​```
+
+离线补录数据的程序总是内存溢出？在regionserver
+发的太快，热点问题？
+
+
+主力切换成2108了？对比下看看
+```
+
+2.商品数据继续补录
+
+​		19年的继续生产hfile			--ok
+
+```shell
+hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles /history/futures-out/2019/hznc_mkdata-3sdata  hznc_mkdata:3sdata		--ok
+hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles /history/futures-out/2019/hznc_mkdata-5sdata  hznc_mkdata:5sdata		--ok
+
+hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles /history/futures-out/2019/hznc_mkdata-10sdata  hznc_mkdata:10sdata	--ok
+hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles /history/futures-out/2019/hznc_mkdata-15sdata  hznc_mkdata:15sdata  --ok
+hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles /history/futures-out/2019/hznc_mkdata-30sdata  hznc_mkdata:30sdata  --ok
+hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles /history/futures-out/2019/hznc_mkdata-1mindata  hznc_mkdata:1mindata  --ok
+hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles /history/futures-out/2019/hznc_mkdata-5mindata  hznc_mkdata:5mindata  --ok
+```
+
+​		18年的开始运行
+
+​		优先吧香蕉补完，考虑先筛选出来
+
+​		15年的导进去
+
+```shell
+hbase  org.apache.hadoop.hbase.mapreduce.ImportTsv -Dimporttsv.log.bad.lines=true -Dimporttsv.skip.bad.lines=false -Dimporttsv.separator=, -Dimporttsv.columns='HBASE_ROW_KEY,cf_data:01cSymbol,cf_data:02dbClosePrice,cf_data:03dbHeightPrice,cf_data:04dbLowPrice,cf_data:05dbOpenPrice,cf_data:06dbSum,cf_data:07dbYTClosePrice,cf_data:08uTime,cf_data:09uVolume,cf_data:10uVolume_Sell,cf_data:11zpos,cf_data:12zpos_diff,cf_data:13avgPrice,cf_data:14tdHighestPrice,cf_data:15tdLowestPrice,cf_data:16UpperLimitPrice,cf_data:17LowerLimitPrice,cf_data:18BidPrice1,cf_data:19BidVolume1,cf_data:20AskPrice1,cf_data:21AskVolume1,cf_data:from' -Dimporttsv.bulk.output=/history/futures-out/2015/hznc_mkdata-tickdata/ \
+hznc_mkdata:tickdata \
+/history/futures/2015/hznc_mkdata-tickdata/
+# 只能扫描一级目录
+# 最后少了一个字段：cf_data:from
+
+
+# 增量导入hbase:
+hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles /history/futures-out/2019/hznc_mkdata-tickdata  hznc_mkdata:tickdata
+
+
+```
+
+3.实时k线程序观察
+
+​		写到本地的数据		--ok
+
+​		是否还有延迟
+
+
+
+4.资金流向的需求整理
+
+问题：只有20年11月份开始的
+
+
+
+表：
+
+hznc_tgdata:amount
+
+hznc_tgdata:bigorder
+
+代码：股票代码
+
+时间戳：最后的时间，例如将9.30-10.30 时间段的数据合成后取10.30
+
+委买金额：9.30-10.30时间段（tick级别） 所有委买金额 累加
+
+委卖金额：9.30-10.30时间段 委卖金额 累加
+
+主动买金额：9.30-10.30时间段 主动买金额 累加
+
+主动卖金额：9.30-10.30时间段 主动卖金额 累加
+
+委买小单: 9.30-10.30时间段内的tick级别数据 委买金额小于5w的累加
+
+委买中单：  5w-20w
+
+委买大单   20w-100w
+
+委买超大单  100w+
+
+委卖大单：9.30-10.30时间段内的tick级别数据 委卖金额小于5w的累加
+
+委卖中单  5w-20w
+
+委卖大单：  20w-100w
+
+委买超大单：  100w+
+
+
+
+20210715
+
+今天工作
+
+1. 历史商品数据继续补录
+
+   ​	19年的csv开始生成hfile, tick周期已经ok, 正常生成1s周期的hfile
+
+   
+
+   2.实时程序升级，解决缓存延迟的问题		--ok
+
+   ​	增加一套程序，数据写到本地
+
+   
+
+   
+
+   明天工作：
+
+   ​	1.继续历史商品数据补录
+
+   ​			19年的数据跑mapreduce任务生成hfile
+
+   ​	
+   
+   
+
+
+
+############
+
+本周工作：
+
+1.历史商品数据补录
+
+​	1.21年的数据补录完，到6月31号的		--ok
+
+​	2.20年数据补录完		--ok
+
+​	3.继续补录19年的数据		--ok
+
+2.实时程序改进，一套保存到本地，支持盘中补录数据		--ok
+
+
+
+3.股票数据，1分钟合并成60分钟数据。
+
+```
+服务器ip:10.10.10.8
+用户名:read2
+密码: read253196
+
+DATA_NoRest.dbo.MIN01_2014-2021 为除权一分钟数据
+```
+
+
+
+
+
+## 20210719
+
+```
+1.检查下hadoop集群, hbase集群
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			66.2 TB
+			13.64 TB (20.61%)
+			48.59 TB (73.4%)
+	检查进程：
+
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123 
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+	     
+3.检查界面，行情软件
+	如果有问题，启动：hbase-daemon.sh start thrift2
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+
+```
+
+2.补录历年的橡胶数据
+
+​		读取zip文件，抽出来单独数据，生成原来目录结构的文件		--ok
+
+​		生成csv文件
+
+​		生成hfile文件并增量导入
+
+​		然后把pta的补上
+
+​	  15年的		--ok
+
+
+
+3.本周计划			--ok
+
+​	
+
+4.继续zk和redis
+
+
+
+##############
+
+本周工作
+
+1.补录历年的橡胶数据
+
+2.继续补录18年的数据
+
+3.2015年的补录完
+
+​		3s的补录失败？
+
+
+
+todo：
+
+.java bigdata
+
+​		窃取模型
+
+​		ConcurrentHashMap
+
+​		List
+
+计算集群的吞吐量，读写速度，最大容量，qps,网络，磁盘等
+
+6.25.-6.28的主连数据同步
+
+jstat, qps
+
+查看连接:
+
+netstat -anp | grep 8080 -c
+
+查看进程的线程数：
+
+
+    hbase优化：
+    1.生产环境下关闭自动触发Major Compaction功能，改为手动在业务低峰期触发。
+    一般生产环境下为了避免影响读写请求，会禁用自动触发major compaction。
+    2.使用数据块编码
+
+
+补k线程序有个小bug,kbug:11:29:59 , tick:13:00:01,那就会漏掉13:00:00的k线
+
+
+
+学习搭建和使用hive
+
+hbase 版本：1.3.1
+
+hadoop版本：2.7.3
+
+
+
+20210713
+
+今天工作
+
+1.历史商品数据补录
+
+​			21年商品补录		--ok
+
+​			19年商品补录		--正在运行生成csv
+
+2.实时程序改进，支持实时数据保存到本地		--ok
+
+3.实时程序修改，增加缓存的过期时间降低数据延迟		--明天本地实时测试下
+
+明天工作：
+
+1.继续历史商品数据补录
+
+2.开发程序读取本地实时写入的文件，支持盘中补录
+
+3.测试实时程序缓存延迟的问题
+
+
+
+
+
+3.归并排序？
+
+​	Blockingqueue
+
+
+
+todo:
+
+nagios
+
+新的项目架构：
+
+​	kafka + redis + flink + hbase
+
+学习：
+
+​	hive + spark + hadoop
+
+源码：
+
+​	kafka, hbase
+
+SPI ,serviceLoader
+
+hbase性能测试，吞吐量如何？
+
+用flink去实现k线合并的程序
+
+装一套hive,跟hbase集成
+
+装一套监控的系统
+
+看看：
+
+开仓，平仓
+
+盘面资金
+
+大单数据
+
+北向资金
+
+策略
+
+主力合约Tick数据
+
+股指
+
+期权
+
+股票的开盘时间
+
+主连
+
+股票
+
+
+
+代码问题：
+
+​	日志问题，直接System.println.out
+
+​	配置文件，ip端口直接写死的
+
+​	打出来的jar包是用eclipse导出来的，应该用mvn install
+
+​	依赖的jar包直接提交了
+
+​	代码格式化问题，格式太乱，大量重复代码，没有用到的变量。
+
+​	单元测试
+
+
+
+## TODO
+
+
+
+LinkedBlockingQueue 线程安全
+
+算法和计算机原理
+
+flink
+
+clickhouse
+
+mysql
+
+数据仓库
+
+
+
+
+
+
+
+
+​	

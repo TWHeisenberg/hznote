@@ -3027,8 +3027,6 @@ https://blog.51cto.com/moerjinrong/2287680
 
 
 
-############
-
 ## 20210629
 
 ```
@@ -3157,6 +3155,258 @@ master 端口改为9090		--ok
 
 
 
+############
+
+## 20210630	
+
+```
+1.检查下hadoop集群, hbase集群			--ok
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			66.2 TB
+			8.83 TB (13.35%)
+			53.4 TB (80.66%)
+	检查进程， 下面一个都不能少：
+		
+
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123 
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+	     
+3.检查界面，行情软件
+	如果有问题，启动：hbase-daemon.sh start thrift2
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+```
+
+
+
+2.商品历史数据补录
+
+​		股指历史数据补录，15年和21年的
+
+​			解压21年的和15年的		--ok
+
+​			发送21年的		--ok
+
+​			发送15年的
+
+​		商品历史数据补录
+
+​				ag,cf,y,bu,pta,sp,rb,fg,ap,eb,ni,al,hc,lu,p,i,jm,j,zc,tc,c
+
+​				检查15年的			--ok
+
+​				解压并继续发送15年的
+
+​				解压16年的
+
+导入太慢了，换种方式，直接生成hfile:
+
+​	Bulkload 
+
+​	https://blog.csdn.net/xiaohu21/article/details/108310612
+
+
+
+3.升级实时k线程序
+
+​			升级实时k线程序			--ok
+
+​			手动插入主力代码的记录		--ok
+
+
+
+20210630：
+
+今天工作：
+
+1.商品历史数据补录
+
+2.升级实时k线程序，对接新的主力切换规则		--ok
+
+明天工作：
+
+1.继续商品历史书补录
+
+
+
+############
+
+## 20210701
+
+```
+1.检查下hadoop集群, hbase集群			--ok
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			66.2 TB
+			8.9 TB (13.44%)
+			53.34 TB (80.57%)
+	检查进程， 下面一个都不能少：
+
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+
+jps | wc -l
+jps
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123 
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+	     
+3.检查界面，行情软件
+	如果有问题，启动：hbase-daemon.sh start thrift2
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+```
+
+1.商品历史数据补录
+
+​		商品历史数据补录
+
+​				ag,cf,y,bu,pta,sp,rb,fg,ap,eb,ni,al,hc,lu,p,i,jm,j,zc,tc,c
+
+​				检查15年的			--ok
+
+​				解压并继续发送15年的
+
+​				解压16年的
+
+导入太慢了，换种方式，直接生成hfile:
+
+​	Bulkload 
+
+​	https://blog.csdn.net/xiaohu21/article/details/108310612
+
+​		先生成csv		--ok
+
+​		上传到hdfs
+
+​				创建目录：
+
+​						hdfs dfs -mkdir -p /csv/input/2015
+
+​				上传：
+
+​						hdfs dfs -put hznc_mkdata-tickdata.csv /csv/input/2015
+
+​				查看：
+
+​						hdfs dfs -ls /csv/input/2015
+
+​		hbase shell 生成hfile文件
+
+```shell
+hbase  org.apache.hadoop.hbase.mapreduce.ImportTsv \
+-Dimporttsv.separator=, \
+-Dimporttsv.columns='HBASE_ROW_KEY,cf_data:01cSymbol,cf_data:02dbClosePrice,cf_data:03dbHeightPrice,cf_data:04dbLowPrice,cf_data:05dbOpenPrice,cf_data:06dbSum,cf_data:07dbYTClosePrice,cf_data:08uTime,cf_data:09uVolume,cf_data:10uVolume_Sell,cf_data:11zpos,cf_data:12zpos_diff,cf_data:13avgPrice,cf_data:14tdHighestPrice,cf_data:15tdLowestPrice,cf_data:16UpperLimitPrice,cf_data:17LowerLimitPrice,cf_data:18BidPrice1,cf_data:19BidVolume1,cf_data:20AskPrice1,cf_data:21AskVolume1,cf_data:from'  \
+-Dimporttsv.bulk.output=/csv/output/2015 \
+hznc_mkdata:tickdata \
+/csv/input/2015
+```
+
+​		
+
+没有权限：
+
+```
+Exception in thread "main" org.apache.hadoop.security.AccessControlException: Permission denied: user=root, access=EXECUTE, inode="/user/root/.staging/job_1625124755907_0002":hadoop:supergroup:drwx------
+        at org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker.check(FSPermissionChecker.java:320)
+```
+
+
+
+需要启动web-proxy:
+
+yarn-daemon.sh start proxyserver
+
+查看mr任务：
+
+yarn application -list
+
+杀掉任务：
+
+yarn application -kill application_1625127398446_0003
+
+
+
+实时k线程序本地内存溢出了？
+
+```java
+// Something really bad happened. We are on the send thread that will now die.
+LOG.error("Internal AsyncProcess #" + id + " error for "
+    + tableName + " processing for " + server, t);
+throw new RuntimeException(t);
+```
+
+是否可以调节线程的大小
+
+32 位 windows增加内存？
+
+
+
+20210701
+
+今天工作：
+
+1.商品历史数据补录
+
+​		准备修改程序，换个方式导历史数据：
+
+​					1.修改程序将各周期数据生成本地csv		--ok
+
+​					2.收盘后调用hbase自带的importTsv工具将csv转换成hbase基础文件hfile		--正在测试中
+
+​					3.增量导入hfile文件
+
+2.商品历史数据补录  --ok
+
+明天工作：
+
+1.测试hbase BulkLoad导入数据方式
+
+2.补录股指历史数据，由于合约全称化升级导致6.1-6.17数据缺失
+
+
+
+2.线程池
+
+
+
+
+
 并发编程:
 
 LinkedBlockingQueue
@@ -3193,6 +3443,8 @@ netstat -anp | grep 8080 -c
 hbase 版本：1.3.1
 
 hadoop版本：2.7.3
+
+
 
 
 
