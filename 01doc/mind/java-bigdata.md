@@ -1354,7 +1354,7 @@ zk是一个开源的分布式协调服务，分布式程序可以基于它实现
 
 zk以节点znode保存数据，节点可以有子节点形成一个树状的结构，因为数据是加载到内存中读写，所以很快。
 
-**ZAB**
+#### **ZAB**
 
 ​	Zookeeper Atomic Broadcast 是为分布式协调服务zk专门设计的协议，zk主要依赖ZAB实现分布式数据的一致性。ZAB有两个重要的特性：
 
@@ -1374,13 +1374,13 @@ Leader崩溃后，会从Follower中选举出新的Leader。
 
 ​	但是如果ZAB协议确保丢弃那些只在Leader服务器上提出而其他Followe都没有收到的事务。
 
-**数据发布/订阅**
+#### **数据发布/订阅**
 
 ​	两种模式，推拉。拉：客户端轮训查询节点数据。推：客户端在初始化的时候注册一个Watcher监听器。当数据改变会通知到客户端。
 
 可以用来做配置中心。
 
-**集群管理**
+#### **集群管理**
 
 通过zk的两大特效：
 
@@ -1390,11 +1390,11 @@ Leader崩溃后，会从Follower中选举出新的Leader。
 
 利用这两大特效，集群机器可以在zk上注册节点，然后进行心跳检测，如果有机器故障，会话失效，节点会删除。然后会通知到监听的服务器。
 
-**Master选举**
+#### **Master选举**
 
 争抢注册master节点，没抢到的注册监听，master故障后节点失效，重新争抢注册master节点。
 
-**分布式锁**
+#### **分布式锁**
 
 ​	排他锁，通过zk上指定的节点作为锁，如：/exclusive_lock/lock。获取锁，所有客户端都尝试在节点/exclusev_lock下创建lock节点，创建失败的对该节点注册监听，实时监听锁的状态。释放锁，获取锁的客户端故障临时节点删除，或者客户端完成操作主动删除锁节点。
 
@@ -1416,7 +1416,7 @@ Leader崩溃后，会从Follower中选举出新的Leader。
 
 4.接收到Watcher通知后，重复步骤2
 
-**分布式队列**
+#### **分布式队列**
 
 类似全是写请求的共享锁：
 
@@ -1428,7 +1428,7 @@ Leader崩溃后，会从Follower中选举出新的Leader。
 
 4.接收到Watcher通知后，重复步骤1.
 
-**zk和hadoop**
+#### **zk和hadoop**
 
 ​	YARN HA
 
@@ -1450,7 +1450,7 @@ HDFS HA
 
 ​	解决办法也比较简单就是通过zk的ACL权限控制机制，当RM1恢复过来后会去节点更新数据，但是发现自己没有权限，就是说节点不是自己创建的，将自己切换为Standby状态。
 
-**zk和hbase**
+#### **zk和hbase**
 
 系统容错
 
@@ -1470,7 +1470,7 @@ hbase可以选择自带的zk也可以复用装好的zk,多台hbase也可以复�
 
 
 
-**zk和kafka**
+#### **zk和kafka**
 
 Broker注册
 
@@ -1496,11 +1496,118 @@ Topic注册
 
 ​	每个消费者对/consumers/[group_id]/ids节点注册子节点列表变更的的监听，一旦发现消费者增多或者减少，触发消费者负载均衡。
 
-**Leader选举**
+#### **Watcher工作机制**
 
-**数据存储**
+三个过程：
 
-**ACL**
+​	1.客户端注册Watcher，创建客户端对象实例时通过构造函数传递一个默认的Watcher:
+
+```java
+public ZooKeeper(String connectString, int sessionTimeout, Watcher watcher) // 作为会话期间默认的Watcher
+```
+
+​	或者通过getData,getChildren和exist三个接口注册Watcher，以getData为例：
+
+```shell
+public byte[] getData(final String path, Watcher watcher, Stat stat) // 传入一个Watcher
+public byte[] getData(String path, boolean watch, Stat stat) // 监听watcher,构造方法中默认的Watcher注册
+```
+
+标记request请求"这是带有Watcher监听的请求"，封装Wathcer的注册信息WatchRegistration对象，临时保存数据节点路径和Watcher的对应关系。
+
+像服务器发送请求，完成请求后将Watcher注册到ZKWatcherManager中去：Map<String, Set<Watcher>>。
+
+2.服务端处理Watcher
+
+​	1.服务器处理客户端的请求时，如getData请求，判断请求是否注册Watcher,如果true就将当前的ServerCnxn对象和数据节点保存到getData方法中去。
+
+ServerCnxn对象代表客户端跟服务端的连接，默认实现是NIOServerCnxn,因为实现了Watcher的process接口所以可以看做一个Watcher对象。
+
+​	2.数据节点的路径和ServerCnxn(可以看做Watcher对象)，最终存储在WatcherManager的WatchTable和watch2Paths中。
+
+​	3.对指定节点进行数据更新后，调用Watchermanager的triggerWatch方法触发事件：封装WatchedEven事件，包括通知状态，事件类型和节点路径。
+
+调用Wathcer的process方法触发Watcher。综上，服务端处理Watcher只是借助当前客户端连接的ServerCnxn对象来实现WatchedEvent对象传递，真正的Watcher回调和业务逻辑执行都在客户端。
+
+3.客户端回调Watcher
+
+​	客户端的SendThread线程接收事件通知，交由EvenThread线程回调Watcher。
+
+Watcher的触发是一次性的。
+
+客户端回到Watcher是串行执行的。
+
+Watcher是轻量级的，服务器通知只返回事件的类型，通知状态和节点路径。
+
+#### **Leader选举**
+
+zk服务器的几种状态：LOOKING(寻找leader状态),FOLOLOWING（跟随者状态）,LEADING（领导者状态）,OBSERVING（观察者状态）
+
+服务器刚启动初始化时和leader故障需要重新选举时，选举的过程基本一样：
+
+​	1.每个server会发出一个投票
+
+​		第一次投票每个服务器会投给自己，所推举的基本元素包括<myid, ZXID(事务的id)，state(服务器状态), peerEpoch（投票轮次）>，
+
+​	2.接收来自各个服务器的投票
+
+​			接收其他服务器的投票，通知检查是否本轮投票，是否来自LOOKING状态的服务器。
+
+​	3.变更投票
+
+​		将接受的来自其他服务器的投票和自己的投票进行对比，如果zxid大于其他服务器的就不变更，如果等于，继续比较myid,如果大于就不变更自己的投票
+
+​	这个规则是为了确保哪台服务器上的数据越新越有可能成为Leader,原因很简单，数据越新，ZXID越大，越容易保证数据的恢复。
+
+​	4.统计投票
+
+​		半数原则
+
+​	改变服务器状态
+
+#### **数据存储**
+
+​	内存数据
+
+​		DataTree是zk内存数据存储的核心，是一个以“树”的结构，存储内存中完整的数据。
+
+​		DataNode是数据存储的最小单元，表示一个节点。保存节点的状态，ACL信息，数据内容，父节点和子节点列表属性。
+
+​	事务日志
+
+​		zk在运行过程中针对所有的更新操作，在响应返回到客户端之前将事务写到本地磁盘的事务日志中，这样整个更新操作才生效。
+
+​		事务可视化：zk自带的工具jar包读取事务日志文件：org.apache.zookeeper.server.LogFormatter  ../Data/datalog/version-2/log.1
+
+​		通过dataLogDir配置，并且事务日志是预写的，默认是64M。每次事务的写入过程中文件大小增长带来的Seek开销
+
+​	数据快照
+
+​		zk会在若干次事务日志记录之后，将内存数据库的全量数据dump到本地文件中，这个过程就是数据快照。通过snapCount配置每次快照之间事务日志记录的次数。
+
+#### **ACL**
+
+​	Access Control List，访问控制列表，用来保证数据的安全。
+
+可以从三个方面理解：
+
+​	权限模式：
+
+​		IP,通过IP粒度来控制，如192.168.*。
+
+​		Digest,最常用的权限模式，类似于“username:password”的标识进行权限配置。
+
+​		World,是一种最开放权限模式，表示对所有用户开放。可以看做特殊的Digest模式：“world:anyone”。
+
+​		Super,可以对任何节点进行任何操作。
+
+​	授权对象：ID
+
+​		指权限赋予的用户或者一个实体，如IP地址或者机器等，在不同权限模式下授权对象是不同的。
+
+​	权限：
+
+​		CREATE, DELETE,READ,WRITE,ADMIN(允许ACL相关操作)
 
 ## 4 . redis
 
