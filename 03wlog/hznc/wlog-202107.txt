@@ -2014,7 +2014,122 @@ TIME_WAIT 33
 
 4.继续zk和redis
 
+​	zk 		--ok
 
+
+
+20210719
+
+今天工作：
+
+​		对历年橡胶数据补录
+
+​		1.开发程序从zip文件中抽取指定合约的文件		--ok
+
+​		2.运行离线k线程序，生成csv文件到hdfs
+
+明天工作：
+
+​	1.继续橡胶数据补录
+
+​	2.18年的商品数据准备
+
+​				下载并解压，开始生成csv文件	
+
+​					
+
+## 20210720
+
+```
+1.检查下hadoop集群, hbase集群
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			66.2 TB
+			13.61 TB (20.56%)
+			48.69 TB (73.55%)
+	检查进程：
+
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123 
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+	     
+3.检查界面，行情软件
+	如果有问题，启动：hbase-daemon.sh start thrift2
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+
+```
+
+2.补录商品数据
+
+​		橡胶数据生成csv文件
+
+​		18年商品数据，跑mr任务
+
+```shell
+hbase  org.apache.hadoop.hbase.mapreduce.ImportTsv -Dimporttsv.log.bad.lines=true -Dimporttsv.skip.bad.lines=false -Dimporttsv.separator=, -Dimporttsv.columns='HBASE_ROW_KEY,cf_data:01cSymbol,cf_data:02dbClosePrice,cf_data:03dbHeightPrice,cf_data:04dbLowPrice,cf_data:05dbOpenPrice,cf_data:06dbSum,cf_data:07dbYTClosePrice,cf_data:08uTime,cf_data:09uVolume,cf_data:10uVolume_Sell,cf_data:11zpos,cf_data:12zpos_diff,cf_data:13avgPrice,cf_data:14tdHighestPrice,cf_data:15tdLowestPrice,cf_data:16UpperLimitPrice,cf_data:17LowerLimitPrice,cf_data:18BidPrice1,cf_data:19BidVolume1,cf_data:20AskPrice1,cf_data:21AskVolume1,cf_data:from' -Dimporttsv.bulk.output=/history/futures-out/2018/hznc_mkdata-tickdata/ \
+hznc_mkdata:tickdata \
+/history/futures/2018/hznc_mkdata-tickdata/
+# 只能扫描一级目录
+# 最后少了一个字段：cf_data:from
+
+
+# 增量导入hbase:
+hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles /history/futures-out/2018/hznc_mkdata-1sdata  hznc_mkdata:1sdata
+
+# 远程调试看看：
+
+
+```
+
+
+
+3.
+
+数字存放在数字栈，字符串存放在字符串栈，遇到右括号时候弹出一个数字栈，字母栈弹到左括号为止。就是逆波兰式那种题。
+
+```java
+public String decodeString(String s) {
+		StringBuffer ans=new StringBuffer();
+		Stack<Integer> multiStack=new Stack<>();
+		Stack<StringBuffer> ansStack=new Stack<>();
+		int multi=0;
+		for(char c:s.toCharArray()){
+			if(Character.isDigit(c))multi=multi*10+c-'0';
+			else if(c=='['){
+				ansStack.add(ans);
+				multiStack.add(multi);
+				ans=new StringBuffer();
+				multi=0;
+			}else if(Character.isAlphabetic(c)){
+				ans.append(c);
+			}else{
+				StringBuffer ansTmp=ansStack.pop();
+				int tmp=multiStack.pop();
+				for(int i=0;i<tmp;i++)ansTmp.append(ans);
+				ans=ansTmp;
+			}
+		}
+		return ans.toString();
+	}
+```
 
 ##############
 
@@ -2024,7 +2139,7 @@ TIME_WAIT 33
 
 2.继续补录18年的数据
 
-3.2015年的补录完
+3.2015年的补录完		--ok
 
 ​		3s的补录失败？
 
