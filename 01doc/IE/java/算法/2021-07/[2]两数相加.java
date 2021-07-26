@@ -82,6 +82,11 @@ class Solution {
       }
 
       return head.next;
+      /**
+       * 时间复杂度：O(max(m, n))
+       * 空间复杂度：O(1) 返回值不计入空间复杂度
+       *
+       */
     }
 }
 //leetcode submit region end(Prohibit modification and deletion)
