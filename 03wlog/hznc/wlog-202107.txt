@@ -1,5 +1,11 @@
 ## tips
 
+可以用来测试的服务器：
+
+10.10.10.109
+
+
+
 释放buffer/cache的内存：
 
 ```
@@ -2018,23 +2024,25 @@ TIME_WAIT 33
 
 
 
-20210719
+20210720
 
 今天工作：
 
-​		对历年橡胶数据补录
+​	补录商品橡胶数据， 生成csv文件写入hdfs 		--ok
 
-​		1.开发程序从zip文件中抽取指定合约的文件		--ok
+​	补录18年商品数据，运行生成csv文件
 
-​		2.运行离线k线程序，生成csv文件到hdfs
+​	修复hbase服务器down掉的问题
 
 明天工作：
 
-​	1.继续橡胶数据补录
+​	继续补录商品橡胶数据，生成hfile
 
-​	2.18年的商品数据准备
+​	18年商品数据继续补录
 
-​				下载并解压，开始生成csv文件	
+​	
+
+
 
 ​					
 
@@ -2096,40 +2104,224 @@ hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles /history/futures-o
 
 # 远程调试看看：
 
-
 ```
 
 
 
 3.
 
-数字存放在数字栈，字符串存放在字符串栈，遇到右括号时候弹出一个数字栈，字母栈弹到左括号为止。就是逆波兰式那种题。
+hbase
 
-```java
-public String decodeString(String s) {
-		StringBuffer ans=new StringBuffer();
-		Stack<Integer> multiStack=new Stack<>();
-		Stack<StringBuffer> ansStack=new Stack<>();
-		int multi=0;
-		for(char c:s.toCharArray()){
-			if(Character.isDigit(c))multi=multi*10+c-'0';
-			else if(c=='['){
-				ansStack.add(ans);
-				multiStack.add(multi);
-				ans=new StringBuffer();
-				multi=0;
-			}else if(Character.isAlphabetic(c)){
-				ans.append(c);
-			}else{
-				StringBuffer ansTmp=ansStack.pop();
-				int tmp=multiStack.pop();
-				for(int i=0;i<tmp;i++)ansTmp.append(ans);
-				ans=ansTmp;
-			}
-		}
-		return ans.toString();
-	}
+```shell
+hbase hbck -repair table
+
+hbase hbck # 检查hbase
+    ERROR: There is a hole in the region chain between 000800_1893427200_2 and 000930_1893427200_2.  You need to create a new .regioninfo and region dir in hdfs to plug the hole.
+    73 inconsistencies detected.
+Status: INCONSISTENT
+
+hbase hbck -fixAssignments
+hbase hbck -fixAssignments # 把meta表中记录的region分配给regionserver 
+    
+    
+hbase hbck 只做检查 
+hbase hbck -fixMeta 根据region目录中的.regioninfo，生成meta表
+hbase hbck -fixAssignments 把meta表中记录的region分配给regionserver 
+hbase hbck -fixHdfsOrphans 修复.regioninfo文件
+hbase hbck -repair  表名
+
 ```
+
+
+
+## 20210721
+
+```
+1.检查下hadoop集群, hbase集群		--ok
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			67.09 TB
+			14.18 TB (21.14%)
+			48.4 TB (72.14%)
+	检查进程：
+
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123 
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+	     
+3.检查界面，行情软件
+	如果有问题，启动：hbase-daemon.sh start thrift2
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+
+```
+
+2.补录商品数据
+
+​	橡胶数据，发完csv,生成hfile
+
+​	18年数据继续生成hfile,等橡胶完成
+
+```shell
+hbase  org.apache.hadoop.hbase.mapreduce.ImportTsv -Dimporttsv.log.bad.lines=true -Dimporttsv.skip.bad.lines=false -Dimporttsv.separator=, -Dimporttsv.columns='HBASE_ROW_KEY,cf_data:01cSymbol,cf_data:02dbClosePrice,cf_data:03dbHeightPrice,cf_data:04dbLowPrice,cf_data:05dbOpenPrice,cf_data:06dbSum,cf_data:07dbYTClosePrice,cf_data:08uTime,cf_data:09uVolume,cf_data:10uVolume_Sell,cf_data:11zpos,cf_data:12zpos_diff,cf_data:13avgPrice,cf_data:14tdHighestPrice,cf_data:15tdLowestPrice,cf_data:16UpperLimitPrice,cf_data:17LowerLimitPrice,cf_data:18BidPrice1,cf_data:19BidVolume1,cf_data:20AskPrice1,cf_data:21AskVolume1,cf_data:from' -Dimporttsv.bulk.output=/history/futures-out/2018/hznc_mkdata-tickdata/ \
+hznc_mkdata:tickdata \
+/history/futures/2018/hznc_mkdata-tickdata
+
+hbase  org.apache.hadoop.hbase.mapreduce.ImportTsv -Dimporttsv.log.bad.lines=true -Dimporttsv.skip.bad.lines=false -Dimporttsv.separator=, -Dimporttsv.columns='HBASE_ROW_KEY,cf_data:01cSymbol,cf_data:02dbClosePrice,cf_data:03dbHeightPrice,cf_data:04dbLowPrice,cf_data:05dbOpenPrice,cf_data:06dbSum,cf_data:07dbYTClosePrice,cf_data:08uTime,cf_data:09uVolume,cf_data:10uVolume_Sell,cf_data:11zpos,cf_data:12zpos_diff,cf_data:13avgPrice,cf_data:from' -Dimporttsv.bulk.output=/history/futures-out/2018/hznc_mkdata-2sdata/ \
+hznc_mkdata:2sdata \
+/history/futures/2018/hznc_mkdata-2sdata
+# 只能扫描一级目录
+# 最后少了一个字段：cf_data:from
+
+# 增量导入hbase:
+hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles /history/futures-out/ru/hznc_mkdata-1sdata  hznc_mkdata:1sdata
+hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles /history/futures-out/ru/hznc_mkdata-2sdata  hznc_mkdata:2sdata
+hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles /history/futures-out/ru/hznc_mkdata-5sdata  hznc_mkdata:5sdata
+
+3s的表报错：
+Can't read partitions file
+Caused by: java.io.IOException: Wrong number of partitions in keyset
+http://support-it.huawei.com/docs/zh-cn/fusioninsight-all/maintenance-guide/zh-cn_topic_0222551198.html
+
+
+18年的1s		--ok
+18年的tick    --nok, bad lines?
+
+```
+
+3.其他
+
+​		
+
+4.修复表异常：
+
+```
+hbase hbck hznc_mkdata:3sdata		--ok
+hbase hbck -fixHdfsOverlaps
+hbase hbck -fixHdfsOverlaps hznc_mkdata:3sdata
+
+好东西：
+FusionInsight HD 维护宝典.pdf
+
+
+```
+
+
+
+
+
+20210722
+
+今天工作：
+
+​	15-21年商品橡胶数据补录		--ok
+
+​	补录18年商品数据
+
+​			1s和2s  --ok
+
+明天工作：
+
+​	橡胶数据生成主力代码然后生成主连数据
+
+​	继续补录18年商品其他周期数据
+
+​	
+
+## 20210722
+
+```
+1.检查下hadoop集群, hbase集群
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			67.09 TB
+			12.7 TB (18.93%)
+			49.89 TB (74.35%)
+	检查进程：
+
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123 
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+	     
+3.检查界面，行情软件
+	如果有问题，启动：hbase-daemon.sh start thrift2
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+
+```
+
+2.补录商品数据
+
+​	橡胶数据，发完csv,生成hfile
+
+​	18年数据继续生成hfile,等橡胶完成
+
+```
+2021-07-22 08:36:50,668 INFO  [main-EventThread] zookeeper.ClientCnxn: EventThread shut down				--ok
+Exception in thread "main" java.io.IOException: Trying to load more than 32 hfiles to one family of one region
+        at org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles.doBulkLoad(LoadIncrementalHFiles.java:430)
+        at org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles.doBulkLoad(LoadIncrementalHFiles.java:344)
+        at org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles.run(LoadIncrementalHFiles.java:1124)
+        at org.apache.hadoop.util.ToolRunner.run(ToolRunner.java:70)
+        at org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles.main(LoadIncrementalHFiles.java:1131)
+        
+       
+       hbase-site.xlm
+    <property> 
+    <name>hbase.mapreduce.bulkload.max.hfiles.perRegion.perFamily</name> 
+    <value>3200</value>
+    </property>
+    
+    ru:
+    tick, 1s, 2s, 3s, 5s ,10s,15s,30s， 1min，5min		--ok
+		15min，30min,60min,ddata
+		
+    2018:
+    1s	--ok
+    
+    
+   [["1","0","1","0","0"],["1","0","1","1","1"],["1","1","1","1","1"],["1","0","0","1","0"]]
+   
+
+```
+
+生成主力代码
+
+
 
 ##############
 
@@ -2145,7 +2337,475 @@ public String decodeString(String s) {
 
 
 
+高稳定性：
+
+保证程序的稳定性和正确性，个人提倡从测试出发保证，这个测试不是说开发依赖测试人员，
+
+是开发首先自己要通过测试。不能说自己都没有测试过就交给测试人员，毕竟开发是主要责任人。
+
+测试通过三个方面保证：
+
+单元测试，很重要！
+
+功能性的测试即集成测试
+
+性能测试
+
+目前环境性能测试没有充足的条件。其他自己都是可以去实现的。
+
+
+
+## 20210723
+
+```
+1.检查下hadoop集群, hbase集群
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			67.09 TB
+			12.97 TB (19.34%)
+			49.56 TB (73.87%)
+	检查进程：
+
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123 
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+	     
+3.检查界面，行情软件
+	如果有问题，启动：hbase-daemon.sh start thrift2
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+
+```
+
+2.补录商品数据
+
+​	橡胶数据生成主力代码		--ok
+
+​		开始生成主连数据		--ok
+
+```
+使用方法:1.进入Index_Data_his数据库, 将需计算的数据存入“T003_主力合约待计算表”;
+2、执行“C001_批量计算期指主力合约”存储过程;
+3、查看“T004_主力合约代码”表
+```
+
+
+
+​	18年数据继续生成hfile
+
+​		tick,1s,2s,3s,5s,10s，15s,30s			--ok
+
+3.redis
+
+
+
+今天工作-20210723：
+
+计算生成橡胶数据主力代码		--ok
+
+生成橡胶主连数据
+
+下周工作：
+
+​	生成橡胶主连数据
+
+​	17年商品数据补录
+
+
+
+## 20210724
+
+```
+1.检查下hadoop集群, hbase集群
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			67.09 TB
+			12.97 TB (19.34%)
+			49.56 TB (73.87%)
+	检查进程：
+
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123 
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+	     
+3.检查界面，行情软件
+	如果有问题，启动：hbase-daemon.sh start thrift2
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+
+```
+
+2.补录橡胶的主连数据
+
+```shell
+hbase  org.apache.hadoop.hbase.mapreduce.ImportTsv -Dimporttsv.log.bad.lines=true -Dimporttsv.skip.bad.lines=false -Dimporttsv.separator=, -Dimporttsv.columns='HBASE_ROW_KEY,cf_data:01cSymbol,cf_data:02dbClosePrice,cf_data:03dbHeightPrice,cf_data:04dbLowPrice,cf_data:05dbOpenPrice,cf_data:06dbSum,cf_data:07dbYTClosePrice,cf_data:08uTime,cf_data:09uVolume,cf_data:10uVolume_Sell,cf_data:11zpos,cf_data:12zpos_diff,cf_data:13avgPrice,cf_data:14tdHighestPrice,cf_data:15tdLowestPrice,cf_data:16UpperLimitPrice,cf_data:17LowerLimitPrice,cf_data:18BidPrice1,cf_data:19BidVolume1,cf_data:20AskPrice1,cf_data:21AskVolume1,cf_data:from' -Dimporttsv.bulk.output=/history/futures-out/ru-main/hznc_mkdata-tickdata/ \
+hznc_mkdata:tickdata \
+/history/futures/ru-main/hznc_mkdata-tickdata
+
+/history/futures/ru-main
+```
+
+3.补录股票数据			--ok
+
+​		看看程序？
+
+​				hznc_data:60mindata_1，hznc_data:Ddata_1
+
+​				 hznc.com.java.NewInterfaceToHbase.GuPiaoReduce
+
+​				沪深300 000300，中证500 000905 ，上证50  000016
+
+​				补录日k和小时k
+
+
+
+​		数据？
+
+## 20210726
+
+​	明天继续。。。
+
+
+
+```java
+//标准的如何在双向链表中将指定元素放入队尾
+// LinkedHashMap 中覆写
+//访问元素之后的回调方法
+
+/**
+ * 1. 使用 get 方法会访问到节点, 从而触发调用这个方法
+ * 2. 使用 put 方法插入节点, 如果 key 存在, 也算要访问节点, 从而触发该方法
+ * 3. 只有 accessOrder 是 true 才会调用该方法
+ * 4. 这个方法会把访问到的最后节点重新插入到双向链表结尾
+ */
+void afterNodeAccess(Node<K,V> e) { // move node to last
+    // 用 last 表示插入 e 前的尾节点
+    // 插入 e 后 e 是尾节点, 所以也是表示 e 的前一个节点
+    LinkedHashMap.Entry<K,V> last;
+    //如果是访问序，且当前节点并不是尾节点
+    //将该节点置为双向链表的尾部
+    if (accessOrder && (last = tail) != e) {
+        // p: 当前节点
+        // b: 前一个节点
+        // a: 后一个节点
+        // 结构为: b <=> p <=> a
+        LinkedHashMap.Entry<K,V> p =
+            (LinkedHashMap.Entry<K,V>)e, b = p.before, a = p.after;
+        // 结构变成: b <=> p <- a
+        p.after = null;
+
+        // 如果当前节点 p 本身是头节点, 那么头结点要改成 a
+        if (b == null)
+            head = a;
+        // 如果 p 不是头尾节点, 把前后节点连接, 变成: b -> a
+        else
+            b.after = a;
+
+        // a 非空, 和 b 连接, 变成: b <- a
+        if (a != null)
+            a.before = b;
+        // 如果 a 为空, 说明 p 是尾节点, b 就是它的前一个节点, 符合 last 的定义
+      	// 这个 else 没有意义，因为最开头if已经确保了p不是尾结点了，自然after不会是null
+        else
+            last = b;
+
+        // 如果这是空链表, p 改成头结点
+        if (last == null)
+            head = p;
+        // 否则把 p 插入到链表尾部
+        else {
+            p.before = last;
+            last.after = p;
+        }
+        tail = p;
+        ++modCount;
+    }
+}
+
+
+				测试用例:["LRUCache","put","put","get","put","get","put","get","get","get"]
+				[[2],[1,1],[2,2],[1],[3,3],[2],[4,4],[1],[3],[4]]
+				测试结果:[null,null,null,1,null,2,null,-1,3,4]
+				期望结果:[null,null,null,1,null,-1,null,-1,3,4]
+
+
+
+广度优先搜索 / 深度优先搜索，二分查找，滑动窗口，双指针，动态规划
+```
+
+
+
+## 20210727
+
+```
+1.检查下hadoop集群, hbase集群		--ok
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			67.09 TB
+			12.51 TB (19.29%)
+			46.23 TB (71.27%)
+	检查进程：
+
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123 
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+	     
+3.检查界面，行情软件
+	如果有问题，启动：hbase-daemon.sh start thrift2
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+
+2021-07-27 08:27:21,809 ERROR org.apache.hadoop.hdfs.server.datanode.DataNode: slave2:50010:DataXceiver error processing READ_BLOCK operation  src: /10.10.0.253:54500 dst: /10.10.0.54:50010
+org.apache.hadoop.hdfs.server.datanode.ReplicaNotFoundException: Replica not found for BP-820644543-10.10.0.254-1562028117422:blk_1076748201_3008249
+        at org.apache.hadoop.hdfs.server.datanode.BlockSender.getReplica(BlockSender.java:455
+
+```
+
+2.补录橡胶的主连数据
+
+​	补录17年的数据， 先上传完		--ok
+
+​	开始发送17年的数据
+
+
+
+3.根目录满了？
+
+减少目录：dfs.datanode.data.dir
+
+退役一台然后修改data.dir,重新上线
+
+
+
+
+
+## 20210728
+
+```
+1.检查下hadoop集群, hbase集群		--ok
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			63.54 TB
+			12.51 TB (19.69%)
+			46.01 TB (72.4%)
+	检查进程：
+
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123 
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+	     
+3.检查界面，行情软件
+	如果有问题，启动：hbase-daemon.sh start thrift2
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+
+2021-07-27 08:27:21,809 ERROR org.apache.hadoop.hdfs.server.datanode.DataNode: slave2:50010:DataXceiver error processing READ_BLOCK operation  src: /10.10.0.253:54500 dst: /10.10.0.54:50010
+org.apache.hadoop.hdfs.server.datanode.ReplicaNotFoundException: Replica not found for BP-820644543-10.10.0.254-1562028117422:blk_1076748201_3008249
+        at org.apache.hadoop.hdfs.server.datanode.BlockSender.getReplica(BlockSender.java:455
+
+```
+
+2.补录橡胶的主连数据
+
+​	补录17年的数据， 先上传完		--ok
+
+​	开始发送17年的数据
+
+
+
+3.根目录满了？
+
+
+
+```shell
+先用keep-0测试下
+1.退役keep-0
+	vim excludes
+	hadoop dfsadmin -refreshNodes
+	# 等退役完成
+	hadoop dfsadmin -report
+	hadoop-daemon.st stop datanode
+	hdfs dfsadmin -refreshNodes # 刷新一下
+2.停掉hbase
+	hbase-daemon.stop regionserver
+	
+3.修改datanode.dir,保留最大的就好
+dfs.datanode.data.dir
+# <value>file:///data/dfs,file:///ncdata/dfs,file:///ncdata1/dfs</value>
+#  <value>file:///ncdata1/dfsdata</value>
+# 备份原来的目录，先不要立即删除
+
+4.启动datanode
+启动regionserver 
+观察
+
+keep-0，slave2，master,keep-1,slave1
+keep-0, slave2,master	--ok
+
+current: hdfs balancer
+
+
+负载均衡
+
+限制网络带宽：
+
+hdfs dfsadmin -setBalancerBandwidth  5388608  # 5M 
+
+start-balancer.sh -h # 查看帮助
+
+start-balancer.sh -t 40 # datanode 之间使用率相差%40以上开始rebanlace
+```
+
+
+
+简单工厂模式
+
+​	角色：
+
+​			Factory(工厂)：负责创建对象
+
+​			Product(抽象类产品)
+
+​			ConcreteProduct(具体产品)
+
+​	可以根据不同的参数选项由于工厂类创建对应的对象。如果有新的产品，实现新的产品然后配置到工厂类中。
+
+装饰模式
+
+​	角色：抽象组件角色（Component）和具体组件角色（Concrete Component）,装饰角色（Decorator）和具体装饰角色（Concrete Decorator）
+
+​	通过创建装饰角色，接收组件角色作为成员变量，动态的扩展组件角色的功能。
+
+java IO流的设计就用到了这个模式：FileInputStream&FileOutputStream，FileReader&FileWriter这些可以直接操作文件流是节点流，在装饰模式中是组件角色。
+
+而BufferedInputStream, BufferedFileReader 这些是依赖节点流扩展缓冲功能，是具体装饰角色。具体实现就是BufferedInputStream 内部有成员变量InputStream in,初始化时候接收InutStream，在原来InputStream基础上增加缓冲功能。
+
+​	apache tika 的parse实现也是使用装饰模式。
+
+策略模式：
+
+​	角色：
+
+​		策略（Strategy），接口，定义了算法方法。
+
+​		具体策略（Concrete Strategy）, 具体算法实现。
+
+​		上下文（Context）, 依赖策略成员变量，委托策略成员变量调用算法。
+
+定义一些算法并将算法封装起来，可以根据需要替换算法。
+
+​	满足开闭原则的，如果需要新的算法只要增加新的算法实现并且实现。
+
+​	应用：
+
+线程池中就应用到了策略模式：
+
+```java
+public ThreadPoolExecutor(int corePoolSize,
+                              int maximumPoolSize,
+                              long keepAliveTime,
+                              TimeUnit unit,
+                              BlockingQueue<Runnable> workQueue,
+                              ThreadFactory threadFactory,
+                              RejectedExecutionHandler handler) // 拒绝策略{
+    ThreadPoolExecutor实际就是上下文角色
+```
+
+4.其他
+
+​	算法		--ok
+
+​	kafka
+
+​	zero copy
+
+​	磁盘读写原理
+
+​	设计模式		--ok
+
+
+
+5.k线bug修复
+
 todo：
+
+《hbase原理和实践》
+
+reactor模式：
+
+​		https://www.cnblogs.com/crazymakercircle/p/9833847.html
+
+
+
+搭建数仓，使用flink，kafka,redis做实时处理， hive离线分析。
 
 .java bigdata
 
@@ -2186,27 +2846,21 @@ hadoop版本：2.7.3
 
 
 
-20210713
 
-今天工作
 
-1.历史商品数据补录
+今天工作-20210727
 
-​			21年商品补录		--ok
+1.17年商品数据补录，生成csv到本地
 
-​			19年商品补录		--正在运行生成csv
+2.处理hbase服务器磁盘占满的问题
 
-2.实时程序改进，支持实时数据保存到本地		--ok
-
-3.实时程序修改，增加缓存的过期时间降低数据延迟		--明天本地实时测试下
+​		处理完2个节点，剩余3台，现在每台节点退役要2-3小时
 
 明天工作：
 
-1.继续历史商品数据补录
+1.继续补录17年商品数据
 
-2.开发程序读取本地实时写入的文件，支持盘中补录
-
-3.测试实时程序缓存延迟的问题
+2.处理剩余服务器磁盘占满的问题
 
 
 
@@ -2287,6 +2941,15 @@ hbase性能测试，吞吐量如何？
 
 
 ## TODO
+
+
+
+|      |                   |                   |
+| ---- | ----------------- | ----------------- |
+| 一   | 系统:java, 大数据 | now-20210801      |
+| 二   | flink+数仓项目    | 20210801-20211001 |
+| 三   | 收集和整理        | 20211001-20211015 |
+| 四   | 实践              | 20211015          |
 
 
 
