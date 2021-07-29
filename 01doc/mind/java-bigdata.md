@@ -1228,6 +1228,63 @@ IO 的分类
 
 
 
+### 设计模式
+
+#### 简单工厂模式
+
+​	角色：
+
+​			Factory(工厂)：负责创建对象
+
+​			Product(抽象类产品)
+
+​			ConcreteProduct(具体产品)
+
+​	可以根据不同的参数选项由于工厂类创建对应的对象。如果有新的产品，实现新的产品然后配置到工厂类中。
+
+#### 装饰模式
+
+​	角色：抽象组件角色（Component）和具体组件角色（Concrete Component）,装饰角色（Decorator）和具体装饰角色（Concrete Decorator）
+
+​	通过创建装饰角色，接收组件角色作为成员变量，动态的扩展组件角色的功能。
+
+java IO流的设计就用到了这个模式：FileInputStream&FileOutputStream，FileReader&FileWriter这些可以直接操作文件流是节点流，在装饰模式中是组件角色。
+
+而BufferedInputStream, BufferedFileReader 这些是依赖节点流扩展缓冲功能，是具体装饰角色。具体实现就是BufferedInputStream 内部有成员变量InputStream in,初始化时候接收InutStream，在原来InputStream基础上增加缓冲功能。
+
+​	apache tika 的parse实现也是使用装饰模式。
+
+#### 策略模式
+
+​	角色：
+
+​		策略（Strategy），接口，定义了算法方法。
+
+​		具体策略（Concrete Strategy）, 具体算法实现。
+
+​		上下文（Context）, 依赖策略成员变量，委托策略成员变量调用算法。
+
+定义一些算法并将算法封装起来，可以根据需要替换算法。
+
+​	满足开闭原则的，如果需要新的算法只要增加新的算法实现并且实现。
+
+​	应用：
+
+线程池中就应用到了策略模式：
+
+```java
+public ThreadPoolExecutor(int corePoolSize,
+                              int maximumPoolSize,
+                              long keepAliveTime,
+                              TimeUnit unit,
+                              BlockingQueue<Runnable> workQueue,
+                              ThreadFactory threadFactory,
+                              RejectedExecutionHandler handler) // 拒绝策略{
+    ThreadPoolExecutor实际就是上下文角色
+```
+
+
+
 # 大数据
 
 ## 1. linux
