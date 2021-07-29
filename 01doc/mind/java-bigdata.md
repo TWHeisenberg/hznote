@@ -1230,7 +1230,7 @@ IO 的分类
 
 ### 设计模式
 
-#### 简单工厂模式
+#### 简单工厂
 
 ​	角色：
 
@@ -1241,6 +1241,69 @@ IO 的分类
 ​			ConcreteProduct(具体产品)
 
 ​	可以根据不同的参数选项由于工厂类创建对应的对象。如果有新的产品，实现新的产品然后配置到工厂类中。
+
+
+
+#### 工厂方法
+
+工厂方法模式的主要角色如下。
+
+1. 抽象工厂（Abstract Factory）：提供了创建产品的接口，调用者通过它访问具体工厂的工厂方法 newProduct() 来创建产品。
+2. 具体工厂（ConcreteFactory）：主要是实现抽象工厂中的抽象方法，完成具体产品的创建。
+3. 抽象产品（Product）：定义了产品的规范，描述了产品的主要特性和功能。
+4. 具体产品（ConcreteProduct）：实现了抽象产品角色所定义的接口，由具体工厂来创建，它同具体工厂之间一一对应。
+
+简单工厂模式违背了开闭原则，每次有新增加的产品时需要修改工厂内部的判断逻辑。工厂方法模式可以解决这个问题，只需要创建对应的工厂类即可。用户可以不关心具体的产品和实现只有知道是哪个工厂生产的。
+
+但是缺点是每次新增产品都要新增对应的工厂类使系统设计复杂。
+
+jdk中的工厂方法：
+
+Collection中的iterator方法， 对于iterator来说Collection就是抽象工厂，定义了工厂方法iterator()，ArrayList,HashSet就是具体工厂，有各自的实现Iteractor()方法,
+
+具体产品分别是ListIterator， LinkedKeyIterator。
+
+
+
+#### 抽象工厂模式
+
+抽象工厂（AbstractFactory）模式的定义：是一种为访问类提供一个创建一组相关或相互依赖对象的接口，且访问类无须指定所要产品的具体类就能得到同族的不同等级的产品的模式结构。
+
+抽象工厂模式是工厂方法模式的升级版本，工厂方法模式只生产一个等级的产品，而抽象工厂模式可生产多个等级的产品。
+
+抽象工厂模式的主要角色如下。
+
+1. 抽象工厂（Abstract Factory）：提供了创建产品的接口，它包含多个创建产品的方法 newProduct()，可以创建多个不同等级的产品。
+2. 具体工厂（Concrete Factory）：主要是实现抽象工厂中的多个抽象方法，完成具体产品的创建。
+3. 抽象产品（Product）：定义了产品的规范，描述了产品的主要特性和功能，抽象工厂模式有多个抽象产品。
+4. 具体产品（ConcreteProduct）：实现了抽象产品角色所定义的接口，由具体工厂来创建，它同具体工厂之间是多对一的关系。
+
+```java
+interface AbstractFactory { // 抽象工厂
+    public Product1 newProduct1();
+    public Product2 newProduct2();
+}
+
+class ConcreteFactory1 implements AbstractFactory { // 具体工厂
+    public Product1 newProduct1() {
+        System.out.println("具体工厂 1 生成-->具体产品 11...");
+        return new ConcreteProduct11();
+    }
+    public Product2 newProduct2() {
+        System.out.println("具体工厂 1 生成-->具体产品 21...");
+        return new ConcreteProduct21();
+    }
+}
+// 后面可以实现具体工厂2， 具体工厂3...
+```
+
+jdk中的抽象工厂模式：
+
+jdbc接口java.sql.Connection类就是一个抽象工厂，定义了一些抽象产品，可以生产哪些产品：Statement，PreparedStatement
+
+而mysql 的com.mysql.jdbc.ConnectionImpl就是具体工厂，生产com.mysql.jdbc.StatementImpl和com.mysql.jdbc.ServerPreparedStatement是具体产品。
+
+
 
 #### 装饰模式
 
