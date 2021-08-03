@@ -6,7 +6,7 @@
 
 ## 1. 集合
 
-两种集合框架：collection和map，其中collection分为set和List。
+两种集合框架：collection和map，其中collection下有set和List。
 
 #### hashMap
 
@@ -1346,7 +1346,117 @@ public ThreadPoolExecutor(int corePoolSize,
     ThreadPoolExecutor实际就是上下文角色
 ```
 
+#### 代理模式
 
+​			代理模式给某一个对象提供一个代理对象，并由代理对象控制对原对象的引用。通俗的来讲代理模式就是我们生活中常见的中介。作用：中介隔离作用， 开闭原则，增加功能
+
+静态代理：
+
+​			为某个对象编写代理类，由这个代理对象调用对象的方法。在程序运行之前，代理类class文件就已经编译完成了。
+
+动态代理：
+
+​			在动态代理中我们不再需要再手动的创建代理类，我们只需要编写一个动态处理器就可以了。真正的代理对象由JDK再运行时为我们动态的来创建。
+
+```java
+动态代理：
+interface Customer{
+    void buyHouse();
+ }
+ class ConcreteCustomer implements Customer{
+    public void buyHouse(){
+      System.out.println("I want to buy house.");
+    }
+    
+// handler
+class DynamicProxyHandler implements InvocationHandler{
+
+    private Object target;
+
+    public DynamicProxyHandler(Object target){
+      this.target = target;
+    }
+
+   @Override
+   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+     System.out.println("before buy house.");
+     Object result = method.invoke(target, args);
+     System.out.println("after buy house.");
+     return result;
+   }
+
+ }
+     
+ public void testDynamicProxy(){
+    Customer customer = new ConcreteCustomer();
+     // 创建代理对象
+    Customer customerProxy = (Customer) Proxy.newProxyInstance(Customer.class.getClassLoader(), new Class[]{Customer.class}, new 				DynamicProxyHandler(customer));
+    customerProxy.buyHouse();
+  }
+     
+// 代理的对象为什么必须实现接口？
+ /**
+ 	因为jdk会为代理对象生成代理类，这个代理类以及继承了Proxy类，而代理对象必须向下是这代理对象的子类或者实现，才能调用对象的接口，所以只能去实现接口；
+ 	又因为代理对象只作为一个原对象调用方法的入口，真正的实现或者加强在handler中处理，符合开闭原则。
+ */
+```
+
+​			优点：相对于静态代理，代理类是动态生成的，只需要编写InvocationHandler类， 减少了开发的工作。
+
+​			缺点：代理类必须实现接口。
+
+CGLIB动态代理
+
+​	CGLib采用了非常底层的字节码技术，其原理是通过字节码技术为一个类创建子类，并在子类中采用方法拦截的技术拦截所有父类方法的调用，顺势织入横切逻辑。但因为采用的是继承，所以不能对final修饰的类进行代理。
+
+```java
+class CglibProxy implements MethodInterceptor{
+    private Object target;
+
+    public Object getInstance(Object target){
+      this.target = target;
+      Enhancer enhancer = new Enhancer();
+      enhancer.setSuperclass(this.target.getClass());
+      enhancer.setCallback(this);
+      return enhancer.create();
+    }
+
+    public Object intercept(Object object, Method method, Object[] args, MethodProxy methodProxy) throws Throwable{
+        System.out.println("before buy house.");
+        Object result = methodProxy.invoke(object, args);
+        System.out.println("after buy house.");
+        return result;
+    }
+  }
+
+  // 测试
+  public void testCglibProxy() {
+    Customer customer = new ConcreteCustomer();
+    CglibProxy cglibProxy = new CglibProxy();
+    ConcreteCustomer customerCglibProxy = (ConcreteCustomer) cglibProxy.getInstance(customer);
+    customerCglibProxy.buyHouse();
+  }
+```
+
+
+
+#### 原型模式
+
+​	当系统中需要大量创建相同或者相似的对象时，就可以通过“原型设计模式”来实现。原型模式的核心思想是，通过拷贝指定的“原型实例（对象）”，创建跟该对象一样的新对象。简单理解就是“克隆指定对象”。
+
+​	实现：
+
+​		1.实现Cloneable接口
+
+​		2.重写clone方法
+
+深拷贝和浅拷贝：
+
+​		浅拷贝：1、当类的成员变量是基本数据类型时，浅拷贝会复制该属性的值赋值给新对象。2、当成员变量是引用数据类型时，浅拷贝复制的是引用数据类型的地址值。这种情况下，当拷贝出的某一个类修改了引用数据类型的成员变量后，会导致所有拷贝出的类都发生改变。
+
+​		深拷贝：深拷贝不仅会复制成员变量为基本数据类型的值，给新对象。还会给是引用数据类型的成员变量申请储存空间，并复制引用数据类型成员变量的对象。这样拷贝出的新对象就不怕修改了是引用数据类型的成员变量后，对其它拷贝出的对象造成影响了。
+
+​		实现方式：实现clone方法，调用引用对象的clone；序列化方式
 
 # 大数据
 
@@ -1355,6 +1465,46 @@ public ThreadPoolExecutor(int corePoolSize,
 ### 1. tcp协议，三次握手，四次挥手，timewait
 
 ## 2 . kafka
+
+#### 架构模型基本概念
+
+- Broker，消息中间件处理节点，一个 Kafka 节点就是一个 broker，一个或者多个 Broker 可以组成一个 Kafka 集群
+- Topic，主题，Kafka根据topic对消息进行归类，发布到Kafka集群的每条消息都需要指定一个topic
+- Producer，消息生产者，向Broker发送消息的客户端
+- Consumer，消息消费者，从Broker读取消息的客户端
+- ConsumerGroup，每个Consumer属于一个特定的Consumer Group，一条消息可以发送到多个不同的Consumer Group，但是一个Consumer Group中只能有一个Consumer能够消费该消息
+- Partition，一个topic可以分为多个partition，每个partition内部是有序的。一个 partition 只能被 consumer group 中的至多一个 consumer 所绑定消费，正常情况下，期望 partition 的数量能够与 consumer group 中 consumer 的数量相等，这样能够做到消息的均衡消费
+
+#### 消息投递方式
+
+这类问题可以分成两个部分分析：发送消息的持久性保障，以及在消费消息时的保证措施。
+
+- 在新版本的 kafka 中，对于 producer 来说，可以设置同一个消息不会被多次投递，这依赖于 broker 给每个 producer 一个编号，以及对 message 也有相关的编号，所以会对相同编号的消息进行去重，保证消息的幂等性。
+- kafka 同样支持 transaction message，即 batch message 要么全部写入成功，要么全部写入失败。这个可能会带来一些延迟，如果说不一定需要这个的话，就可以直接异步发送即可。
+
+at most once
+
+> 消息可能丢失，但是绝对不会多次发送
+
+对于 consumer 来说，如果在消息处理结束之前就更新了 offset，则可能因为 customer 挂掉出现消息丢失的情况。
+
+at least once
+
+> 消息可能重复，但是绝对不会被丢失
+
+对于 consumer 来说，如果在消息处理结束之后再更新 offset，则可能出现消息处理完了，但 offset 未更新情况，这就需要系统能够接受幂等处理，或者将重复消息进行抛弃。
+
+exactly once
+
+> 消息被发送有且仅有一次
+
+- 如果 consumer 在读取消息之后又重新把消息发送给 kafka 的另一个 topic，则可以将这些消息 以及 更新 offset 的消息作为一个 transaction 进行发送。如果事务等级设置的是 `read commited`，那么消息未成功提交之前，用户就不会获取到相关消息。
+- 如果 consumer 读取消息之后，是发送到其他不支持 2PC 的系统中，往往可以采取的一种方式是，将 offset 与数据一块儿发送给相关系统，这样即使消息没有 unique id，也能通过 offset 来判断是否是同一条消息。
+
+#### 存储方式
+
+- kafka 在存储是以 partition 为单位，每个 partition 包含一组 Segment 文件以及一组索引文件，消息文件和索引文件一一对应，文件名就是这个文件中第一条消息的索引序号。索引文件中保存了索引的序号和对应的消息在 segment 文件中的位置。在设计索引上，kafka 为了节省空间，不会为每条消息都创建索引，而是每隔几条消息创建一条索引，采用的是稀疏索引的方式。
+- kafka 写入消息的时就是在 segment 文件尾部连续追加写入，一个文件写到了指定大小（一般是 1G ）再写下一个文件。查找消息时，首先根据文件名找到的索引文件，然后用二分法查找索引在里面找到离目标消息最近的索引，再去消息文件中找到这条最近的索引指向的消息位置，然后从这个位置开始顺序遍历消息文件找到目标消息。
 
 #### ZK的作用
 
@@ -1414,7 +1564,7 @@ leader维护一个与之基本保持同步的副本列表。叫ISR(in-sync Repli
 
 由leader动态维护
 
-如果副本跟leader差太多会从ISR移除
+如果副本跟leader差太多会从ISR移除， 心跳跟同步的offset。
 
 leader接受消息当ISR的所有副本都向leader发送ACK时，leader才commit.
 
@@ -1452,7 +1602,7 @@ leader接受消息当ISR的所有副本都向leader发送ACK时，leader才commi
 
 每个partition是有序的，不可变的消息序列，新的消息会加到partition的末尾
 
-3.零拷贝技术
+3.零拷贝技术-sendFile
 
 直接把数据从内核态拷到网络传输层。避免了用户态和内核态这些之间的切换。
 
@@ -1460,11 +1610,14 @@ leader接受消息当ISR的所有副本都向leader发送ACK时，leader才commi
 
 内核态：当程序要读写文件时，一般要切换到内核态系统调用。
 
+4.batch 处理
+
+- 为了加快效率，消息的读取，以及落地都会采用 batch 的方式进行处理，即多读，以及 批次 flush 处理。
+- 同时为了节省网络带宽，会对发送的数据进行压缩，log 会将压缩后的数据进行存储，comsumer 在读取之后再进行解压。
+
 #### zero copy
 
 TODO
-
-
 
 ## 3.  zookeeper
 
