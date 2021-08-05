@@ -2671,6 +2671,7 @@ TIME_WAIT 33
 org.apache.hadoop.hdfs.server.datanode.ReplicaNotFoundException: Replica not found for BP-820644543-10.10.0.254-1562028117422:blk_1076748201_3008249
         at org.apache.hadoop.hdfs.server.datanode.BlockSender.getReplica(BlockSender.java:455
 
+get "hznc_mkdata:tickdata", "CF109_1627451657_1"
 ```
 
 2.补录橡胶的主连数据
@@ -2708,9 +2709,9 @@ dfs.datanode.data.dir
 观察
 
 keep-0，slave2，master,keep-1,slave1
-keep-0, slave2,master	--ok
+keep-0, slave2,master，keep-1	--ok
 
-current: hdfs balancer
+current: slave1
 
 
 负载均衡
@@ -2779,21 +2780,330 @@ public ThreadPoolExecutor(int corePoolSize,
     ThreadPoolExecutor实际就是上下文角色
 ```
 
-4.其他
+
+
+## 20210729
+
+```
+1.检查下hadoop集群, hbase集群	
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			61.32 TB
+			12.55 TB (20.47%)
+			43.75 TB (71.36%)
+	检查进程：
+
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123 
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+	     
+3.检查界面，行情软件
+	如果有问题，启动：hbase-daemon.sh start thrift2
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+
+2021-07-27 08:27:21,809 ERROR org.apache.hadoop.hdfs.server.datanode.DataNode: slave2:50010:DataXceiver error processing READ_BLOCK operation  src: /10.10.0.253:54500 dst: /10.10.0.54:50010
+org.apache.hadoop.hdfs.server.datanode.ReplicaNotFoundException: Replica not found for BP-820644543-10.10.0.254-1562028117422:blk_1076748201_3008249
+        at org.apache.hadoop.hdfs.server.datanode.BlockSender.getReplica(BlockSender.java:455
+
+get "hznc_mkdata:tickdata", "CF109_1627451657_1"
+```
+
+2.补录橡胶的主连数据
+
+​	补录17年的数据， 先上传完		--ok
+
+​	开始发送17年的数据
+
+```shell
+hbase  org.apache.hadoop.hbase.mapreduce.ImportTsv -Dimporttsv.log.bad.lines=true -Dimporttsv.skip.bad.lines=false -Dimporttsv.separator=, -Dimporttsv.columns='HBASE_ROW_KEY,cf_data:01cSymbol,cf_data:02dbClosePrice,cf_data:03dbHeightPrice,cf_data:04dbLowPrice,cf_data:05dbOpenPrice,cf_data:06dbSum,cf_data:07dbYTClosePrice,cf_data:08uTime,cf_data:09uVolume,cf_data:10uVolume_Sell,cf_data:11zpos,cf_data:12zpos_diff,cf_data:13avgPrice,cf_data:14tdHighestPrice,cf_data:15tdLowestPrice,cf_data:16UpperLimitPrice,cf_data:17LowerLimitPrice,cf_data:18BidPrice1,cf_data:19BidVolume1,cf_data:20AskPrice1,cf_data:21AskVolume1,cf_data:from' -Dimporttsv.bulk.output=/history/futures-out/2017/hznc_mkdata-tickdata/ \
+hznc_mkdata:tickdata \
+/history/futures/2017/hznc_mkdata-tickdata
+
+```
+
+3.根目录满了？		--ok
+
+
+
+```shell
+先用keep-0测试下
+1.退役keep-0
+	vim excludes
+	hadoop dfsadmin -refreshNodes
+	# 等退役完成
+	hadoop dfsadmin -report
+	hadoop-daemon.st stop datanode
+	hdfs dfsadmin -refreshNodes # 刷新一下
+2.停掉hbase
+	hbase-daemon.stop regionserver
+	
+3.修改datanode.dir,保留最大的就好
+dfs.datanode.data.dir
+# <value>file:///data/dfs,file:///ncdata/dfs,file:///ncdata1/dfs</value>
+#  <value>file:///ncdata1/dfsdata</value>
+# 备份原来的目录，先不要立即删除
+
+4.启动datanode
+启动regionserver 
+观察
+
+keep-0，slave2，master,keep-1,slave1
+keep-0, slave2,master，keep-1,slave1	--ok
+
+TODO:
+
+负载均衡
+
+限制网络带宽：
+
+hdfs dfsadmin -setBalancerBandwidth  5388608  # 5M 
+
+start-balancer.sh -h # 查看帮助
+
+start-balancer.sh -t 40 # datanode 之间使用率相差%40以上开始rebanlace
+```
+
+​	工厂方法
+
+工厂方法模式的主要角色如下。
+
+1. 抽象工厂（Abstract Factory）：提供了创建产品的接口，调用者通过它访问具体工厂的工厂方法 newProduct() 来创建产品。
+2. 具体工厂（ConcreteFactory）：主要是实现抽象工厂中的抽象方法，完成具体产品的创建。
+3. 抽象产品（Product）：定义了产品的规范，描述了产品的主要特性和功能。
+4. 具体产品（ConcreteProduct）：实现了抽象产品角色所定义的接口，由具体工厂来创建，它同具体工厂之间一一对应。
+
+简单工厂模式违背了开闭原则，每次有新增加的产品时需要修改工厂内部的判断逻辑。工厂方法模式可以解决这个问题，只需要创建对应的工厂类即可。用户可以不关心具体的产品和实现只有知道是哪个工厂生产的。
+
+但是缺点是每次新增产品都要新增对应的工厂类使系统设计复杂。
+
+jdk中的工厂方法：
+
+Collection中的iterator方法， 对于iterator来说Collection就是抽象工厂，定义了工厂方法iterator()，ArrayList,HashSet就是具体工厂，有各自的实现Iteractor()方法,
+
+具体产品分别是ListIterator， LinkedKeyIterator。
+
+
+
+​		抽象工厂模式
+
+抽象工厂（AbstractFactory）模式的定义：是一种为访问类提供一个创建一组相关或相互依赖对象的接口，且访问类无须指定所要产品的具体类就能得到同族的不同等级的产品的模式结构。
+
+抽象工厂模式是工厂方法模式的升级版本，工厂方法模式只生产一个等级的产品，而抽象工厂模式可生产多个等级的产品。
+
+抽象工厂模式的主要角色如下。
+
+1. 抽象工厂（Abstract Factory）：提供了创建产品的接口，它包含多个创建产品的方法 newProduct()，可以创建多个不同等级的产品。
+2. 具体工厂（Concrete Factory）：主要是实现抽象工厂中的多个抽象方法，完成具体产品的创建。
+3. 抽象产品（Product）：定义了产品的规范，描述了产品的主要特性和功能，抽象工厂模式有多个抽象产品。
+4. 具体产品（ConcreteProduct）：实现了抽象产品角色所定义的接口，由具体工厂来创建，它同具体工厂之间是多对一的关系。
+
+```java
+interface AbstractFactory { // 抽象工厂
+    public Product1 newProduct1();
+    public Product2 newProduct2();
+}
+
+class ConcreteFactory1 implements AbstractFactory { // 具体工厂
+    public Product1 newProduct1() {
+        System.out.println("具体工厂 1 生成-->具体产品 11...");
+        return new ConcreteProduct11();
+    }
+    public Product2 newProduct2() {
+        System.out.println("具体工厂 1 生成-->具体产品 21...");
+        return new ConcreteProduct21();
+    }
+}
+// 后面可以实现具体工厂2， 具体工厂3...
+```
+
+jdk中的抽象工厂模式：
+
+jdbc接口java.sql.Connection类就是一个抽象工厂，定义了一些抽象产品，可以生产哪些产品：Statement，PreparedStatement
+
+而mysql 的com.mysql.jdbc.ConnectionImpl就是具体工厂，生产com.mysql.jdbc.StatementImpl和com.mysql.jdbc.ServerPreparedStatement是具体产品。
+
+
+
+5.k线bug修复		--ok
+
+
+
+今天工作-20210729
+
+1.17年商品数据继续补录，上传csv文件到hdfs
+
+2.处理hbase服务器磁盘占满的问题		--ok
+
+明天工作：
+
+1.继续补录17年商品数据, 跑mapreduce任务生成hfile
+
+
+
+## 20210730
+
+```
+1.检查下hadoop集群, hbase集群	
+	echo "list" | hbase shell # 是否能列出来
+	Hbase  UI页面地址：http://10.10.0.254:60010/master-status#compactStas  # 节点数至少5个， Dead Region Servers
+	HDFS   UI页面地址：http://10.10.0.254:50070/dfshealth.html#tab-overview 
+			61.32 TB
+			13.42 TB (21.89%)
+			44.73 TB (72.95%)
+	检查进程：
+
+            2481 HMaster
+            18354 ResourceManager
+            2180 DataNode
+            1925 NameNode
+            1845 JournalNode
+            28327 Jps
+            26696 Main
+            30620 QuorumPeerMain
+            28238 ThriftServer
+
+	
+2.检查程序运行和发送情况
+10.10.10.104   administrator/Admin123 
+	进程：datacenter-realtime-futures		晚上八点
+    	  
+	     
+3.检查界面，行情软件
+	如果有问题，启动：hbase-daemon.sh start thrift2
+
+CLOSE_WAIT 47
+ESTABLISHED 133
+FIN_WAIT2 9
+TIME_WAIT 33
+
+
+2021-07-27 08:27:21,809 ERROR org.apache.hadoop.hdfs.server.datanode.DataNode: slave2:50010:DataXceiver error processing READ_BLOCK operation  src: /10.10.0.253:54500 dst: /10.10.0.54:50010
+org.apache.hadoop.hdfs.server.datanode.ReplicaNotFoundException: Replica not found for BP-820644543-10.10.0.254-1562028117422:blk_1076748201_3008249
+        at org.apache.hadoop.hdfs.server.datanode.BlockSender.getReplica(BlockSender.java:455
+
+get "hznc_mkdata:tickdata", "CF109_1627451657_1"
+```
+
+
+
+2.补录17年商品数据
+
+​	开始发送17年的数据
+
+```shell
+hbase  org.apache.hadoop.hbase.mapreduce.ImportTsv -Dimporttsv.log.bad.lines=true -Dimporttsv.skip.bad.lines=false -Dimporttsv.separator=, -Dimporttsv.columns='HBASE_ROW_KEY,cf_data:01cSymbol,cf_data:02dbClosePrice,cf_data:03dbHeightPrice,cf_data:04dbLowPrice,cf_data:05dbOpenPrice,cf_data:06dbSum,cf_data:07dbYTClosePrice,cf_data:08uTime,cf_data:09uVolume,cf_data:10uVolume_Sell,cf_data:11zpos,cf_data:12zpos_diff,cf_data:13avgPrice,cf_data:14tdHighestPrice,cf_data:15tdLowestPrice,cf_data:16UpperLimitPrice,cf_data:17LowerLimitPrice,cf_data:18BidPrice1,cf_data:19BidVolume1,cf_data:20AskPrice1,cf_data:21AskVolume1,cf_data:from' -Dimporttsv.bulk.output=/history/futures-out/2017/hznc_mkdata-tickdata/ \
+hznc_mkdata:tickdata \
+/history/futures/2017/hznc_mkdata-tickdata
+
+
+hbase org.apache.hadoop.hbase.mapreduce.LoadIncrementalHFiles /history/futures-out/2017/hznc_mkdata-15sdata  hznc_mkdata:15sdata
+
+tick, 1s, 2s		--ok
+current: 5s
+nok: 3s
+
+3s报错：
+
+2021-07-30 15:27:06,651 INFO  [main] mapreduce.Job: Task Id : attempt_1627553602235_0004_m_000009_2, Status : FAILED
+Error: java.lang.IllegalArgumentException: Can't read partitions file
+        at org.apache.hadoop.mapreduce.lib.partition.TotalOrderPartitioner.setConf(TotalOrderPartitioner.java:116)
+        at org.apache.hadoop.util.ReflectionUtils.setConf(ReflectionUtils.java:76)
+        at org.apache.hadoop.util.ReflectionUtils.newInstance(ReflectionUtils.java:136)
+        at org.apache.hadoop.mapred.MapTask$NewOutputCollector.<init>(MapTask.java:702)
+        at org.apache.hadoop.mapred.MapTask.runNewMapper(MapTask.java:770)
+        at org.apache.hadoop.mapred.MapTask.run(MapTask.java:341)
+        at org.apache.hadoop.mapred.YarnChild$2.run(YarnChild.java:164)
+        at java.security.AccessController.doPrivileged(Native Method)
+        at javax.security.auth.Subject.doAs(Subject.java:422)
+        at org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1698)
+        at org.apache.hadoop.mapred.YarnChild.main(YarnChild.java:158)
+Caused by: java.io.IOException: Wrong number of partitions in keyset
+        at org.apache.hadoop.mapreduce.lib.partition.TotalOrderPartitioner.setConf(TotalOrderPartitioner.java:90)
+        ... 10 more
+```
+
+3.盘面资金一分钟一下周期保存		-- 下周测试一天
+
+```
+hznc_tgdata:amount
+1_000300_10_1627259400
+
+
+#ifndef nle_kdperiod#ifndef nle_kdperiodtypedef enum __nle_kdperiod { nlec_kdp_null = 0, nlec_kdp_01m, nlec_kdp_05m, nlec_kdp_15m, nlec_kdp_01d, nlec_kdp_01w, nlec_kdp_01mth, nlec_kdp_30m, nlec_kdp_60m, nlec_kdp_tick, nlec_kdp_01s, nlec_kdp_05s, nlec_kdp_10s, nlec_kdp_15s, nlec_kdp_30s, nlec_kdp_year, nlec_kdp_02s, nlec_kdp_03s, nlec_kdp_07s, nlec_kdp_end,}nle_kdperiod;#endif // !nle_kdperiod
+```
+
+4.负载均衡
+
+限制网络带宽：
+
+// 50M 
+
+hdfs dfsadmin -setBalancerBandwidth  52428800
+
+hdfs balancer -threshold 10 # datanode 之间使用率相差%10以上开始rebanlace
+
+
+
+
+
+5.26和6.1股指主连
+
+5.其他
 
 ​	算法		--ok
+
+```java
+class Solution {
+    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        if (root==p||root==q) {
+            return root;
+        }
+        if (root!=null){
+            TreeNode lNode=lowestCommonAncestor(root.left,p,q);
+            TreeNode rNode=lowestCommonAncestor(root.right,p,q);
+            if (lNode!=null&&rNode!=null)
+                return root;
+            else if(lNode==null) {//两个都在右子树
+                return rNode;
+            }
+            else { //两个都在左子树里面
+                return lNode;
+            }
+        }
+        return null;
+    }
+}
+```
 
 ​	kafka
 
 ​	zero copy
 
-​	磁盘读写原理
+​	磁盘读写原理，内存页，脏页
 
-​	设计模式		--ok
+​	设计模式
 
+​			代理模式
 
-
-5.k线bug修复
+​			原型模式
 
 todo：
 
@@ -2848,21 +3158,43 @@ hadoop版本：2.7.3
 
 
 
-今天工作-20210727
+今天工作-20210728
 
-1.17年商品数据补录，生成csv到本地
+1.17年商品数据补录		--ok
 
-2.处理hbase服务器磁盘占满的问题
+2.盘面资金数据1分钟以下周期存储
 
-​		处理完2个节点，剩余3台，现在每台节点退役要2-3小时
+​		下周测试半天
 
-明天工作：
+下周工作：
 
-1.继续补录17年商品数据
+1.16年商品数据补录
 
-2.处理剩余服务器磁盘占满的问题
+2.21年的股指主连补录
+
+3.盘面资金1分钟以下数据存储
+
+where '2020-05-26' >= start_date AND '2020-05-26' <= end_date and 
 
 
+
+今日总结-20210730：
+
+数据中心-1.1.2
+
+​	1.17年商品数据补录 进度100%		--ok
+
+   2 .盘面资金数据1分钟以下周期存储	60%
+下周计划：
+
+​	数据中心-1.1.2
+
+  1.16年商品数据补录				0%
+
+ 	2.	21年的股指主连补录				0%		
+ 	3.	盘面资金1分钟以下数据存储     60%
+
+项目风险：无
 
 
 
