@@ -14,6 +14,8 @@
 
 jdk1.7采用头插法，1.8采用尾插法。
 
+头插法带来的问题：put元素和resize时会采用头插法，打破了原来链表的顺序，在多线程环境下可能出现链表成环的问题。而尾插法可以保证链表顺序。
+
 ##### put方法
 
 ```java
@@ -164,7 +166,7 @@ rehash
 
 ##### concurrentHashMap
 
-TODO
+源码
 
 #### List
 
@@ -172,7 +174,13 @@ TODO
 
 ArrayList底层实现是数组，特点是查询快，增删慢。初始容量10，每次扩容1.5倍。
 
-LinkedList底层实现是红黑树，特点是是增删快，查询慢。
+LinkedList底层实现是双向链表，特点是是增删快，查询慢。
+
+```java
+public class LinkedList<E>
+    extends AbstractSequentialList<E>
+    implements List<E>, Deque<E>, Cloneable, java.io.Serializable
+```
 
 Vector实现跟ArrayList实现一样，但是所有的方法都加了synchronized，线程安全，效率差于ArrayList
 
@@ -188,7 +196,23 @@ CopyOnWriteArrayList	TODO
 
 ##### HashSet
 
-基于红黑树实现，无序不可重复。
+基于HashMap实现，无序不可重复。
+
+##### LinkedHashSet
+
+HashSet的子类，基于LinkedHashMap实现，构造函数通过HashSet的构造方法：
+
+```java
+public LinkedHashSet() {
+    super(16, .75f, true);
+}
+```
+
+```java
+HashSet(int initialCapacity, float loadFactor, boolean dummy) {
+    map = new LinkedHashMap<>(initialCapacity, loadFactor);
+}
+```
 
 
 
@@ -200,19 +224,27 @@ jvm中锁的实现，两种使用方法，本质都是每个对象都有一个�
 
 修饰代码块：
 
-对同步快使用了monitorenter和monitorexit指令实现的，线程执行monitorenter时尝试获取monitor的所有权，monitor都有自己的计数器，如果monitor的进入数为0，则该线程进入monitor，计数器+1，成为对象锁的持有者，这个过程是可重入的，如果持有线程再次获取monitro,计数器+1。如果monitor进入数不为0，说明被其他线程持有，则线程进入同步队列，状态变为BLOCKED；
+对同步块使用了monitorenter和monitorexit指令实现的，线程执行monitorenter时尝试获取monitor的所有权，monitor都有自己的计数器，如果monitor的进入数为0，则该线程进入monitor，计数器+1，成为对象锁的持有者，这个过程是可重入的，如果持有线程再次获取monitro,计数器+1。如果monitor进入数不为0，说明被其他线程持有，则线程进入同步队列，状态变为BLOCKED；
 
 修饰方法：
 
 通过方法上的修饰符ACC_SYNCRONIZED来完成的。
 
+ACC_SYNCHRONIZED会去隐式调用刚才的两个指令：monitorenter和monitorexit。
+
+所以归根究底，还是monitor对象的争夺
+
 syncronized锁是保存在对象头里面的Mark Word中的。
 
 jdk1.6开始为了减少锁释放和获取的性能，引入了“偏向锁”和“轻量级锁”，所以目前锁是有4中状态：	
 
-对象刚初始化时无锁状态，当有线程访问同步块并且获取锁时，会在对象头和帧栈的锁记录里面记录偏向线程的ID，并在Mark Word中的偏向锁标志设置为1。
+无锁状态：对象刚初始化时无锁状态；
 
-如果有其他线程竞争则偏向锁被撤销（等到全局安全点，没有正在执行的字节码，先暂停偏向的线程，检查如果线程不活动，置为无锁，或者锁记录中有其他线程，偏向其他的线程），升级为轻量级锁，过程：JVM在当前线程帧栈中创建用于保存锁记录的空间，然后将地偶像头中的Mark Word复制到锁记录中，然后线程通过CAS将对象头中Mark Word的引用指向锁记录中的，如果成功则过得锁，失败，表示有其他线程竞争，自旋获取锁。jvm中有参数设置自旋的次数，默认10次，超过会膨胀为重量级锁（TODO：自适应锁？）
+偏向锁状态：当有线程访问同步块并且获取锁时，会在对象头和帧栈的锁记录里面记录偏向线程的ID，并在Mark Word中的偏向锁标志设置为1。
+
+轻量级锁：如果有其他线程竞争则偏向锁被撤销（等到全局安全点，没有正在执行的字节码，先暂停偏向的线程，检查如果线程不活动，置为无锁，或者锁记录中有其他线程，偏向其他的线程），升级为轻量级锁，过程：JVM在当前线程帧栈中创建用于保存锁记录的空间，接着讲对象头中的Mark Word复制到锁记录中，然后线程通过CAS将对象头中Mark Word的引用指向锁记录中的，官方称： Displaced Mard Word ， 如果成功则过得锁，失败，表示有其他线程竞争，自旋获取锁。
+
+重量级锁：jvm中有参数设置自旋的次数，默认10次，超过会膨胀为重量级锁（TODO：自适应锁？）
 
 轻量级锁竞争过程中通过CAS替换对象头中的Mark Word，如果失败升级为重量级锁。过程不可逆
 
@@ -240,7 +272,7 @@ jdk1.6开始为了减少锁释放和获取的性能，引入了“偏向锁”�
 
 ​	Mark Word
 
-​	指向类的引用
+​	class pointer：这一部分用于存储对象的类型指针，该指针指向它的类元数据，JVM通过这个指针确定对象是哪个类的实例。
 
 ​	数组长度（如果是数组）
 
@@ -263,6 +295,11 @@ volatile变量执行写操作后，JMM会把工作内存中的最新变量刷新
 volatile通过编译器生成字节码时，在指令序列中添加“lock”指令，在volatile变量的读写前后加上内存屏障禁止指令的重排序，从而保证有序性
 
 **不保证原子性**，volatile变量的读和写都是原子的，但是对复合操作如i++,不保证原子性。
+
+**MESI协议**
+
+MESI保证了每个缓存中使用的共享变量的副本是一致的。它核心的思想是：基于总线嗅探机制，当CPU写数据时，如果发现操作的变量是共享变量，即在其他CPU中也存在该变量的副本，会发出信号通知其他CPU将该变量的缓存行置为无效状态，因此当其他CPU需要读取这个变量时，发现自己缓存中缓存该变量的缓存行是无效的，那么它就会从内存重新读取。
+
 
 #### Java内存模型（JMM）
 
@@ -296,9 +333,9 @@ happens-before规则用来阐述操作之间的内存可见性，我个人理解
 
 Singleton instance = new Singleton(),这句话实际是分三步执行：
 
-1.分配内存空间
+1.堆上分配内存空间
 
-2.初始化instance
+2.初始化instance对象
 
 3.将instance指向分配的内存地址
 
@@ -351,6 +388,22 @@ reentrantLock是基于AQS实现的可重入锁，在jdk中实现。与synchroniz
     PipedOutputStream out = new PipedOutputStream();
     out.connect(in);
 ```
+
+#### 线程的6种状态
+
+NEW: 线程刚创建时，还没有start
+
+BLOCKED:阻塞等待获取锁
+
+RUNNING:运行
+
+WAITING:调用wait方法，释放锁，进入等待。waitng 被notify后进入BLOCKED状态。
+
+TIMED_WAITING:等待指定时长
+
+DEAD：线程运行完毕
+
+Join实际通过wait/notify实现
 
 
 
@@ -1483,6 +1536,137 @@ class CglibProxy implements MethodInterceptor{
 ​		具体子类/具体实现
 
 ​		jdk中的实现：AQS，定义了一个方法的骨架：acquire， tryAcquire，tryRelease， tryAcquireShared， tryReleaseShared等等。
+
+#### 适配器模式
+
+​			将一个类的接口转换成客户希望的另外一个接口，使得原本由于接口不兼容而不能一起工作的那些类能一起工作。按照adapter跟adaptee的关系是继承还是依赖分为类适配器和对象适配器两种模式。
+
+适配器模式（Adapter）包含以下主要角色。
+
+1. 目标（Target）接口：当前系统业务所期待的接口，它可以是抽象类或接口。
+2. 适配者（Adaptee）类：它是被访问和适配的现存组件库中的组件接口。
+3. 适配器（Adapter）类：它是一个转换器，通过继承或引用适配者的对象，把适配者接口转换成目标接口，让客户按目标接口的格式访问适配者。
+
+主要优点如下。
+
+- 客户端通过适配器可以透明地调用目标接口。
+
+- 复用了现存的类，程序员不需要修改原有代码而重用现有的适配者类。
+
+- 将目标类和适配者类解耦，解决了目标类和适配者类接口不一致的问题。
+
+- 在很多业务场景中符合开闭原则。
+
+  其缺点是：
+
+  - 适配器编写过程需要结合业务场景全面考虑，可能会增加系统的复杂性。
+  - 增加代码阅读难度，降低代码可读性，过多使用适配器会使系统代码变得凌乱。
+
+  
+
+  两种不同适配器的优缺点
+
+  类适配器：优点是因为是适配器类继承适配者类，可以重写适配者的方法，更加灵活。缺点是java单继承并且final类不可继承。
+
+  对象适配器：优点是可以适配多个适配者，缺点是可能过多的引入适配者类。
+
+  
+
+  适配器模式在jdk中的体现
+
+  io 的设计就用到了适配器模式（对象适配器）， InputStreamReader类可以将InputStream适配到Reader。InputStreamReader就是适配器类，InputStream是适配者，
+
+  Reader就是目标接口，我们想调用的接口。更深入的研究其实可以发现：InputStreamReader类中有成员变量StreamDecoder，它才是真正的适配器，将InputStream转换成Reader, 同样OutputStreamWriter中由StreamEncoder进行OutputStream适配成Writer。
+
+  ```java
+      public InputStreamReader(InputStream in) {
+          super(in);
+          try {
+              sd = StreamDecoder.forInputStreamReader(in, this, (String)null); // ## check lock object
+          } catch (UnsupportedEncodingException e) {
+              // The default encoding should always be available
+              throw new Error(e);
+          }
+      }
+  ```
+
+  还有其他的如StringReader将String类适配到Reader接口， ByteArryInputStream 适配器将byte数组适配到InputStream流接口。
+
+#### 桥接模式
+
+​	桥接模式即将抽象部分与它的实现部分分离开来，使他们都可以独立变化。
+
+桥接模式将继承关系转化成关联关系，它降低了类与类之间的耦合度，减少了系统中类的数量，也减少了代码量。
+
+说白了就是将两个不同维度的类组合起来，其中一个类抽成抽象类，包含另外一个类的接口为成员属性， jdk中的桥接模式：
+
+![在这里插入图片描述](https://www.pianshen.com/images/981/8bd72aeea29de03019256b3f4435cb2d.JPEG)
+
+其中Handler就是抽象类，Formatter 是一个抽象类同时是Handler的成员变量，可以有自己不同的实现类。
+
+#### 观察者模式
+
+​				又叫发布-订阅模式（Publish/Subscribe），定义对象间一种一对多的依赖关系，使得每当一个对象改变状态，则所有依赖于它的对象都会得到通知并自动更新
+
+​	结构：
+
+Subject类是主题，它把所有对观察者对象的引用文件存在了一个集合里，每个主题都可以有任何数量的`观察者`。它是一个抽象主题，提供了一个可以增加和删除观察者对象的接口。
+
+Observer类是抽象观察者，为所有的具体观察者定义一个接口，在得到主题的通知时更新自己。
+
+ConcreteSubject类是具体主题，将有关状态存入具体观察者对象，在具体主题内部状态改变时，给所有登记过的观察者发出通知。
+
+ConcreteObserver是具体观察者，实现抽象观察者角色所要求的更新接口，以便使本身的状态与主题的状态相协同。
+
+ConcreteSubject通过attach方法添加观察者，内部维护一个集合保存订阅的观察者，当主题有变动时，迭代调用观察者的update方法。
+
+优点：
+
+​		1.观察者和被观察者是抽象耦合的。 2.建立了触发机制
+
+缺点：
+
+​		1.如果观察者很多，通知会比较耗时。
+
+​		2.如果观察者很被观察者相互依赖，可能导致系统崩溃。
+
+
+
+#### 建造者模式
+
+​			创建者模式又叫建造者模式，是将一个复杂的对象的构建与它的表示分离，使
+ 得同样的构建过程可以创建不同的表示。创建者模式隐藏了复杂对象的创建过程，它把复杂对象的创建过程加以抽象，通过子类继承或者重载的方式，动态的创建具有复合属性的对象。
+
+结构
+	抽象建造者类（builder）：为创建product对象而指定各个组件的抽象接口
+
+​	具体建造类（concreteBuilder）：实现builder接口，重写方法构建不同的表示
+
+​	产品类（product）：具体的产品
+
+​	指挥者类（director）：构建一个使用builder接口的对象
+
+适用场景
+
+​	隔离复杂对象的创建和使用，相同的方法，不同执行顺序，产生不同事件结果
+
+​	多个部件都可以装配到一个对象中，但产生的运行结果不相同
+
+​	在用户不知道对象的建造过程和细节的情况下就可以直接创建复杂的对象。
+
+jdk中的建造者模式
+
+​	StringBuffer就是采用建造者模式。
+
+​	Appendable：抽象建造者，定义了创建对象的接口
+
+​	AbstractStringBuilder：具体建造者，它实现了appendable接口的append(Character c)方法。
+
+​	StringBuilder：指挥者角色，持有具体建造者的引用，由于StringBuilder继承了AbstractStringBuilder，这里StringBuilder通过super来作为具体建造者的引用。
+
+​	String：产品角色。
+
+
 
 
 
